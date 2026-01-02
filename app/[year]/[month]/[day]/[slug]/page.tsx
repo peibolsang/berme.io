@@ -53,6 +53,8 @@ export const generateMetadata = async ({
 
     const description = post.excerpt ?? "Blog post.";
 
+    const postImage = post.image?.trim();
+
     return {
       title: post.title,
       description,
@@ -66,11 +68,13 @@ export const generateMetadata = async ({
         url: post.url,
         publishedTime: post.publishedAt,
         modifiedTime: post.updatedAt,
+        images: postImage ? [{ url: postImage }] : undefined,
       },
       twitter: {
         card: "summary_large_image",
         title: post.title,
         description,
+        images: postImage ? [postImage] : undefined,
       },
     };
   } catch {
@@ -96,7 +100,21 @@ export default async function PostPage({ params }: PageProps) {
 
     return (
       <div className="min-h-screen">
-        <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
+        <section
+          className={`bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 ${
+            post.image ? "pt-0" : "pt-12"
+          } dark:bg-slate-900`}
+        >
+          {post.image && (
+            <div className="-mx-6 mb-6 h-[150px] overflow-hidden">
+              <img
+                src={post.image}
+                alt=""
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          )}
           <div className="mx-auto w-full max-w-2xl">
             <Link
               href="/"
@@ -105,7 +123,7 @@ export default async function PostPage({ params }: PageProps) {
               ← Back
             </Link>
             <h1
-              className={`mt-6 text-7xl font-semibold ${playfairDisplay.className}`}
+              className={`mt-6 text-6xl font-semibold ${playfairDisplay.className}`}
             >
               {post.title}
             </h1>

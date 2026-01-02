@@ -4,6 +4,7 @@ type FrontmatterData = {
   slug?: string;
   publishedAt?: string;
   excerpt?: string;
+  image?: string;
   draft?: boolean;
 };
 

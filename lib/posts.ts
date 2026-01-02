@@ -47,6 +47,7 @@ const fetchPosts = async (): Promise<Post[]> => {
       publishedAt: publishedAtDate.toISOString(),
       updatedAt: issue.updated_at,
       excerpt: data.excerpt,
+      image: data.image,
       body,
       labels,
       url,
