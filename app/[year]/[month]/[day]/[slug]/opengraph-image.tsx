@@ -51,13 +51,13 @@ export default async function Image({
         <div
           style={{
             marginTop: 48,
-            fontSize: 18,
-            letterSpacing: "0.24em",
-            textTransform: "uppercase",
-            color: "#64748b",
+            fontSize: 54,
+            fontWeight: 800,
+            lineHeight: 1.1,
+            color: "#0f172a",
           }}
         >
-          Pablo Bermejo
+          {title}
         </div>
       </div>
     ),
