@@ -3,8 +3,11 @@
 ## Project Structure & Module Organization
 This repository is a Next.js App Router project.
 - `app/` contains route modules and layouts (e.g., `app/page.tsx`, `app/layout.tsx`) and global styles in `app/globals.css`.
+- `app/api/revalidate/route.ts` handles GitHub webhook revalidation.
 - `public/` stores static assets served at the site root.
 - Config lives at the top level: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, and `postcss.config.mjs`.
+- Data access lives in `lib/` (GitHub DAL, posts, comments, caching utilities).
+- Shared UI lives in `components/` (Markdown renderer, theme toggle).
 
 ## Build, Test, and Development Commands
 Use npm scripts from `package.json`:
@@ -23,6 +26,24 @@ Follow existing patterns in the `app/` directory:
 ## Testing Guidelines
 No test framework is currently configured. If you add tests, document the runner and add a script to `package.json`. Prefer colocated tests under `app/` or a top-level `tests/` directory, with names like `*.test.tsx`.
 
+## Features Implemented
+- GitHub Issues CMS: posts are issues labeled `published` in `GITHUB_OWNER/GITHUB_REPO`.
+- Permalinks: `/{year}/{month}/{day}/{slug}` with redirects for date-only routes.
+- Markdown rendering with GFM + sanitization + syntax highlighting.
+- Post labels rendered as chips (excluding `published`).
+- Comments rendered from GitHub issue comments, with Markdown.
+- Dark mode with toggle (Radix icons) and split header/body backgrounds.
+- SEO routes: `sitemap.xml`, `feed.xml`, `robots.txt`.
+
+## Caching & Revalidation Strategy
+- Posts list cached via `unstable_cache` in `lib/posts.ts` with tag `posts` and TTL `REVALIDATE_SECONDS` (default 3600).
+- Comments cached via `unstable_cache` in `lib/comments.ts` with tag `comments:<issueNumber>` and TTL 300s.
+- Revalidation webhook in `app/api/revalidate/route.ts`:
+  - Issue labeled `published` → `revalidateTag("posts", "page")`
+  - Issue edited → `revalidateTag("posts", "page")`
+  - Comment created → `revalidateTag("comments:<issueNumber>", "page")`
+- Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
+
 ## Commit & Pull Request Guidelines
 There is no established commit convention yet (only the initial scaffold commit exists). Use short, imperative messages (e.g., "Add hero section"). For pull requests:
 - Include a concise summary of changes and rationale.
@@ -31,3 +52,4 @@ There is no established commit convention yet (only the initial scaffold commit 
 
 ## Security & Configuration Tips
 Store secrets in environment files (e.g., `.env.local`) and avoid committing them. Update `next.config.ts` only when project-level behavior changes.
+Required env vars for production: `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`. Optional: `GITHUB_OWNER`, `GITHUB_REPO`, `REVALIDATE_SECONDS`.
