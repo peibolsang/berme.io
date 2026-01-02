@@ -15,17 +15,27 @@ export default async function Image({
 }: {
   params: { year: string; month: string; day: string; slug: string };
 }) {
-  const post = await getPostByPermalink(
-    params.year,
-    params.month,
-    params.day,
-    params.slug
-  );
-
   const brandTitle = "Pablo Bermejo";
   const fallbackTitle = params.slug.replace(/-/g, " ").trim();
-  const postTitle = post?.title ?? (fallbackTitle || brandTitle);
-  const description = post?.excerpt ?? "Notes and essays.";
+  let postTitle = fallbackTitle || brandTitle;
+  let description = "Notes and essays.";
+
+  try {
+    const post = await getPostByPermalink(
+      params.year,
+      params.month,
+      params.day,
+      params.slug
+    );
+    if (post?.title) {
+      postTitle = post.title;
+    }
+    if (post?.excerpt) {
+      description = post.excerpt;
+    }
+  } catch {
+    // Use slug-based fallback if the post lookup fails.
+  }
 
   return new ImageResponse(
     (
