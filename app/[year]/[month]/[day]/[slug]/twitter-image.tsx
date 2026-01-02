@@ -18,6 +18,7 @@ export default async function Image({
   const brandTitle = "Pablo Bermejo";
   let postTitle = brandTitle;
   let description = "Notes and essays.";
+  let hasPostTitle = false;
 
   try {
     const post = await getPostByPermalink(
@@ -28,6 +29,7 @@ export default async function Image({
     );
     if (typeof post?.title === "string" && post.title.trim()) {
       postTitle = post.title;
+      hasPostTitle = true;
     }
     if (typeof post?.excerpt === "string" && post.excerpt.trim()) {
       description = post.excerpt;
@@ -47,9 +49,9 @@ export default async function Image({
           justifyContent: "center",
           alignItems: "flex-start",
           padding: "80px",
-          backgroundColor: "#0f172a",
+          backgroundColor: "#0b1120",
           backgroundImage:
-            "radial-gradient(circle at 15% 20%, #1e293b 0%, #0f172a 70%, #020617 100%)",
+            "radial-gradient(circle at 20% 15%, #1f2937 0%, #0b1120 55%, #0f172a 100%)",
           color: "#f8fafc",
         }}
       >
@@ -59,18 +61,38 @@ export default async function Image({
         <div style={{ marginTop: 24, fontSize: 26, color: "#cbd5f5" }}>
           {description}
         </div>
-        <div
-          style={{
-            marginTop: 48,
-            fontSize: 54,
-            fontWeight: 800,
-            lineHeight: 1.1,
-            color: "#f8fafc",
-            maxWidth: "100%",
-          }}
-        >
-          {postTitle}
-        </div>
+        {hasPostTitle ? (
+          <div
+            style={{
+              marginTop: 48,
+              fontSize: 54,
+              fontWeight: 800,
+              lineHeight: 1.1,
+              color: "#f8fafc",
+              maxWidth: "100%",
+            }}
+          >
+            {postTitle}
+          </div>
+        ) : (
+          <div
+            style={{
+              marginTop: 48,
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "14px 26px",
+              borderRadius: 999,
+              backgroundColor: "rgba(248, 250, 252, 0.12)",
+              color: "#f8fafc",
+              fontSize: 24,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            Read more
+          </div>
+        )}
       </div>
     ),
     size
