@@ -13,7 +13,7 @@ const escapeXml = (value: string) =>
     .replace(/'/g, "&apos;");
 
 export async function GET() {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const posts = await getAllPosts();
 
   const items = posts

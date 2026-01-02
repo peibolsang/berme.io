@@ -1,7 +1,7 @@
 import { getBaseUrl } from "../../lib/site";
 
 export async function GET() {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const body = `User-agent: *
 Allow: /
 Sitemap: ${baseUrl}/sitemap.xml

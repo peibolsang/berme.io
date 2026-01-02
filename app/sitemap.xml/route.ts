@@ -19,7 +19,7 @@ const buildSitemap = (baseUrl: string, urls: { loc: string; lastmod?: string }[]
 };
 
 export async function GET() {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const posts = await getAllPosts();
   const urls = [
     { loc: `${baseUrl}/` },
