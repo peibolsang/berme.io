@@ -31,17 +31,18 @@ export const getAllPosts = async (): Promise<Post[]> => {
 
   try {
     const issues = await fetchAllBlogIssues();
-    const posts = issues
-      .map((issue) => {
+    const posts: Post[] = [];
+
+    issues.forEach((issue) => {
         const { data, body } = parseFrontmatter(issue.body ?? "");
         if (data.draft) {
-          return null;
+          return;
         }
 
         const publishedAtRaw = data.publishedAt ?? issue.created_at;
         const publishedAtDate = asDate(publishedAtRaw);
         if (!publishedAtDate) {
-          return null;
+          return;
         }
 
         const slug = data.slug ? slugify(data.slug) : slugify(issue.title);
@@ -50,7 +51,7 @@ export const getAllPosts = async (): Promise<Post[]> => {
           .map((label) => (label.name ?? "").trim())
           .filter(Boolean);
 
-        return {
+        posts.push({
           id: String(issue.id),
           number: issue.number,
           title: issue.title,
@@ -61,10 +62,10 @@ export const getAllPosts = async (): Promise<Post[]> => {
           body,
           labels,
           url,
-        } satisfies Post;
-      })
-      .filter((post): post is Post => Boolean(post))
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+        });
+      });
+
+    posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
     cache = {
       posts,
