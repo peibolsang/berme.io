@@ -1,15 +1,9 @@
+import { unstable_cache } from "next/cache";
 import { fetchAllBlogIssues } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
 import { config } from "./config";
 import type { Post } from "../types";
-
-type CacheState = {
-  posts: Post[];
-  updatedAt: number;
-};
-
-let cache: CacheState | null = null;
 
 const buildUrl = (date: Date, slug: string) => {
   const year = date.getUTCFullYear();
@@ -23,63 +17,51 @@ const asDate = (value: string) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-export const getAllPosts = async (): Promise<Post[]> => {
-  const now = Date.now();
-  if (cache && now - cache.updatedAt < config.revalidateSeconds * 1000) {
-    return cache.posts;
-  }
+const fetchPosts = async (): Promise<Post[]> => {
+  const issues = await fetchAllBlogIssues();
+  const posts: Post[] = [];
 
-  try {
-    const issues = await fetchAllBlogIssues();
-    const posts: Post[] = [];
-
-    issues.forEach((issue) => {
-        const { data, body } = parseFrontmatter(issue.body ?? "");
-        if (data.draft) {
-          return;
-        }
-
-        const publishedAtRaw = data.publishedAt ?? issue.created_at;
-        const publishedAtDate = asDate(publishedAtRaw);
-        if (!publishedAtDate) {
-          return;
-        }
-
-        const slug = data.slug ? slugify(data.slug) : slugify(issue.title);
-        const url = buildUrl(publishedAtDate, slug);
-        const labels = issue.labels
-          .map((label) => (label.name ?? "").trim())
-          .filter(Boolean);
-
-        posts.push({
-          id: String(issue.id),
-          number: issue.number,
-          title: issue.title,
-          slug,
-          publishedAt: publishedAtDate.toISOString(),
-          updatedAt: issue.updated_at,
-          excerpt: data.excerpt,
-          body,
-          labels,
-          url,
-        });
-      });
-
-    posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-
-    cache = {
-      posts,
-      updatedAt: now,
-    };
-
-    return posts;
-  } catch (error) {
-    if (cache) {
-      return cache.posts;
+  issues.forEach((issue) => {
+    const { data, body } = parseFrontmatter(issue.body ?? "");
+    if (data.draft) {
+      return;
     }
-    throw error;
-  }
+
+    const publishedAtRaw = data.publishedAt ?? issue.created_at;
+    const publishedAtDate = asDate(publishedAtRaw);
+    if (!publishedAtDate) {
+      return;
+    }
+
+    const slug = data.slug ? slugify(data.slug) : slugify(issue.title);
+    const url = buildUrl(publishedAtDate, slug);
+    const labels = issue.labels
+      .map((label) => (label.name ?? "").trim())
+      .filter(Boolean);
+
+    posts.push({
+      id: String(issue.id),
+      number: issue.number,
+      title: issue.title,
+      slug,
+      publishedAt: publishedAtDate.toISOString(),
+      updatedAt: issue.updated_at,
+      excerpt: data.excerpt,
+      body,
+      labels,
+      url,
+    });
+  });
+
+  posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+
+  return posts;
 };
+
+export const getAllPosts = unstable_cache(fetchPosts, ["posts"], {
+  revalidate: config.revalidateSeconds,
+  tags: ["posts"],
+});
 
 export const getPostByPermalink = async (
   year: string,

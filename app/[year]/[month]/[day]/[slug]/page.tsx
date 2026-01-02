@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
 import { getPostByPermalink } from "../../../../../lib/posts";
-import { fetchIssueComments, type GitHubComment } from "../../../../../lib/github";
+import { getIssueComments } from "../../../../../lib/comments";
+import type { GitHubComment } from "../../../../../lib/github";
 import { Markdown } from "../../../../../components/Markdown";
 import { config } from "../../../../../lib/config";
 
@@ -80,7 +81,7 @@ export default async function PostPage({ params }: PageProps) {
 
     let comments: GitHubComment[] = [];
     try {
-      comments = await fetchIssueComments(post.number);
+      comments = await getIssueComments(post.number);
     } catch {
       comments = [];
     }
