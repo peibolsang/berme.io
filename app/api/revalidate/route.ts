@@ -34,13 +34,13 @@ export async function POST(request: Request) {
     if (action === "labeled") {
       const label = String(payload.label?.name ?? "").toLowerCase();
       if (label === "published") {
-        await revalidateTag("posts", "page");
+        await revalidateTag("posts");
         revalidated.push("posts");
       }
     }
 
     if (action === "edited") {
-      await revalidateTag("posts", "page");
+      await revalidateTag("posts");
       revalidated.push("posts");
     }
   }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const issueNumber = Number(payload.issue?.number);
     if (Number.isFinite(issueNumber)) {
       const tag = `comments:${issueNumber}`;
-      await revalidateTag(tag, "page");
+      await revalidateTag(tag);
       revalidated.push(tag);
     }
   }
