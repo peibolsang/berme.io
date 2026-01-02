@@ -16,8 +16,7 @@ export default async function Image({
   params: { year: string; month: string; day: string; slug: string };
 }) {
   const brandTitle = "Pablo Bermejo";
-  const fallbackTitle = params.slug.replace(/-/g, " ").trim();
-  let postTitle = fallbackTitle || brandTitle;
+  let postTitle = brandTitle;
   let description = "Notes and essays.";
 
   try {
@@ -27,10 +26,10 @@ export default async function Image({
       params.day,
       params.slug
     );
-    if (post?.title) {
+    if (typeof post?.title === "string" && post.title.trim()) {
       postTitle = post.title;
     }
-    if (post?.excerpt) {
+    if (typeof post?.excerpt === "string" && post.excerpt.trim()) {
       description = post.excerpt;
     }
   } catch {
@@ -67,6 +66,7 @@ export default async function Image({
             fontWeight: 800,
             lineHeight: 1.1,
             color: "#f8fafc",
+            maxWidth: "100%",
           }}
         >
           {postTitle}
