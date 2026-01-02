@@ -56,6 +56,9 @@ export const generateMetadata = async ({
     return {
       title: post.title,
       description,
+      alternates: {
+        canonical: post.url,
+      },
       openGraph: {
         title: post.title,
         description,
@@ -63,6 +66,11 @@ export const generateMetadata = async ({
         url: post.url,
         publishedTime: post.publishedAt,
         modifiedTime: post.updatedAt,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: post.title,
+        description,
       },
     };
   } catch {

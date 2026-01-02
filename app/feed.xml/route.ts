@@ -35,7 +35,7 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <rss version="2.0">
       <channel>
-        <title>Pablo</title>
+        <title>Pablo Bermejo</title>
         <link>${baseUrl}</link>
         <description>Notes and essays.</description>
         ${items}

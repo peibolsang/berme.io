@@ -47,7 +47,9 @@ export default async function Home() {
       <div className="min-h-screen px-6 py-16">
         <main className="mx-auto w-full max-w-2xl">
           <header className="mb-12">
-            <h1 className="text-2xl font-semibold tracking-tight">Pablo</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Pablo Bermejo
+            </h1>
           </header>
 
           <div className="space-y-10">
@@ -91,7 +93,9 @@ export default async function Home() {
     return (
       <div className="min-h-screen px-6 py-16">
         <main className="mx-auto w-full max-w-2xl">
-          <h1 className="text-2xl font-semibold tracking-tight">Pablo</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Pablo Bermejo
+          </h1>
           <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
             {isDev
               ? message
