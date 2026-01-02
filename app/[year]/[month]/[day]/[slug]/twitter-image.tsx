@@ -78,7 +78,7 @@ export default async function Image({
           <div
             style={{
               marginTop: 48,
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
               padding: "14px 26px",
               borderRadius: 999,
@@ -88,6 +88,7 @@ export default async function Image({
               fontWeight: 700,
               letterSpacing: "0.04em",
               textTransform: "uppercase",
+              width: "fit-content",
             }}
           >
             Read more
