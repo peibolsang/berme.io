@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { Playfair_Display } from "next/font/google";
 
 export const runtime = "edge";
 
@@ -8,6 +9,11 @@ export const size = {
 };
 
 export const contentType = "image/png";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+});
 
 export default function Image() {
   return new ImageResponse(
@@ -19,30 +25,21 @@ export default function Image() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          alignItems: "flex-start",
+          alignItems: "center",
+          textAlign: "center",
           padding: "80px",
           backgroundColor: "#0f172a",
           backgroundImage:
-            "radial-gradient(circle at 15% 20%, #1e293b 0%, #0f172a 70%, #020617 100%)",
+            "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0b1120 100%)",
           color: "#f8fafc",
+          fontFamily: playfair.style.fontFamily,
         }}
       >
-        <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>
+        <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1.05 }}>
           Pablo Bermejo
         </div>
-        <div style={{ marginTop: 24, fontSize: 28, color: "#cbd5f5" }}>
+        <div style={{ marginTop: 20, fontSize: 28, color: "#cbd5f5" }}>
           Notes and essays.
-        </div>
-        <div
-          style={{
-            marginTop: 48,
-            fontSize: 20,
-            letterSpacing: "0.24em",
-            textTransform: "uppercase",
-            color: "#94a3b8",
-          }}
-        >
-          berme.io
         </div>
       </div>
     ),
