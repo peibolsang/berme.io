@@ -8,6 +8,7 @@ type YearGroup = {
     title: string;
     date: string;
     url: string;
+    pinned?: boolean;
   }[];
 };
 
@@ -30,6 +31,7 @@ const groupByYear = (posts: Awaited<ReturnType<typeof getAllPosts>>) => {
       title: post.title,
       date: dateLabel,
       url: post.url,
+      pinned: post.pinned,
     });
 
     groups.set(year, entry);
@@ -42,6 +44,7 @@ export default async function Home() {
   try {
     const posts = await getAllPosts();
     const grouped = groupByYear(posts);
+    const pinned = posts.filter((post) => post.pinned);
 
     return (
       <div className="min-h-screen px-6 py-16">
@@ -53,6 +56,37 @@ export default async function Home() {
           </header>
 
           <div className="space-y-10">
+            {pinned.length > 0 && (
+              <section className="-mx-5 rounded-2xl border border-zinc-200/70 bg-white px-5 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="rounded-full border border-zinc-300 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100">
+                    Featured
+                  </span>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {pinned.map((post) => {
+                    const date = new Date(post.publishedAt);
+                    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                    const day = String(date.getUTCDate()).padStart(2, "0");
+                    const dateLabel = `${month}-${day}`;
+
+                    return (
+                      <li key={post.url} className="flex gap-4">
+                        <span className="text-amber-700/70 dark:text-amber-200/70">
+                          {dateLabel}
+                        </span>
+                        <Link
+                          href={post.url}
+                          className="font-semibold text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                        >
+                          {post.title}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
             {grouped.length === 0 ? (
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 No published posts yet.

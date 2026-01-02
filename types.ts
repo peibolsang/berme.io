@@ -7,6 +7,7 @@ export type Post = {
   updatedAt: string;
   excerpt?: string;
   image?: string;
+  pinned?: boolean;
   body: string;
   labels: string[];
   url: string;

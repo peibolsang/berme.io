@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { fetchAllBlogIssues } from "./github";
+import { fetchAllBlogIssues, fetchPinnedIssueNumbers } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
 import { config } from "./config";
@@ -18,7 +18,10 @@ const asDate = (value: string) => {
 };
 
 const fetchPosts = async (): Promise<Post[]> => {
-  const issues = await fetchAllBlogIssues();
+  const [issues, pinnedNumbers] = await Promise.all([
+    fetchAllBlogIssues(),
+    fetchPinnedIssueNumbers(),
+  ]);
   const posts: Post[] = [];
 
   issues.forEach((issue) => {
@@ -48,6 +51,7 @@ const fetchPosts = async (): Promise<Post[]> => {
       updatedAt: issue.updated_at,
       excerpt: data.excerpt,
       image: data.image,
+      pinned: pinnedNumbers.has(issue.number),
       body,
       labels,
       url,
