@@ -1,8 +1,7 @@
 import { getAllPosts } from "../../lib/posts";
 import { getBaseUrl } from "../../lib/site";
-import { config } from "../../lib/config";
 
-export const revalidate = config.revalidateSeconds;
+export const revalidate = 3600;
 
 const buildSitemap = (baseUrl: string, urls: { loc: string; lastmod?: string }[]) => {
   const items = urls
