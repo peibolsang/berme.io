@@ -22,7 +22,9 @@ export default async function Image({
     params.slug
   );
 
-  const title = post?.title ?? "Pablo Bermejo";
+  const brandTitle = "Pablo Bermejo";
+  const fallbackTitle = params.slug.replace(/-/g, " ").trim();
+  const postTitle = post?.title ?? (fallbackTitle || brandTitle);
   const description = post?.excerpt ?? "Notes and essays.";
 
   return new ImageResponse(
@@ -43,7 +45,7 @@ export default async function Image({
         }}
       >
         <div style={{ fontSize: 54, fontWeight: 700, lineHeight: 1.15 }}>
-          {title}
+          {brandTitle}
         </div>
         <div style={{ marginTop: 24, fontSize: 26, color: "#cbd5f5" }}>
           {description}
@@ -57,7 +59,7 @@ export default async function Image({
             color: "#f8fafc",
           }}
         >
-          {title}
+          {postTitle}
         </div>
       </div>
     ),
