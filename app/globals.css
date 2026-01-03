@@ -133,6 +133,17 @@ main :is(p, li) {
   color: #2563eb;
 }
 
+.know-pablo-root {
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+.know-pablo-pill {
+  position: fixed !important;
+  right: 1.25rem !important;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important;
+}
+
 .dark .markdown-body pre .hljs-comment,
 .dark .markdown-body pre .hljs-quote {
   color: #94a3b8;

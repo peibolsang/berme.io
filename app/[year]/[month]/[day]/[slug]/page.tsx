@@ -141,7 +141,7 @@ export default async function PostPage({ params }: PageProps) {
               ← Back
             </Link>
             <h1
-              className={`mt-6 text-6xl font-semibold ${playfairDisplay.className}`}
+              className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
             >
               {post.title}
             </h1>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
+import { KnowPablo } from "../components/KnowPablo";
 
 type YearGroup = {
   year: string;
@@ -75,7 +76,7 @@ export default async function Home() {
       <div className="min-h-screen px-6 py-16">
         <main className="mx-auto w-full max-w-5xl">
           <div className="grid gap-10 md:grid-cols-[240px_minmax(0,1fr)] md:gap-16">
-            <aside>
+            <aside className="hidden md:block">
               <h1 className="text-2xl font-semibold tracking-tight">
                 Pablo Bermejo
               </h1>
@@ -137,8 +138,13 @@ export default async function Home() {
             </aside>
 
             <div className="space-y-10">
+              <div className="md:hidden">
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  Pablo Bermejo
+                </h1>
+              </div>
             {pinned.length > 0 && (
-              <section className="-mx-5 rounded-2xl border border-zinc-200/70 bg-white px-5 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+              <section className="-mx-6 border-y border-zinc-200/70 bg-white px-6 py-5 shadow-sm md:-mx-5 md:rounded-2xl md:border md:border-zinc-200/70 md:px-5 dark:border-slate-700 dark:bg-slate-900/60 md:dark:border-slate-700">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="rounded-full border border-zinc-300 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100">
                     Featured
@@ -213,6 +219,7 @@ export default async function Home() {
             </div>
           </div>
         </main>
+        <KnowPablo />
       </div>
     );
   } catch (error) {
