@@ -28,20 +28,23 @@ No test framework is currently configured. If you add tests, document the runner
 
 ## Features Implemented
 - GitHub Issues CMS: posts are issues labeled `published` in `GITHUB_OWNER/GITHUB_REPO`.
+- Pinned posts: GitHub pinned issues (GraphQL) are surfaced as a Featured section on the homepage.
 - Permalinks: `/{year}/{month}/{day}/{slug}` with redirects for date-only routes.
 - Markdown rendering with GFM + sanitization + syntax highlighting.
 - Post labels rendered as chips (excluding `published`).
 - Comments rendered from GitHub issue comments, with Markdown.
+- Optional post cover image via frontmatter `image` rendered above the post title.
 - Dark mode with toggle (Radix icons) and split header/body backgrounds.
 - SEO routes: `sitemap.xml`, `feed.xml`, `robots.txt`.
 
 ## Caching & Revalidation Strategy
-- Posts list cached via `unstable_cache` in `lib/posts.ts` with tag `posts` and TTL `REVALIDATE_SECONDS` (default 3600).
+- Post pages are statically generated (`dynamic = "force-static"` with `generateStaticParams`) and updated only via webhook revalidation.
+- Posts list cached via `unstable_cache` in `lib/posts.ts` with TTL `REVALIDATE_SECONDS` (default 3600).
 - Comments cached via `unstable_cache` in `lib/comments.ts` with tag `comments:<issueNumber>` and TTL 300s.
 - Revalidation webhook in `app/api/revalidate/route.ts`:
-  - Issue labeled `published` → `revalidateTag("posts", "page")`
-  - Issue edited → `revalidateTag("posts", "page")`
-  - Comment created → `revalidateTag("comments:<issueNumber>", "page")`
+  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")`
+  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")`
+  - Comment created → `revalidatePath(postUrl)`
 - Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
 
 ## Commit & Pull Request Guidelines
@@ -52,4 +55,4 @@ There is no established commit convention yet (only the initial scaffold commit 
 
 ## Security & Configuration Tips
 Store secrets in environment files (e.g., `.env.local`) and avoid committing them. Update `next.config.ts` only when project-level behavior changes.
-Required env vars for production: `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`. Optional: `GITHUB_OWNER`, `GITHUB_REPO`, `REVALIDATE_SECONDS`.
+Required env vars for production: `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`. Optional: `GITHUB_OWNER`, `GITHUB_REPO`, `REVALIDATE_SECONDS`. Note: pinned posts require `GITHUB_TOKEN` (GraphQL).

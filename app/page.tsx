@@ -7,9 +7,35 @@ type YearGroup = {
   posts: {
     title: string;
     date: string;
+    dateCompact: string;
     url: string;
     pinned?: boolean;
   }[];
+};
+
+const monthNames = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+const formatDateLabels = (iso: string) => {
+  const date = new Date(iso);
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const dateLabel = `${month}-${day}`;
+  const monthName = monthNames[date.getUTCMonth()] ?? month;
+  const dateCompact = monthName;
+  return { dateLabel, dateCompact };
 };
 
 const groupByYear = (posts: Awaited<ReturnType<typeof getAllPosts>>) => {
@@ -18,9 +44,7 @@ const groupByYear = (posts: Awaited<ReturnType<typeof getAllPosts>>) => {
   posts.forEach((post) => {
     const date = new Date(post.publishedAt);
     const year = String(date.getUTCFullYear());
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const dateLabel = `${month}-${day}`;
+    const { dateLabel, dateCompact } = formatDateLabels(post.publishedAt);
 
     const entry = groups.get(year) ?? {
       year,
@@ -30,6 +54,7 @@ const groupByYear = (posts: Awaited<ReturnType<typeof getAllPosts>>) => {
     entry.posts.push({
       title: post.title,
       date: dateLabel,
+      dateCompact,
       url: post.url,
       pinned: post.pinned,
     });
@@ -63,24 +88,34 @@ export default async function Home() {
                     Featured
                   </span>
                 </div>
-                <ul className="space-y-2 text-sm">
+                <ul className="space-y-3 text-sm">
                   {pinned.map((post) => {
-                    const date = new Date(post.publishedAt);
-                    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-                    const day = String(date.getUTCDate()).padStart(2, "0");
-                    const dateLabel = `${month}-${day}`;
+                    const { dateLabel, dateCompact } = formatDateLabels(
+                      post.publishedAt
+                    );
 
                     return (
-                      <li key={post.url} className="flex gap-4">
-                        <span className="text-amber-700/70 dark:text-amber-200/70">
-                          {dateLabel}
+                      <li
+                        key={post.url}
+                        className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
+                      >
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="sm:hidden">{dateCompact}</span>
+                          <span className="hidden sm:inline">{dateLabel}</span>
                         </span>
-                        <Link
-                          href={post.url}
-                          className="font-semibold text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                        >
-                          {post.title}
-                        </Link>
+                        <div className="space-y-1">
+                          <Link
+                            href={post.url}
+                            className="text-sm font-semibold leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                          >
+                            {post.title}
+                          </Link>
+                          {post.excerpt && (
+                            <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                              {post.excerpt}
+                            </p>
+                          )}
+                        </div>
                       </li>
                     );
                   })}
@@ -99,13 +134,17 @@ export default async function Home() {
                 </h2>
                 <ul className="space-y-2 text-sm">
                     {group.posts.map((post) => (
-                      <li key={post.url} className="flex gap-4">
-                        <span className="text-zinc-500 dark:text-zinc-400">
-                          {post.date}
+                      <li
+                        key={post.url}
+                        className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
+                      >
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="sm:hidden">{post.dateCompact}</span>
+                          <span className="hidden sm:inline">{post.date}</span>
                         </span>
                       <Link
                         href={post.url}
-                        className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                        className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                       >
                         {post.title}
                       </Link>
