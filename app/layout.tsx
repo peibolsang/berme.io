@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     siteName: "Pablo Bermejo",
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
+        url: "/og-image.png",
+        width: 1406,
+        height: 1028,
         alt: "Pablo Bermejo",
       },
     ],
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pablo Bermejo",
     description: "Notes and essays.",
-    images: ["/twitter-image"],
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],

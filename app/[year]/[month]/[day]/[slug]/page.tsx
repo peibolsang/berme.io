@@ -53,7 +53,8 @@ export const generateMetadata = async ({
 
     const description = post.excerpt ?? "Blog post.";
 
-    const postImage = post.image?.trim();
+    const postImage = post.image?.trim() ?? "";
+    const fallbackImage = "/og-image.png";
 
     return {
       title: post.title,
@@ -68,13 +69,13 @@ export const generateMetadata = async ({
         url: post.url,
         publishedTime: post.publishedAt,
         modifiedTime: post.updatedAt,
-        images: postImage ? [{ url: postImage }] : undefined,
+        images: [{ url: postImage || fallbackImage }],
       },
       twitter: {
         card: "summary_large_image",
         title: post.title,
         description,
-        images: postImage ? [postImage] : undefined,
+        images: [postImage || fallbackImage],
       },
     };
   } catch {
