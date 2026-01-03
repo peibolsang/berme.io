@@ -54,7 +54,17 @@ export const generateMetadata = async ({
     const description = post.excerpt ?? "Blog post.";
 
     const postImage = post.image?.trim() ?? "";
-    const fallbackImage = "/og-image.png";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
+      "http://localhost:3000";
+    const fallbackImage = new URL("/og-image.png", siteUrl).toString();
+    const resolvedImage = postImage
+      ? postImage.startsWith("http")
+        ? postImage
+        : new URL(postImage, siteUrl).toString()
+      : fallbackImage;
+    const isFallbackImage = resolvedImage === fallbackImage;
 
     return {
       title: post.title,
@@ -69,13 +79,18 @@ export const generateMetadata = async ({
         url: post.url,
         publishedTime: post.publishedAt,
         modifiedTime: post.updatedAt,
-        images: [{ url: postImage || fallbackImage }],
+        images: [
+          {
+            url: resolvedImage,
+            ...(isFallbackImage ? { width: 1406, height: 1028 } : {}),
+          },
+        ],
       },
       twitter: {
         card: "summary_large_image",
         title: post.title,
         description,
-        images: [postImage || fallbackImage],
+        images: [resolvedImage],
       },
     };
   } catch {
