@@ -31,10 +31,11 @@ const monthNames = [
 
 const formatDateLabels = (iso: string) => {
   const date = new Date(iso);
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
-  const dateLabel = `${month}-${day}`;
-  const monthName = monthNames[date.getUTCMonth()] ?? month;
+  const monthName =
+    monthNames[date.getUTCMonth()] ??
+    String(date.getUTCMonth() + 1).padStart(2, "0");
+  const dateLabel = `${monthName} ${day}`;
   const dateCompact = monthName;
   return { dateLabel, dateCompact };
 };
@@ -152,9 +153,8 @@ export default async function Home() {
                 </div>
                 <ul className="space-y-3 text-sm">
                   {pinned.map((post) => {
-                    const { dateLabel, dateCompact } = formatDateLabels(
-                      post.publishedAt
-                    );
+                    const date = new Date(post.publishedAt);
+                    const year = String(date.getUTCFullYear());
 
                     return (
                       <li
@@ -162,8 +162,8 @@ export default async function Home() {
                         className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
                       >
                         <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                          <span className="sm:hidden">{dateCompact}</span>
-                          <span className="hidden sm:inline">{dateLabel}</span>
+                          <span className="sm:hidden">{year}</span>
+                          <span className="hidden sm:inline">{year}</span>
                         </span>
                         <div className="space-y-1">
                           <Link

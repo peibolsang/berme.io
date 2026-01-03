@@ -9,7 +9,7 @@ export const config = {
   github: {
     token: process.env.GITHUB_TOKEN ?? "",
     owner: process.env.GITHUB_OWNER ?? "peibolsang",
-    repo: process.env.GITHUB_REPO ?? "octotype",
+    repo: process.env.GITHUB_REPO ?? "peibolsang",
   },
   revalidateSeconds: Number(process.env.REVALIDATE_SECONDS ?? "3600"),
 };
