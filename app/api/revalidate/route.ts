@@ -1,5 +1,6 @@
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { createHmac, timingSafeEqual } from "crypto";
+import { getAllPosts } from "../../../lib/posts";
 
 const verifySignature = (body: string, signature: string | null) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET ?? "";
@@ -28,29 +29,49 @@ export async function POST(request: Request) {
   const event = request.headers.get("x-github-event") ?? "";
   const payload = JSON.parse(body);
   const revalidated: string[] = [];
+  let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
+  try {
+    posts = await getAllPosts();
+  } catch {
+    posts = [];
+  }
 
   if (event === "issues") {
     const action = String(payload.action ?? "");
     if (action === "labeled") {
       const label = String(payload.label?.name ?? "").toLowerCase();
       if (label === "published") {
-        await revalidateTag("posts", "max");
-        revalidated.push("posts");
+        const issueNumber = Number(payload.issue?.number);
+        const post = posts.find((item) => item.number === issueNumber);
+        if (post) {
+          await revalidatePath(post.url);
+          revalidated.push(post.url);
+        }
+        await revalidatePath("/");
+        revalidated.push("/");
       }
     }
 
     if (action === "edited") {
-      await revalidateTag("posts", "max");
-      revalidated.push("posts");
+      const issueNumber = Number(payload.issue?.number);
+      const post = posts.find((item) => item.number === issueNumber);
+      if (post) {
+        await revalidatePath(post.url);
+        revalidated.push(post.url);
+      }
+      await revalidatePath("/");
+      revalidated.push("/");
     }
   }
 
   if (event === "issue_comment" && payload.action === "created") {
     const issueNumber = Number(payload.issue?.number);
     if (Number.isFinite(issueNumber)) {
-      const tag = `comments:${issueNumber}`;
-      await revalidateTag(tag, "max");
-      revalidated.push(tag);
+      const post = posts.find((item) => item.number === issueNumber);
+      if (post) {
+        await revalidatePath(post.url);
+        revalidated.push(post.url);
+      }
     }
   }
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
-import { getPostByPermalink } from "../../../../../lib/posts";
+import { getAllPosts, getPostByPermalink } from "../../../../../lib/posts";
 import { getIssueComments } from "../../../../../lib/comments";
 import type { GitHubComment } from "../../../../../lib/github";
 import { Markdown } from "../../../../../components/Markdown";
@@ -80,6 +80,24 @@ export const generateMetadata = async ({
   } catch {
     return {};
   }
+};
+
+export const dynamic = "force-static";
+
+export const generateStaticParams = async () => {
+  const posts = await getAllPosts();
+  return posts.map((post) => {
+    const date = new Date(post.publishedAt);
+    const year = String(date.getUTCFullYear());
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    return {
+      year,
+      month,
+      day,
+      slug: post.slug,
+    };
+  });
 };
 
 export default async function PostPage({ params }: PageProps) {
