@@ -73,14 +73,55 @@ export default async function Home() {
 
     return (
       <div className="min-h-screen px-6 py-16">
-        <main className="mx-auto w-full max-w-2xl">
-          <header className="mb-12">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Pablo Bermejo
-            </h1>
-          </header>
+        <main className="mx-auto w-full max-w-5xl">
+          <div className="grid gap-10 md:grid-cols-[240px_minmax(0,1fr)] md:gap-16">
+            <aside>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Pablo Bermejo
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                I am a product leader, distinguished technologist, and writer. I've been
+                building enterprise software platforms and applications for the last 20 years,
+                and I love to share what I learn.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                I want to create a lasting difference in the teams I work with as we build
+                technology together.
+              </p>
+              <div className="mt-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  Links
+                </p>
+                <ul className="mt-3 space-y-2 text-sm">
+                  <li>
+                    <a
+                      href="https://github.com/peibolsang"
+                      className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                    >
+                      GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.linkedin.com/in/pablobermejo/"
+                      className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                    >
+                      LinkedIn
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://x.com/peibolsang"
+                      className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                    >
+                      X (Twitter)
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </aside>
 
-          <div className="space-y-10">
+            <div className="space-y-10">
             {pinned.length > 0 && (
               <section className="-mx-5 rounded-2xl border border-zinc-200/70 bg-white px-5 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
                 <div className="mb-4 flex items-center gap-3">
@@ -99,7 +140,7 @@ export default async function Home() {
                         key={post.url}
                         className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
                       >
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
                           <span className="sm:hidden">{dateCompact}</span>
                           <span className="hidden sm:inline">{dateLabel}</span>
                         </span>
@@ -138,7 +179,7 @@ export default async function Home() {
                         key={post.url}
                         className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
                       >
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
                           <span className="sm:hidden">{post.dateCompact}</span>
                           <span className="hidden sm:inline">{post.date}</span>
                         </span>
@@ -154,6 +195,7 @@ export default async function Home() {
                 </section>
               ))
             )}
+            </div>
           </div>
         </main>
       </div>
