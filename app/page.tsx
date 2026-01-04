@@ -84,7 +84,7 @@ export default async function Home() {
               <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
                 I am a product leader, distinguished technologist, and writer. I've been
                 building enterprise software platforms and applications for the last 20 years,
-                and I love to share what I learn.
+                and I love sharing what I learn.
               </p>
               <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
                 I create a lasting difference in the teams I work with as we build technology
