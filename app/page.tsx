@@ -1,14 +1,16 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
 import { KnowPablo } from "../components/KnowPablo";
-import { PostsIndex } from "../components/PostsIndex";
+import { LandingViews } from "../components/LandingViews";
+import { getAllSeries } from "../lib/series";
+import { getBooks } from "../lib/books";
 
 export default async function Home() {
   try {
-    const posts = await getAllPosts();
+    const [posts, series] = await Promise.all([getAllPosts(), getAllSeries()]);
     const pinned = posts.filter((post) => post.pinned);
+    const books = getBooks();
 
     return (
       <div className="min-h-screen px-6 py-16">
@@ -58,21 +60,6 @@ export default async function Home() {
                   </li>
                 </ul>
               </div>
-              <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                  Books
-                </p>
-                <ul className="mt-3 space-y-2 text-sm">
-                  <li>
-                    <a
-                      href="https://leanpub.com/software-platforms"
-                      className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                    >
-                      Software Platforms
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </aside>
 
             <div className="space-y-10">
@@ -81,48 +68,13 @@ export default async function Home() {
                   Pablo Bermejo
                 </h1>
               </div>
-              {pinned.length > 0 && (
-                <section className="-mx-6 border-y border-zinc-200/70 bg-white px-6 py-5 shadow-sm md:-mx-5 md:rounded-2xl md:border md:border-zinc-200/70 md:px-5 dark:border-slate-700 dark:bg-slate-900/60 md:dark:border-slate-700">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="rounded-full border border-zinc-300 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100">
-                      Featured
-                    </span>
-                  </div>
-                  <ul className="space-y-3 text-sm">
-                    {pinned.map((post) => {
-                      const date = new Date(post.publishedAt);
-                      const year = String(date.getUTCFullYear());
-
-                      return (
-                        <li
-                          key={post.url}
-                          className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
-                        >
-                          <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                            <span className="sm:hidden">{year}</span>
-                            <span className="hidden sm:inline">{year}</span>
-                          </span>
-                          <div className="space-y-1">
-                            <Link
-                              href={post.url}
-                              className="text-sm font-semibold leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                            >
-                              {post.title}
-                            </Link>
-                            {post.excerpt && (
-                              <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-                                {post.excerpt}
-                              </p>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              )}
               <Suspense fallback={<div className="h-6" />}>
-                <PostsIndex posts={posts} />
+                <LandingViews
+                  posts={posts}
+                  pinned={pinned}
+                  series={series}
+                  books={books}
+                />
               </Suspense>
             </div>
           </div>

@@ -105,21 +105,6 @@ export const KnowPablo = () => {
                 </li>
               </ul>
             </div>
-            <div className="mt-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                Books
-              </p>
-              <ul className="mt-3 space-y-2 text-sm">
-                <li>
-                  <a
-                    href="https://leanpub.com/software-platforms"
-                    className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                  >
-                    Software Platforms
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,9 @@
 import { unstable_cache } from "next/cache";
-import { fetchAllBlogIssues, fetchPinnedIssueNumbers } from "./github";
+import {
+  fetchAllBlogIssues,
+  fetchIssuesWithParents,
+  fetchPinnedIssueNumbers,
+} from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
 import { config } from "./config";
@@ -18,13 +22,27 @@ const asDate = (value: string) => {
 };
 
 const fetchPosts = async (): Promise<Post[]> => {
-  const [issues, pinnedNumbers] = await Promise.all([
+  const [issues, pinnedNumbers, issuesWithParents] = await Promise.all([
     fetchAllBlogIssues(),
     fetchPinnedIssueNumbers(),
+    fetchIssuesWithParents(),
   ]);
+  const parentNumbers = new Set(
+    issuesWithParents
+      .map((issue) => issue.parent?.number)
+      .filter((value): value is number => typeof value === "number"),
+  );
+  const childToParentTitle = new Map(
+    issuesWithParents
+      .filter((issue) => issue.parent?.title)
+      .map((issue) => [issue.number, issue.parent?.title ?? ""]),
+  );
   const posts: Post[] = [];
 
   issues.forEach((issue) => {
+    if (parentNumbers.has(issue.number)) {
+      return;
+    }
     const { data, body } = parseFrontmatter(issue.body ?? "");
     if (data.draft) {
       return;
@@ -52,6 +70,7 @@ const fetchPosts = async (): Promise<Post[]> => {
       excerpt: data.excerpt,
       image: data.image,
       pinned: pinnedNumbers.has(issue.number),
+      seriesTitle: childToParentTitle.get(issue.number),
       body,
       labels,
       url,

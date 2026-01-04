@@ -7,6 +7,7 @@ import { getIssueComments } from "../../../../../lib/comments";
 import type { GitHubComment } from "../../../../../lib/github";
 import { Markdown } from "../../../../../components/Markdown";
 import { config } from "../../../../../lib/config";
+import { BackLink } from "../../../../../components/BackLink";
 
 type PageProps = {
   params: Promise<{
@@ -150,19 +151,15 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           )}
           <div className="mx-auto w-full max-w-2xl">
-            <Link
-              href="/"
-              className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            >
-              ← Back
-            </Link>
+            <BackLink />
             <h1
               className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
             >
               {post.title}
             </h1>
             <p className="mt-4 text-xs uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              {formatDate(post.publishedAt)} • {getReadingTime(post.body)} •{" "}
+              {formatDate(post.publishedAt)} • {getReadingTime(post.body)}
+              {post.seriesTitle ? ` • ${post.seriesTitle}` : ""} •{" "}
               <a
                 className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}

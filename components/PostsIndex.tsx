@@ -453,7 +453,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                 </svg>
               </span>
               <span ref={measureLabelRef} className="whitespace-nowrap text-left" />
-              <span className="inline-flex h-4 w-[2.5ch] items-center justify-center rounded-full border border-current/20 text-[9px]">
+              <span className="inline-flex h-4 w-[2.5ch] shrink-0 items-center justify-center rounded-full border border-current/20 text-[9px]">
                 88
               </span>
             </button>
@@ -485,7 +485,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                     >
                     <span
                       className={[
-                        "flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800 dark:border-amber-300/60 dark:bg-amber-400/20 dark:text-amber-100",
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800 dark:border-amber-300/60 dark:bg-amber-400/20 dark:text-amber-100",
                         selected ? "" : "invisible",
                       ].join(" ")}
                     >
@@ -501,8 +501,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                     <span className="whitespace-nowrap text-left">
                       {label.displayName}
                     </span>
-                    <span className="flex-1" />
-                    <span className="inline-flex h-4 w-[2.5ch] items-center justify-center rounded-full border border-current/20 text-[9px]">
+                    <span className="inline-flex h-4 w-[2.5ch] shrink-0 items-center justify-center rounded-full border border-current/20 text-[9px]">
                       {count}
                     </span>
                     </button>

@@ -55,7 +55,10 @@ const githubFetch = async (url: string) => {
   return response.json();
 };
 
-const githubGraphqlFetch = async (query: string, variables: Record<string, string>) => {
+const githubGraphqlFetch = async (
+  query: string,
+  variables: Record<string, string | null>,
+) => {
   const token = getGithubToken();
   if (!token) {
     return null;
@@ -80,6 +83,38 @@ const githubGraphqlFetch = async (query: string, variables: Record<string, strin
   }
 
   return response.json();
+};
+
+export type GitHubIssueParent = {
+  number: number;
+  title: string;
+  body: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GitHubIssueWithParent = {
+  number: number;
+  title: string;
+  body: string | null;
+  createdAt: string;
+  updatedAt: string;
+  parent?: GitHubIssueParent | null;
+};
+
+type IssuesWithParentsResponse = {
+  data?: {
+    repository?: {
+      issues?: {
+        nodes?: (GitHubIssueWithParent | null)[];
+        pageInfo?: {
+          hasNextPage?: boolean | null;
+          endCursor?: string | null;
+        };
+      };
+    };
+  };
+  errors?: { message: string }[];
 };
 
 export const fetchAllBlogIssues = async (): Promise<GitHubIssue[]> => {
@@ -140,6 +175,70 @@ export const fetchPinnedIssueNumbers = async (): Promise<Set<number>> => {
   } catch {
     return new Set<number>();
   }
+};
+
+export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]> => {
+  const { owner, repo } = config.github;
+  const issues: GitHubIssueWithParent[] = [];
+  let cursor: string | null = null;
+
+  const query = `
+    query IssuesWithParents($owner: String!, $repo: String!, $cursor: String) {
+      repository(owner: $owner, name: $repo) {
+        issues(
+          first: 50
+          after: $cursor
+          labels: ["published"]
+          states: OPEN
+          orderBy: { field: UPDATED_AT, direction: DESC }
+        ) {
+          nodes {
+            number
+            title
+            body
+            createdAt
+            updatedAt
+            parent {
+              number
+              title
+              body
+              createdAt
+              updatedAt
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    while (true) {
+      const result = (await githubGraphqlFetch(query, {
+        owner,
+        repo,
+        cursor,
+      })) as IssuesWithParentsResponse | null;
+      const nodes = result?.data?.repository?.issues?.nodes ?? [];
+      nodes.forEach((node) => {
+        if (node) {
+          issues.push(node);
+        }
+      });
+      const pageInfo = result?.data?.repository?.issues?.pageInfo;
+      if (!pageInfo?.hasNextPage || !pageInfo?.endCursor) {
+        break;
+      }
+      cursor = pageInfo.endCursor;
+    }
+  } catch {
+    return [];
+  }
+
+  return issues;
 };
 
 export const fetchIssueComments = async (
