@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Post } from "../types";
 import {
@@ -182,7 +182,16 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const initialSelectedLabels = useMemo(
+    () =>
+      labelKeys.size === 0
+        ? []
+        : readLabelsFromParams(new URLSearchParams(searchParams.toString()), labelKeys),
+    [labelKeys, searchParams],
+  );
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(initialSelectedLabels);
+  const isSyncingFromSearch = useRef(false);
+  const hasInitialized = useRef(false);
 
   const getLabelsFromSearch = useCallback(
     () => readLabelsFromParams(new URLSearchParams(searchParams.toString()), labelKeys),
@@ -192,14 +201,29 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
   useEffect(() => {
     if (labelKeys.size === 0) {
       setSelectedLabels([]);
+      hasInitialized.current = true;
       return;
     }
     const fromSearch = getLabelsFromSearch();
-    setSelectedLabels((prev) => (arraysEqual(prev, fromSearch) ? prev : fromSearch));
+    setSelectedLabels((prev) => {
+      if (arraysEqual(prev, fromSearch)) {
+        return prev;
+      }
+      isSyncingFromSearch.current = true;
+      return fromSearch;
+    });
+    hasInitialized.current = true;
   }, [getLabelsFromSearch, labelKeys]);
 
   useEffect(() => {
+    if (!hasInitialized.current) {
+      return;
+    }
     if (labelKeys.size === 0) {
+      return;
+    }
+    if (isSyncingFromSearch.current) {
+      isSyncingFromSearch.current = false;
       return;
     }
     const fromSearch = getLabelsFromSearch();
