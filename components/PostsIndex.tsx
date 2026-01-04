@@ -195,6 +195,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
   );
   const [chipWidth, setChipWidth] = useState<number | null>(null);
   const measureButtonRef = useRef<HTMLButtonElement | null>(null);
+  const measureLabelRef = useRef<HTMLSpanElement | null>(null);
   const isSyncingFromSearch = useRef(false);
   const hasInitialized = useRef(false);
 
@@ -300,23 +301,26 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
     return { enabled, counts };
   }, [allLabels, labelToPostIds, matchingIds, selectedSet]);
 
-  const longestLabel = useMemo(
-    () =>
-      allLabels.reduce(
-        (current, label) =>
-          label.displayName.length > current.length ? label.displayName : current,
-        "",
-      ),
-    [allLabels],
-  );
-
   useLayoutEffect(() => {
-    if (!measureButtonRef.current) {
+    if (!measureButtonRef.current || !measureLabelRef.current) {
       return;
     }
-    const width = measureButtonRef.current.getBoundingClientRect().width;
-    setChipWidth(width || null);
-  }, [longestLabel]);
+    const button = measureButtonRef.current;
+    const labelSpan = measureLabelRef.current;
+    const originalText = labelSpan.textContent ?? "";
+    let maxWidth = 0;
+
+    allLabels.forEach((label) => {
+      labelSpan.textContent = label.displayName;
+      const width = button.getBoundingClientRect().width;
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+    });
+
+    labelSpan.textContent = originalText;
+    setChipWidth(maxWidth || null);
+  }, [allLabels]);
 
   const toggleLabel = (labelKey: string) => {
     setSelectedLabels((prev) => {
@@ -448,7 +452,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                   <path d="M6.2 11.2 3 8l1.1-1.1 2.1 2.1 5-5L12.3 5l-6.1 6.2Z" />
                 </svg>
               </span>
-              <span className="whitespace-nowrap text-left">{longestLabel}</span>
+              <span ref={measureLabelRef} className="whitespace-nowrap text-left" />
               <span className="inline-flex h-4 w-[2.5ch] items-center justify-center rounded-full border border-current/20 text-[9px]">
                 88
               </span>

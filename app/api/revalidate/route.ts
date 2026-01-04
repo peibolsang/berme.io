@@ -1,6 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getAllPosts } from "../../../lib/posts";
+import { parseFrontmatter } from "../../../lib/frontmatter";
+import { slugify } from "../../../lib/slugify";
 
 const verifySignature = (body: string, signature: string | null) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET ?? "";
@@ -18,6 +20,48 @@ const verifySignature = (body: string, signature: string | null) => {
   }
 };
 
+const buildUrl = (date: Date, slug: string) => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `/${year}/${month}/${day}/${slug}`;
+};
+
+const asDate = (value: string | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const getPostUrlFromIssue = (issue: {
+  title?: string | null;
+  body?: string | null;
+  created_at?: string | null;
+}) => {
+  if (!issue?.title) {
+    return null;
+  }
+  const { data } = parseFrontmatter(issue.body ?? "");
+  const publishedAt = asDate(data.publishedAt ?? issue.created_at);
+  if (!publishedAt) {
+    return null;
+  }
+  const slugSource = data.slug ? String(data.slug) : issue.title;
+  const slug = slugify(slugSource);
+  if (!slug) {
+    return null;
+  }
+  return buildUrl(publishedAt, slug);
+};
+
+const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
+  const unique = Array.from(new Set(urls.filter(Boolean))) as string[];
+  await Promise.all(unique.map((url) => revalidatePath(url)));
+  return unique;
+};
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
@@ -29,36 +73,42 @@ export async function POST(request: Request) {
   const event = request.headers.get("x-github-event") ?? "";
   const payload = JSON.parse(body);
   const revalidated: string[] = [];
-  let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
-  try {
-    posts = await getAllPosts();
-  } catch {
-    posts = [];
-  }
+  let posts: Awaited<ReturnType<typeof getAllPosts>> | null = null;
+  const getCachedPosts = async () => {
+    if (posts) {
+      return posts;
+    }
+    try {
+      posts = await getAllPosts();
+    } catch {
+      posts = [];
+    }
+    return posts;
+  };
 
   if (event === "issues") {
     const action = String(payload.action ?? "");
-    if (action === "labeled") {
+    if (action === "labeled" || action === "unlabeled") {
       const label = String(payload.label?.name ?? "").toLowerCase();
       if (label === "published") {
         const issueNumber = Number(payload.issue?.number);
-        const post = posts.find((item) => item.number === issueNumber);
-        if (post) {
-          await revalidatePath(post.url);
-          revalidated.push(post.url);
-        }
+        const urlFromPayload = getPostUrlFromIssue(payload.issue);
+        const cached = await getCachedPosts();
+        const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
+        const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
+        revalidated.push(...urls);
         await revalidatePath("/");
         revalidated.push("/");
       }
     }
 
-    if (action === "edited") {
+    if (action === "edited" || action === "closed" || action === "reopened") {
       const issueNumber = Number(payload.issue?.number);
-      const post = posts.find((item) => item.number === issueNumber);
-      if (post) {
-        await revalidatePath(post.url);
-        revalidated.push(post.url);
-      }
+      const urlFromPayload = getPostUrlFromIssue(payload.issue);
+      const cached = await getCachedPosts();
+      const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
+      const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
+      revalidated.push(...urls);
       await revalidatePath("/");
       revalidated.push("/");
     }
@@ -67,11 +117,11 @@ export async function POST(request: Request) {
   if (event === "issue_comment" && payload.action === "created") {
     const issueNumber = Number(payload.issue?.number);
     if (Number.isFinite(issueNumber)) {
-      const post = posts.find((item) => item.number === issueNumber);
-      if (post) {
-        await revalidatePath(post.url);
-        revalidated.push(post.url);
-      }
+      const urlFromPayload = getPostUrlFromIssue(payload.issue);
+      const cached = await getCachedPosts();
+      const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
+      const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
+      revalidated.push(...urls);
     }
   }
 
