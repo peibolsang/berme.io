@@ -158,8 +158,7 @@ export default async function PostPage({ params }: PageProps) {
               {post.title}
             </h1>
             <p className="mt-4 text-xs uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              {formatDate(post.publishedAt)} • {getReadingTime(post.body)}
-              {post.seriesTitle ? ` • ${post.seriesTitle}` : ""} •{" "}
+              {formatDate(post.publishedAt)} • {getReadingTime(post.body)} •{" "}
               <a
                 className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
@@ -170,7 +169,7 @@ export default async function PostPage({ params }: PageProps) {
               </a>
             </p>
             {formatLabels(post.labels).length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {formatLabels(post.labels).map((label) => (
                   <span
                     key={label}
@@ -183,8 +182,13 @@ export default async function PostPage({ params }: PageProps) {
             )}
           </div>
         </section>
-        <section className="px-6 pb-16 pt-2 dark:bg-slate-800">
+        <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
           <div className="mx-auto w-full max-w-2xl">
+            {post.seriesTitle ? (
+              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
+                Series: {post.seriesTitle}
+              </p>
+            ) : null}
             <article className="markdown-body mt-0">
               <Markdown content={post.body} />
             </article>
