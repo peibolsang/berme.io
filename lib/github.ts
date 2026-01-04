@@ -5,6 +5,7 @@ export type GitHubIssue = {
   number: number;
   title: string;
   body: string | null;
+  state: "open" | "closed";
   created_at: string;
   updated_at: string;
   labels: {
@@ -90,10 +91,12 @@ export const fetchAllBlogIssues = async (): Promise<GitHubIssue[]> => {
   while (true) {
     const url =
       `https://api.github.com/repos/${owner}/${repo}/issues` +
-      `?state=all&labels=${encodeURIComponent(label)}&per_page=100&page=${page}`;
+      `?state=open&labels=${encodeURIComponent(label)}&per_page=100&page=${page}`;
 
     const batch = (await githubFetch(url)) as GitHubIssue[];
-    const filtered = batch.filter((issue) => !issue.pull_request);
+    const filtered = batch.filter(
+      (issue) => !issue.pull_request && issue.state === "open",
+    );
     issues.push(...filtered);
 
     if (batch.length < 100) {
