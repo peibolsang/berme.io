@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
 import { KnowPablo } from "../components/KnowPablo";
@@ -120,7 +121,9 @@ export default async function Home() {
                   </ul>
                 </section>
               )}
-              <PostsIndex posts={posts} />
+              <Suspense fallback={<div className="h-6" />}>
+                <PostsIndex posts={posts} />
+              </Suspense>
             </div>
           </div>
         </main>
