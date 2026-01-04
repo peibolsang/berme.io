@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Post } from "../types";
 import {
@@ -190,6 +190,11 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
     [labelKeys, searchParams],
   );
   const [selectedLabels, setSelectedLabels] = useState<string[]>(initialSelectedLabels);
+  const [showAllLabels, setShowAllLabels] = useState(
+    () => initialSelectedLabels.length > 0,
+  );
+  const [chipWidth, setChipWidth] = useState<number | null>(null);
+  const measureButtonRef = useRef<HTMLButtonElement | null>(null);
   const isSyncingFromSearch = useRef(false);
   const hasInitialized = useRef(false);
 
@@ -295,6 +300,24 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
     return { enabled, counts };
   }, [allLabels, labelToPostIds, matchingIds, selectedSet]);
 
+  const longestLabel = useMemo(
+    () =>
+      allLabels.reduce(
+        (current, label) =>
+          label.displayName.length > current.length ? label.displayName : current,
+        "",
+      ),
+    [allLabels],
+  );
+
+  useLayoutEffect(() => {
+    if (!measureButtonRef.current) {
+      return;
+    }
+    const width = measureButtonRef.current.getBoundingClientRect().width;
+    setChipWidth(width || null);
+  }, [longestLabel]);
+
   const toggleLabel = (labelKey: string) => {
     setSelectedLabels((prev) => {
       const next = prev.includes(labelKey)
@@ -387,32 +410,81 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
               </PopoverContent>
             </Popover>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {allLabels.map((label) => {
-              const selected = selectedSet.has(label.key);
-              const enabled = labelState.enabled.has(label.key);
-              const disabled = !selected && !enabled;
-              const count = labelState.counts.get(label.key) ?? 0;
-
-              return (
-                <button
-                  key={label.key}
-                  type="button"
-                  aria-pressed={selected}
-                  disabled={disabled}
-                  onClick={() => toggleLabel(label.key)}
-                  className={[
-                    "hidden items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition md:flex",
-                    selected
-                      ? "border-zinc-900/70 bg-[#f4f1ea] text-zinc-900 shadow-[0_0_0_1px_rgba(24,24,27,0.2)] dark:border-amber-300/70 dark:bg-amber-400/20 dark:text-amber-100 dark:shadow-[0_0_0_1px_rgba(245,158,11,0.35)]"
-                      : "border-zinc-300 bg-[#f4f1ea] text-zinc-700 hover:text-zinc-900 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100 dark:hover:text-amber-50",
-                    disabled
-                      ? "cursor-not-allowed opacity-40 hover:text-zinc-600 dark:hover:text-zinc-200"
-                      : "cursor-pointer",
-                  ].join(" ")}
+          <div className="hidden flex-col gap-3 md:flex">
+            <button
+              type="button"
+              onClick={() => setShowAllLabels((prev) => !prev)}
+              className="group inline-flex w-fit items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+              aria-expanded={showAllLabels}
+              aria-controls="label-cloud"
+            >
+              <ChevronDownIcon
+                className={[
+                  "h-4 w-4 transition",
+                  showAllLabels ? "rotate-180 text-zinc-700 dark:text-zinc-200" : "",
+                ].join(" ")}
+              />
+              <span className="underline-offset-4 group-hover:underline">
+                Topics I write about
+              </span>
+              <span className="rounded-full border border-current/20 px-2 py-[1px] text-[10px] no-underline">
+                {allLabels.length}
+              </span>
+            </button>
+            <button
+              ref={measureButtonRef}
+              type="button"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute -left-[9999px] top-0 inline-flex items-center gap-2 rounded-full border border-zinc-900/70 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            >
+              <span className="flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 16 16"
+                  className="h-3 w-3"
+                  fill="currentColor"
                 >
-                  {selected && (
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800 dark:border-amber-300/60 dark:bg-amber-400/20 dark:text-amber-100">
+                  <path d="M6.2 11.2 3 8l1.1-1.1 2.1 2.1 5-5L12.3 5l-6.1 6.2Z" />
+                </svg>
+              </span>
+              <span className="whitespace-nowrap text-left">{longestLabel}</span>
+              <span className="inline-flex h-4 w-[2.5ch] items-center justify-center rounded-full border border-current/20 text-[9px]">
+                88
+              </span>
+            </button>
+            {showAllLabels && (
+              <div id="label-cloud" className="flex flex-wrap gap-2">
+                {allLabels.map((label) => {
+                  const selected = selectedSet.has(label.key);
+                  const enabled = labelState.enabled.has(label.key);
+                  const disabled = !selected && !enabled;
+                  const count = labelState.counts.get(label.key) ?? 0;
+
+                  return (
+                    <button
+                      key={label.key}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={disabled}
+                      onClick={() => toggleLabel(label.key)}
+                      style={chipWidth ? { width: `${chipWidth}px` } : undefined}
+                      className={[
+                        "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                        selected
+                          ? "border-zinc-900/70 bg-[#f4f1ea] text-zinc-900 shadow-[0_0_0_1px_rgba(24,24,27,0.2)] dark:border-amber-300/70 dark:bg-amber-400/20 dark:text-amber-100 dark:shadow-[0_0_0_1px_rgba(245,158,11,0.35)]"
+                          : "border-zinc-300 bg-[#f4f1ea] text-zinc-700 hover:text-zinc-900 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100 dark:hover:text-amber-50",
+                        disabled
+                          ? "cursor-not-allowed opacity-40 hover:text-zinc-600 dark:hover:text-zinc-200"
+                          : "cursor-pointer",
+                      ].join(" ")}
+                    >
+                    <span
+                      className={[
+                        "flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800 dark:border-amber-300/60 dark:bg-amber-400/20 dark:text-amber-100",
+                        selected ? "" : "invisible",
+                      ].join(" ")}
+                    >
                       <svg
                         aria-hidden="true"
                         viewBox="0 0 16 16"
@@ -422,14 +494,18 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                         <path d="M6.2 11.2 3 8l1.1-1.1 2.1 2.1 5-5L12.3 5l-6.1 6.2Z" />
                       </svg>
                     </span>
-                  )}
-                  <span>{label.displayName}</span>
-                  <span className="rounded-full border border-current/20 px-2 py-[1px] text-[9px]">
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+                    <span className="whitespace-nowrap text-left">
+                      {label.displayName}
+                    </span>
+                    <span className="flex-1" />
+                    <span className="inline-flex h-4 w-[2.5ch] items-center justify-center rounded-full border border-current/20 text-[9px]">
+                      {count}
+                    </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       )}
