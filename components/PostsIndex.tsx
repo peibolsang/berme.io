@@ -219,7 +219,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
 
   const selectedSet = useMemo(() => new Set(selectedLabels), [selectedLabels]);
 
-  const matchingIds = useMemo(() => {
+  const matchingIds = useMemo<Set<string>>(() => {
     if (selectedLabels.length === 0) {
       return allPostIds;
     }
@@ -227,16 +227,16 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
     selectedLabels.forEach((label) => {
       const labelSet = labelToPostIds.get(label);
       if (!labelSet) {
-        candidate = new Set();
+        candidate = new Set<string>();
         return;
       }
       if (!candidate) {
-        candidate = new Set(labelSet);
+        candidate = new Set<string>(labelSet);
       } else {
         candidate = intersectSets(candidate, labelSet);
       }
     });
-    return candidate ?? new Set();
+    return candidate ?? new Set<string>();
   }, [selectedLabels, labelToPostIds, allPostIds]);
 
   const matchingPosts = useMemo(
