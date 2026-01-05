@@ -354,7 +354,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                   <span className="flex flex-wrap gap-2">
                     {selectedLabels.length === 0 ? (
                       <span className="text-zinc-400 dark:text-zinc-500">
-                        Select labels
+                        Topics I write about
                       </span>
                     ) : (
                       selectedLabels.map((labelKey) => (
