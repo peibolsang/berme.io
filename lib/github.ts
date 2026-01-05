@@ -97,6 +97,8 @@ export type GitHubIssueWithParent = {
   parent?: GitHubIssueParent | null;
 };
 
+let lastIssuesWithParents: GitHubIssueWithParent[] | null = null;
+
 type IssuesWithParentsResponse = {
   data?: {
     repository?: {
@@ -217,6 +219,9 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
         repo,
         cursor,
       })) as IssuesWithParentsResponse | null;
+      if (!result) {
+        return lastIssuesWithParents ?? [];
+      }
       const nodes = result?.data?.repository?.issues?.nodes ?? [];
       nodes.forEach((node) => {
         if (node) {
@@ -230,9 +235,10 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
       cursor = pageInfo.endCursor;
     }
   } catch {
-    return [];
+    return lastIssuesWithParents ?? [];
   }
 
+  lastIssuesWithParents = issues;
   return issues;
 };
 

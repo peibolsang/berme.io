@@ -45,7 +45,9 @@ No test framework is currently configured. If you add tests, document the runner
   - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
   - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
   - Comment created → `revalidatePath(postUrl)` + `revalidateTag(comments:<issueNumber>)`
+  - Aggregates also revalidate `/feed.xml` and `/sitemap.xml` on post changes.
 - Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
+ - GraphQL parent-issue lookups fall back to the last successful snapshot to avoid series parents leaking into posts during transient failures.
 
 ## Commit & Pull Request Guidelines
 There is no established commit convention yet (only the initial scaffold commit exists). Use short, imperative messages (e.g., "Add hero section"). For pull requests:

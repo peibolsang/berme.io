@@ -72,6 +72,14 @@ const revalidateContentTags = async () => {
   ]);
 };
 
+const revalidateAggregates = async () => {
+  await Promise.all([
+    revalidatePath("/"),
+    revalidatePath("/feed.xml"),
+    revalidatePath("/sitemap.xml"),
+  ]);
+};
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
@@ -116,8 +124,8 @@ export async function POST(request: Request) {
         const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
         revalidated.push(...urls);
         await ensureContentTagsRevalidated();
-        await revalidatePath("/");
-        revalidated.push("/");
+        await revalidateAggregates();
+        revalidated.push("/", "/feed.xml", "/sitemap.xml");
       }
     }
 
@@ -129,8 +137,8 @@ export async function POST(request: Request) {
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
       await ensureContentTagsRevalidated();
-      await revalidatePath("/");
-      revalidated.push("/");
+      await revalidateAggregates();
+      revalidated.push("/", "/feed.xml", "/sitemap.xml");
     }
   }
 
