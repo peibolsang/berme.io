@@ -64,11 +64,11 @@ const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
 
 const revalidateContentTags = async () => {
   await Promise.all([
-    revalidateTag("posts"),
-    revalidateTag("series"),
-    revalidateTag("github-issues"),
-    revalidateTag("github-issues-with-parents"),
-    revalidateTag("github-pinned-issues"),
+    revalidateTag("posts", "max"),
+    revalidateTag("series", "max"),
+    revalidateTag("github-issues", "max"),
+    revalidateTag("github-issues-with-parents", "max"),
+    revalidateTag("github-pinned-issues", "max"),
   ]);
 };
 
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
-      await revalidateTag(`comments:${issueNumber}`);
+      await revalidateTag(`comments:${issueNumber}`, "max");
     }
   }
 
