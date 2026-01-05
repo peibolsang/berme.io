@@ -9,6 +9,8 @@ export type Post = {
   image?: string;
   pinned?: boolean;
   seriesTitle?: string;
+  seriesPart?: number;
+  seriesTotal?: number;
   body: string;
   labels: string[];
   url: string;

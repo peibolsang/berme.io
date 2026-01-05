@@ -32,11 +32,23 @@ const fetchPosts = async (): Promise<Post[]> => {
       .map((issue) => issue.parent?.number)
       .filter((value): value is number => typeof value === "number"),
   );
-  const childToParentTitle = new Map(
-    issuesWithParents
-      .filter((issue) => issue.parent?.title)
-      .map((issue) => [issue.number, issue.parent?.title ?? ""]),
-  );
+  const childToParent = new Map<number, { number: number; title: string }>();
+  const parentToChildren = new Map<number, number[]>();
+  const parentTitles = new Map<number, string>();
+  issuesWithParents.forEach((issue) => {
+    const parent = issue.parent;
+    if (!parent?.title) {
+      return;
+    }
+    childToParent.set(issue.number, { number: parent.number, title: parent.title });
+    parentTitles.set(parent.number, parent.title);
+    const existing = parentToChildren.get(parent.number);
+    if (existing) {
+      existing.push(issue.number);
+    } else {
+      parentToChildren.set(parent.number, [issue.number]);
+    }
+  });
   const posts: Post[] = [];
 
   issues.forEach((issue) => {
@@ -70,10 +82,30 @@ const fetchPosts = async (): Promise<Post[]> => {
       excerpt: data.excerpt,
       image: data.image,
       pinned: pinnedNumbers.has(issue.number),
-      seriesTitle: childToParentTitle.get(issue.number),
+      seriesTitle: childToParent.get(issue.number)?.title,
       body,
       labels,
       url,
+    });
+  });
+
+  const postsByNumber = new Map(posts.map((post) => [post.number, post]));
+  parentToChildren.forEach((childNumbers, parentNumber) => {
+    const parentTitle = parentTitles.get(parentNumber);
+    if (!parentTitle) {
+      return;
+    }
+    const seriesPosts = childNumbers
+      .map((number) => postsByNumber.get(number))
+      .filter((post): post is Post => Boolean(post))
+      .sort((a, b) => a.publishedAt.localeCompare(b.publishedAt));
+    if (seriesPosts.length === 0) {
+      return;
+    }
+    seriesPosts.forEach((post, index) => {
+      post.seriesTitle = parentTitle;
+      post.seriesPart = index + 1;
+      post.seriesTotal = seriesPosts.length;
     });
   });
 

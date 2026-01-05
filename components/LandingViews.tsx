@@ -164,13 +164,13 @@ export const LandingViews = ({ posts, pinned, series, books }: LandingViewsProps
                     </p>
                   ) : (
                     <ul className="space-y-2 text-sm">
-                      {entry.posts.map((post) => (
+                      {entry.posts.map((post, index) => (
                         <li
                           key={post.url}
                           className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
                         >
                           <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                            {formatDate(post.publishedAt)}
+                            Part {index + 1}
                           </span>
                           <Link
                             href={`${post.url}?view=series`}
