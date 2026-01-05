@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { config, getGithubToken } from "./config";
 
 export type GitHubIssue = {
@@ -42,9 +43,6 @@ const githubFetch = async (url: string) => {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       "X-GitHub-Api-Version": "2022-11-28",
     },
-    next: {
-      revalidate: config.revalidateSeconds,
-    },
   });
 
   if (!response.ok) {
@@ -72,9 +70,6 @@ const githubGraphqlFetch = async (
       "X-GitHub-Api-Version": "2022-11-28",
     },
     body: JSON.stringify({ query, variables }),
-    next: {
-      revalidate: config.revalidateSeconds,
-    },
   });
 
   if (!response.ok) {
@@ -264,3 +259,26 @@ export const fetchIssueComments = async (
 
   return comments;
 };
+
+export const getAllBlogIssues = unstable_cache(fetchAllBlogIssues, ["github-issues"], {
+  revalidate: config.revalidateSeconds,
+  tags: ["github-issues"],
+});
+
+export const getPinnedIssueNumbers = unstable_cache(
+  fetchPinnedIssueNumbers,
+  ["github-pinned-issues"],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["github-pinned-issues"],
+  },
+);
+
+export const getIssuesWithParents = unstable_cache(
+  fetchIssuesWithParents,
+  ["github-issues-with-parents"],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["github-issues-with-parents"],
+  },
+);

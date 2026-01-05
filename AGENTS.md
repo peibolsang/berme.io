@@ -39,12 +39,12 @@ No test framework is currently configured. If you add tests, document the runner
 
 ## Caching & Revalidation Strategy
 - Post pages are statically generated (`dynamic = "force-static"` with `generateStaticParams`) and updated only via webhook revalidation.
-- Posts list cached via `unstable_cache` in `lib/posts.ts` with TTL `REVALIDATE_SECONDS` (default 3600).
+- Aggregation data (posts list, series, pinned issues, issues-with-parents) cached via `unstable_cache` with TTL `REVALIDATE_SECONDS` (default 3600).
 - Comments cached via `unstable_cache` in `lib/comments.ts` with tag `comments:<issueNumber>` and TTL 300s.
 - Revalidation webhook in `app/api/revalidate/route.ts`:
-  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")`
-  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")`
-  - Comment created → `revalidatePath(postUrl)`
+  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
+  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
+  - Comment created → `revalidatePath(postUrl)` + `revalidateTag(comments:<issueNumber>)`
 - Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
 
 ## Commit & Pull Request Guidelines

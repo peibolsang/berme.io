@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { fetchIssuesWithParents } from "./github";
+import { getIssuesWithParents } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { getAllPosts } from "./posts";
 import { config } from "./config";
@@ -28,7 +28,7 @@ const getLatestTimestamp = (timestamps: string[]) => {
 };
 
 const fetchSeries = async (): Promise<Series[]> => {
-  const [issues, posts] = await Promise.all([fetchIssuesWithParents(), getAllPosts()]);
+  const [issues, posts] = await Promise.all([getIssuesWithParents(), getAllPosts()]);
   const postsByNumber = new Map<number, Post>(posts.map((post) => [post.number, post]));
   const seriesByNumber = new Map<number, Series>();
 

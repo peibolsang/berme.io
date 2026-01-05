@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getAllPosts } from "../../../lib/posts";
 import { parseFrontmatter } from "../../../lib/frontmatter";
@@ -62,6 +62,16 @@ const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
   return unique;
 };
 
+const revalidateContentTags = async () => {
+  await Promise.all([
+    revalidateTag("posts"),
+    revalidateTag("series"),
+    revalidateTag("github-issues"),
+    revalidateTag("github-issues-with-parents"),
+    revalidateTag("github-pinned-issues"),
+  ]);
+};
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
@@ -74,6 +84,14 @@ export async function POST(request: Request) {
   const payload = JSON.parse(body);
   const revalidated: string[] = [];
   let posts: Awaited<ReturnType<typeof getAllPosts>> | null = null;
+  let contentTagsRevalidated = false;
+  const ensureContentTagsRevalidated = async () => {
+    if (contentTagsRevalidated) {
+      return;
+    }
+    await revalidateContentTags();
+    contentTagsRevalidated = true;
+  };
   const getCachedPosts = async () => {
     if (posts) {
       return posts;
@@ -97,6 +115,7 @@ export async function POST(request: Request) {
         const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
         const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
         revalidated.push(...urls);
+        await ensureContentTagsRevalidated();
         await revalidatePath("/");
         revalidated.push("/");
       }
@@ -109,6 +128,7 @@ export async function POST(request: Request) {
       const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
+      await ensureContentTagsRevalidated();
       await revalidatePath("/");
       revalidated.push("/");
     }
@@ -122,6 +142,7 @@ export async function POST(request: Request) {
       const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
+      await revalidateTag(`comments:${issueNumber}`);
     }
   }
 

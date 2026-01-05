@@ -1,9 +1,5 @@
 import { unstable_cache } from "next/cache";
-import {
-  fetchAllBlogIssues,
-  fetchIssuesWithParents,
-  fetchPinnedIssueNumbers,
-} from "./github";
+import { getAllBlogIssues, getIssuesWithParents, getPinnedIssueNumbers } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
 import { config } from "./config";
@@ -23,9 +19,9 @@ const asDate = (value: string) => {
 
 const fetchPosts = async (): Promise<Post[]> => {
   const [issues, pinnedNumbers, issuesWithParents] = await Promise.all([
-    fetchAllBlogIssues(),
-    fetchPinnedIssueNumbers(),
-    fetchIssuesWithParents(),
+    getAllBlogIssues(),
+    getPinnedIssueNumbers(),
+    getIssuesWithParents(),
   ]);
   const parentNumbers = new Set(
     issuesWithParents
