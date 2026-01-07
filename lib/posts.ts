@@ -23,7 +23,9 @@ const asDate = (value: string) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-const resolveAuthor = async (issue: GitHubIssue) => {
+const resolveAuthor = async (
+  issue: GitHubIssue,
+): Promise<Post["author"]> => {
   const login = issue.user?.login?.trim();
   if (!login) {
     return undefined;
@@ -71,7 +73,7 @@ const fetchPosts = async (): Promise<Post[]> => {
       parentToChildren.set(parent.number, [issue.number]);
     }
   });
-  const postEntries = await Promise.all(
+  const postEntries: Array<Post | null> = await Promise.all(
     issues.map(async (issue) => {
       if (parentNumbers.has(issue.number)) {
         return null;
