@@ -156,7 +156,12 @@ export const LandingViews = ({ posts, pinned, series, books }: LandingViewsProps
               {series.map((entry) => (
                 <section key={entry.number}>
                   <h2 className="mb-4 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                    {entry.title}
+                    <Link
+                      href={`${entry.url}?view=series`}
+                      className="hover:text-zinc-900 dark:hover:text-white"
+                    >
+                      {entry.title}
+                    </Link>
                   </h2>
                   {entry.posts.length === 0 ? (
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">

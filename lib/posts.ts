@@ -109,6 +109,7 @@ const fetchPosts = async (): Promise<Post[]> => {
         image: data.image,
         pinned: pinnedNumbers.has(issue.number),
         seriesTitle: childToParent.get(issue.number)?.title,
+        seriesNumber: childToParent.get(issue.number)?.number,
         body,
         labels,
         url,

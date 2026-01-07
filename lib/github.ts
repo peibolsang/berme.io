@@ -118,6 +118,11 @@ export type GitHubIssueParent = {
   body: string | null;
   createdAt: string;
   updatedAt: string;
+  author?: {
+    login?: string | null;
+    avatarUrl?: string | null;
+    url?: string | null;
+  } | null;
 };
 
 export type GitHubIssueWithParent = {
@@ -126,6 +131,11 @@ export type GitHubIssueWithParent = {
   body: string | null;
   createdAt: string;
   updatedAt: string;
+  author?: {
+    login?: string | null;
+    avatarUrl?: string | null;
+    url?: string | null;
+  } | null;
   parent?: GitHubIssueParent | null;
 };
 
@@ -227,12 +237,22 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
             body
             createdAt
             updatedAt
+            author {
+              login
+              avatarUrl
+              url
+            }
             parent {
               number
               title
               body
               createdAt
               updatedAt
+              author {
+                login
+                avatarUrl
+                url
+              }
             }
           }
           pageInfo {

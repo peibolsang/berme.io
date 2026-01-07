@@ -126,12 +126,14 @@ export default async function PostPage({ params }: PageProps) {
       notFound();
     }
 
-    const seriesInfo =
-      post.seriesTitle && post.seriesPart && post.seriesTotal
-        ? `Series: ${post.seriesTitle} - (Part ${post.seriesPart} of ${post.seriesTotal})`
-        : post.seriesTitle
-          ? `Series: ${post.seriesTitle}`
-          : null;
+    const seriesInfo = post.seriesTitle
+      ? {
+          title: post.seriesTitle,
+          number: post.seriesNumber,
+          part: post.seriesPart,
+          total: post.seriesTotal,
+        }
+      : null;
 
     let comments: GitHubComment[] = [];
     try {
@@ -224,7 +226,20 @@ export default async function PostPage({ params }: PageProps) {
           <div className="mx-auto w-full max-w-2xl">
             {seriesInfo ? (
               <p className="mb-4 text-xs uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
-                {seriesInfo}
+                Series:{" "}
+                {seriesInfo.number ? (
+                  <Link
+                    href={`/series/${seriesInfo.number}?view=series`}
+                    className="hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    {seriesInfo.title}
+                  </Link>
+                ) : (
+                  seriesInfo.title
+                )}
+                {seriesInfo.part && seriesInfo.total
+                  ? ` — Part ${seriesInfo.part} of ${seriesInfo.total}`
+                  : null}
               </p>
             ) : null}
             <article className="markdown-body mt-0">

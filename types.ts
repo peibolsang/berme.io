@@ -15,6 +15,7 @@ export type Post = {
   image?: string;
   pinned?: boolean;
   seriesTitle?: string;
+  seriesNumber?: number;
   seriesPart?: number;
   seriesTotal?: number;
   body: string;
@@ -26,7 +27,15 @@ export type Series = {
   number: number;
   title: string;
   description?: string;
+  body?: string;
   updatedAt: string;
+  author?: {
+    name: string;
+    login?: string;
+    avatarUrl?: string | null;
+    url?: string | null;
+  };
+  url: string;
   posts: Post[];
 };
 
