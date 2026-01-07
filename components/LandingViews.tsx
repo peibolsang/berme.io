@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Book, Post, Series } from "../types";
 import { PostsIndex } from "./PostsIndex";
@@ -35,60 +35,32 @@ export const LandingViews = ({ posts, pinned, series, books }: LandingViewsProps
   const pathname = usePathname();
   const router = useRouter();
 
-  const initialView = useMemo(
-    () => normalizeView(searchParams.get("view")),
-    [searchParams],
-  );
-  const [activeView, setActiveView] = useState<ViewOption>(initialView);
-  const isSyncingFromSearch = useRef(false);
-  const hasInitialized = useRef(false);
-
-  const getViewFromSearch = useCallback(
+  const activeView = useMemo(
     () => normalizeView(searchParams.get("view")),
     [searchParams],
   );
 
-  useEffect(() => {
-    const fromSearch = getViewFromSearch();
-    setActiveView((prev) => {
-      if (prev === fromSearch) {
-        return prev;
+  const handleViewChange = useCallback(
+    (value: string) => {
+      const nextView = normalizeView(value);
+      if (nextView === activeView) {
+        return;
       }
-      isSyncingFromSearch.current = true;
-      return fromSearch;
-    });
-    hasInitialized.current = true;
-  }, [getViewFromSearch]);
-
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      return;
-    }
-    if (isSyncingFromSearch.current) {
-      isSyncingFromSearch.current = false;
-      return;
-    }
-    const fromSearch = getViewFromSearch();
-    if (fromSearch === activeView) {
-      return;
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    if (activeView === "posts") {
-      params.delete("view");
-    } else {
-      params.set("view", activeView);
-    }
-    const query = params.toString();
-    const href = query ? `${pathname}?${query}` : pathname;
-    router.push(href, { scroll: false });
-  }, [activeView, searchParams, pathname, router, getViewFromSearch]);
+      const params = new URLSearchParams(searchParams.toString());
+      if (nextView === "posts") {
+        params.delete("view");
+      } else {
+        params.set("view", nextView);
+      }
+      const query = params.toString();
+      const href = query ? `${pathname}?${query}` : pathname;
+      router.push(href, { scroll: false });
+    },
+    [activeView, pathname, router, searchParams],
+  );
 
   return (
-    <Tabs
-      value={activeView}
-      onValueChange={(value) => setActiveView(value as ViewOption)}
-      className="space-y-10"
-    >
+    <Tabs value={activeView} onValueChange={handleViewChange} className="space-y-10">
       <TabsList aria-label="Content views">
         {viewOptions.map((view) => (
           <TabsTrigger key={view} value={view}>
