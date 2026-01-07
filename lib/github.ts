@@ -12,6 +12,11 @@ export type GitHubIssue = {
   labels: {
     name?: string;
   }[];
+  user?: {
+    login?: string;
+    avatar_url?: string;
+    html_url?: string;
+  };
   pull_request?: Record<string, unknown>;
 };
 
@@ -22,6 +27,13 @@ export type GitHubComment = {
   user?: {
     login?: string;
   };
+};
+
+export type GitHubUserProfile = {
+  login: string;
+  name: string | null;
+  avatar_url: string | null;
+  html_url: string | null;
 };
 
 type PinnedIssueResponse = {
@@ -52,6 +64,26 @@ const githubFetch = async (url: string) => {
 
   return response.json();
 };
+
+const fetchGithubUser = async (
+  login: string,
+): Promise<GitHubUserProfile | null> => {
+  if (!login) {
+    return null;
+  }
+  try {
+    const url = `https://api.github.com/users/${login}`;
+    const user = (await githubFetch(url)) as GitHubUserProfile;
+    return user ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const getGithubUser = unstable_cache(fetchGithubUser, ["github-user"], {
+  revalidate: config.revalidateSeconds,
+  tags: ["github-user"],
+});
 
 const githubGraphqlFetch = async (
   query: string,

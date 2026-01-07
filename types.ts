@@ -5,6 +5,12 @@ export type Post = {
   slug: string;
   publishedAt: string;
   updatedAt: string;
+  author?: {
+    name: string;
+    login?: string;
+    avatarUrl?: string | null;
+    url?: string | null;
+  };
   excerpt?: string;
   image?: string;
   pinned?: boolean;

@@ -164,17 +164,48 @@ export default async function PostPage({ params }: PageProps) {
             >
               {post.title}
             </h1>
-            <p className="mt-4 text-xs uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              {formatDate(post.publishedAt)} • {getReadingTime(post.body)} •{" "}
-              <a
-                className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                View on GitHub
-              </a>
-            </p>
+            <div className="mt-4 flex items-start gap-4">
+              {post.author?.avatarUrl ? (
+                <img
+                  src={post.author.avatarUrl}
+                  alt=""
+                  className="h-9 w-9 rounded-full border border-zinc-200 object-cover dark:border-slate-700"
+                  loading="lazy"
+                />
+              ) : null}
+              <div className="flex flex-col gap-1">
+                {post.author ? (
+                  post.author.url ? (
+                    <a
+                      className="text-base text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"
+                      href={post.author.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {post.author.name}
+                    </a>
+                  ) : (
+                    <span className="text-base text-zinc-900 dark:text-white">
+                      {post.author.name}
+                    </span>
+                  )
+                ) : null}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span>Posted on {formatDate(post.publishedAt)}</span>
+                  <span aria-hidden="true">•</span>
+                  <span>{getReadingTime(post.body)}</span>
+                  <span aria-hidden="true">•</span>
+                  <a
+                    className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                    href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    View on GitHub
+                  </a>
+                </div>
+              </div>
+            </div>
             {formatLabels(post.labels).length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {formatLabels(post.labels).map((label) => (
