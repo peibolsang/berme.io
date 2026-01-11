@@ -33,7 +33,7 @@ export default async function Home() {
                   </p>
                   <Link
                     href="/now"
-                    className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-200"
+                    className="mt-2 inline-flex items-center gap-2 text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                   >
                     <span>{nowPost.title}</span>
                     <span aria-hidden="true">→</span>
@@ -124,7 +124,7 @@ export default async function Home() {
                     </p>
                     <Link
                       href="/now"
-                      className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-200"
+                      className="mt-2 inline-flex items-center gap-2 text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                     >
                       <span>{nowPost.title}</span>
                       <span aria-hidden="true">→</span>
