@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo } from "react";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Book, Post, View } from "../types";
 import { PostsIndex } from "./PostsIndex";
@@ -149,11 +150,17 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
                       No articles yet.
                     </p>
                   ) : (
-                    <div className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                        How I got here
-                      </p>
-                      <ul className="ml-2 space-y-2 text-sm">
+                    <details className="group">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white [&::-webkit-details-marker]:hidden">
+                        <ChevronDownIcon className="h-4 w-4 transition group-open:rotate-180 group-open:text-zinc-700 dark:group-open:text-zinc-200" />
+                        <span className="underline-offset-4 group-hover:underline">
+                          How I got here
+                        </span>
+                        <span className="rounded-full border border-current/20 px-2 py-[1px] text-[10px] no-underline">
+                          {entry.posts.length}
+                        </span>
+                      </summary>
+                      <ul className="ml-2 mt-3 space-y-2 text-sm">
                         {entry.posts.map((post) => (
                           <li
                             key={post.url}
@@ -169,7 +176,7 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
                           </li>
                         ))}
                       </ul>
-                    </div>
+                    </details>
                   )}
                 </section>
               ))}
