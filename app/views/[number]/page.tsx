@@ -136,7 +136,7 @@ export default async function ViewPage({ params }: PageProps) {
           ) : null}
           <section className="mt-10">
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              How I got here
+              Explore line of thought
             </h2>
             {view.posts.length === 0 ? (
               <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">

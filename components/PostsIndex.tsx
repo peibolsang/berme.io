@@ -354,7 +354,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                   <span className="flex flex-wrap gap-2">
                     {selectedLabels.length === 0 ? (
                       <span className="text-zinc-400 dark:text-zinc-500">
-                        Reading Paths
+                        Explore reading paths
                       </span>
                     ) : (
                       selectedLabels.map((labelKey) => (
@@ -429,7 +429,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                 ].join(" ")}
               />
               <span className="underline-offset-4 group-hover:underline">
-                Reading Paths
+                Explore reading paths
               </span>
               <span className="rounded-full border border-current/20 px-2 py-[1px] text-[10px] no-underline">
                 {allLabels.length}
