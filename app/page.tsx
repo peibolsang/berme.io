@@ -1,14 +1,20 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
 import { KnowPablo } from "../components/KnowPablo";
 import { LandingViews } from "../components/LandingViews";
 import { getAllSeries } from "../lib/series";
 import { getBooks } from "../lib/books";
+import { getNowPost } from "../lib/now";
 
 export default async function Home() {
   try {
-    const [posts, series] = await Promise.all([getAllPosts(), getAllSeries()]);
+    const [posts, series, nowPost] = await Promise.all([
+      getAllPosts(),
+      getAllSeries(),
+      getNowPost(),
+    ]);
     const pinned = posts.filter((post) => post.pinned);
     const books = getBooks();
 
@@ -20,6 +26,20 @@ export default async function Home() {
               <h1 className="text-2xl font-semibold tracking-tight">
                 Pablo Bermejo
               </h1>
+              {nowPost ? (
+                <div className="mt-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                    Now
+                  </p>
+                  <Link
+                    href="/now"
+                    className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-200"
+                  >
+                    <span>{nowPost.title}</span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              ) : null}
               <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
                 I am a product leader, distinguished technologist, and writer. I've been
                 building enterprise software platforms and applications for the last 20 years,
@@ -67,6 +87,20 @@ export default async function Home() {
                 <h1 className="text-2xl font-semibold tracking-tight">
                   Pablo Bermejo
                 </h1>
+                {nowPost ? (
+                  <div className="mt-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                      Now
+                    </p>
+                    <Link
+                      href="/now"
+                      className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-200"
+                    >
+                      <span>{nowPost.title}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                ) : null}
               </div>
               <Suspense fallback={<div className="h-6" />}>
                 <LandingViews

@@ -80,6 +80,21 @@ const revalidateAggregates = async () => {
   ]);
 };
 
+const hasNowLabel = (
+  labels: Array<{ name?: string | null }> | null | undefined,
+) =>
+  (labels ?? []).some(
+    (label) => String(label?.name ?? "").toLowerCase() === "now",
+  );
+
+const revalidateNow = async () => {
+  await Promise.all([
+    revalidatePath("/"),
+    revalidatePath("/now"),
+    revalidateTag("now", "max"),
+  ]);
+};
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
@@ -127,6 +142,10 @@ export async function POST(request: Request) {
         await revalidateAggregates();
         revalidated.push("/", "/feed.xml", "/sitemap.xml");
       }
+      if (label === "now") {
+        await revalidateNow();
+        revalidated.push("/", "/now");
+      }
     }
 
     if (action === "edited" || action === "closed" || action === "reopened") {
@@ -139,6 +158,10 @@ export async function POST(request: Request) {
       await ensureContentTagsRevalidated();
       await revalidateAggregates();
       revalidated.push("/", "/feed.xml", "/sitemap.xml");
+      if (hasNowLabel(payload.issue?.labels)) {
+        await revalidateNow();
+        revalidated.push("/now");
+      }
     }
   }
 
@@ -151,6 +174,10 @@ export async function POST(request: Request) {
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
       await revalidateTag(`comments:${issueNumber}`, "max");
+      if (hasNowLabel(payload.issue?.labels)) {
+        await revalidateNow();
+        revalidated.push("/now");
+      }
     }
   }
 
