@@ -6,7 +6,7 @@ import { getGithubUser } from "./github";
 import type { Post } from "../types";
 import type { GitHubIssue } from "./github";
 
-const NOW_LABEL = "NOW";
+const NOW_LABEL = "now";
 
 const githubFetch = async (url: string) => {
   const token = getGithubToken();

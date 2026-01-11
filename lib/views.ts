@@ -105,7 +105,7 @@ const fetchViews = async (): Promise<View[]> => {
 
 export const getAllViews = unstable_cache(fetchViews, ["views"], {
   revalidate: config.revalidateSeconds,
-  tags: ["views"],
+  tags: ["views", "github-issues-with-parents", "posts"],
 });
 
 export const getViewByNumber = async (number: string): Promise<View | null> => {

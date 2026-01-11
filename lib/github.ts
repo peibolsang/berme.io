@@ -80,10 +80,11 @@ const fetchGithubUser = async (
   }
 };
 
-export const getGithubUser = unstable_cache(fetchGithubUser, ["github-user"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["github-user"],
-});
+export const getGithubUser = (login: string) =>
+  unstable_cache(() => fetchGithubUser(login), ["github-user", login], {
+    revalidate: config.revalidateSeconds,
+    tags: ["github-user"],
+  })();
 
 const githubGraphqlFetch = async (
   query: string,
