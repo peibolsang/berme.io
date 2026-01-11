@@ -1,5 +1,5 @@
 import { getAllPosts } from "../../lib/posts";
-import { getAllSeries } from "../../lib/series";
+import { getAllViews } from "../../lib/views";
 import { getBaseUrl } from "../../lib/site";
 
 export const revalidate = 3600;
@@ -20,10 +20,10 @@ const buildSitemap = (baseUrl: string, urls: { loc: string; lastmod?: string }[]
 
 export async function GET() {
   const baseUrl = await getBaseUrl();
-  const [posts, series] = await Promise.all([getAllPosts(), getAllSeries()]);
+  const [posts, views] = await Promise.all([getAllPosts(), getAllViews()]);
   const urls = [
     { loc: `${baseUrl}/` },
-    ...series.map((entry) => ({
+    ...views.map((entry) => ({
       loc: `${baseUrl}${entry.url}`,
       lastmod: entry.updatedAt,
     })),

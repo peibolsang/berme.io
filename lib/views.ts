@@ -3,7 +3,7 @@ import { getGithubUser, getIssuesWithParents } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { getAllPosts } from "./posts";
 import { config } from "./config";
-import type { Post, Series } from "../types";
+import type { Post, View } from "../types";
 import type { GitHubIssueParent } from "./github";
 
 const buildDescription = (body: string) => {
@@ -28,11 +28,11 @@ const getLatestTimestamp = (timestamps: string[]) => {
   return latest.toISOString();
 };
 
-const buildSeriesUrl = (number: number) => `/series/${number}`;
+const buildViewUrl = (number: number) => `/views/${number}`;
 
-const resolveSeriesAuthor = async (
+const resolveViewAuthor = async (
   parent: GitHubIssueParent,
-): Promise<Series["author"]> => {
+): Promise<View["author"]> => {
   const login = parent.author?.login?.trim();
   if (!login) {
     return undefined;
@@ -51,40 +51,40 @@ const resolveSeriesAuthor = async (
   };
 };
 
-const fetchSeries = async (): Promise<Series[]> => {
+const fetchViews = async (): Promise<View[]> => {
   const [issues, posts] = await Promise.all([getIssuesWithParents(), getAllPosts()]);
   const postsByNumber = new Map<number, Post>(posts.map((post) => [post.number, post]));
-  const seriesByNumber = new Map<number, Series>();
+  const viewsByNumber = new Map<number, View>();
 
   for (const issue of issues) {
     const parent = issue.parent;
     if (!parent) {
       continue;
     }
-    if (!seriesByNumber.has(parent.number)) {
+    if (!viewsByNumber.has(parent.number)) {
       const { body } = parseFrontmatter(parent.body ?? "");
       const trimmedBody = body.trim();
       const description = buildDescription(body);
-      const author = await resolveSeriesAuthor(parent);
-      seriesByNumber.set(parent.number, {
+      const author = await resolveViewAuthor(parent);
+      viewsByNumber.set(parent.number, {
         number: parent.number,
         title: parent.title,
         description: description ? description : undefined,
         body: trimmedBody ? body : undefined,
         updatedAt: parent.updatedAt,
         author,
-        url: buildSeriesUrl(parent.number),
+        url: buildViewUrl(parent.number),
         posts: [],
       });
     }
-    const series = seriesByNumber.get(parent.number);
+    const view = viewsByNumber.get(parent.number);
     const childPost = postsByNumber.get(issue.number);
-    if (series && childPost) {
-      series.posts.push(childPost);
+    if (view && childPost) {
+      view.posts.push(childPost);
     }
   }
 
-  const series = Array.from(seriesByNumber.values()).map((entry) => {
+  const views = Array.from(viewsByNumber.values()).map((entry) => {
     const updatedAt = getLatestTimestamp([
       entry.updatedAt,
       ...entry.posts.map((post) => post.updatedAt),
@@ -99,16 +99,16 @@ const fetchSeries = async (): Promise<Series[]> => {
     };
   });
 
-  series.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  return series;
+  views.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return views;
 };
 
-export const getAllSeries = unstable_cache(fetchSeries, ["series"], {
+export const getAllViews = unstable_cache(fetchViews, ["views"], {
   revalidate: config.revalidateSeconds,
-  tags: ["series"],
+  tags: ["views"],
 });
 
-export const getSeriesByNumber = async (number: string): Promise<Series | null> => {
-  const series = await getAllSeries();
-  return series.find((entry) => String(entry.number) === number) ?? null;
+export const getViewByNumber = async (number: string): Promise<View | null> => {
+  const views = await getAllViews();
+  return views.find((entry) => String(entry.number) === number) ?? null;
 };

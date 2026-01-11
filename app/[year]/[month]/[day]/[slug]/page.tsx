@@ -126,15 +126,6 @@ export default async function PostPage({ params }: PageProps) {
       notFound();
     }
 
-    const seriesInfo = post.seriesTitle
-      ? {
-          title: post.seriesTitle,
-          number: post.seriesNumber,
-          part: post.seriesPart,
-          total: post.seriesTotal,
-        }
-      : null;
-
     let comments: GitHubComment[] = [];
     try {
       comments = await getIssueComments(post.number);
@@ -224,22 +215,19 @@ export default async function PostPage({ params }: PageProps) {
         </section>
         <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
           <div className="mx-auto w-full max-w-2xl">
-            {seriesInfo ? (
+            {post.viewTitle ? (
               <p className="mb-4 text-xs uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
-                Series:{" "}
-                {seriesInfo.number ? (
+                View:{" "}
+                {post.viewNumber ? (
                   <Link
-                    href={`/series/${seriesInfo.number}?view=series`}
+                    href={`/views/${post.viewNumber}?view=views`}
                     className="hover:text-zinc-600 dark:hover:text-zinc-300"
                   >
-                    {seriesInfo.title}
+                    {post.viewTitle}
                   </Link>
                 ) : (
-                  seriesInfo.title
+                  post.viewTitle
                 )}
-                {seriesInfo.part && seriesInfo.total
-                  ? ` — Part ${seriesInfo.part} of ${seriesInfo.total}`
-                  : null}
               </p>
             ) : null}
             <article className="markdown-body mt-0">

@@ -4,15 +4,15 @@ import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
 import { KnowPablo } from "../components/KnowPablo";
 import { LandingViews } from "../components/LandingViews";
-import { getAllSeries } from "../lib/series";
+import { getAllViews } from "../lib/views";
 import { getBooks } from "../lib/books";
 import { getNowPost } from "../lib/now";
 
 export default async function Home() {
   try {
-    const [posts, series, nowPost] = await Promise.all([
+    const [posts, views, nowPost] = await Promise.all([
       getAllPosts(),
-      getAllSeries(),
+      getAllViews(),
       getNowPost(),
     ]);
     const pinned = posts.filter((post) => post.pinned);
@@ -106,7 +106,7 @@ export default async function Home() {
                 <LandingViews
                   posts={posts}
                   pinned={pinned}
-                  series={series}
+                  views={views}
                   books={books}
                 />
               </Suspense>

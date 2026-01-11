@@ -39,15 +39,15 @@ No test framework is currently configured. If you add tests, document the runner
 
 ## Caching & Revalidation Strategy
 - Post pages are statically generated (`dynamic = "force-static"` with `generateStaticParams`) and updated only via webhook revalidation.
-- Aggregation data (posts list, series, pinned issues, issues-with-parents) cached via `unstable_cache` with TTL `REVALIDATE_SECONDS` (default 3600).
+- Aggregation data (posts list, views, pinned issues, issues-with-parents) cached via `unstable_cache` with TTL `REVALIDATE_SECONDS` (default 3600).
 - Comments cached via `unstable_cache` in `lib/comments.ts` with tag `comments:<issueNumber>` and TTL 300s.
 - Revalidation webhook in `app/api/revalidate/route.ts`:
-  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
-  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/series/pinned/issues-with-parents)`
+  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/views/pinned/issues-with-parents)`
+  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/views/pinned/issues-with-parents)`
   - Comment created → `revalidatePath(postUrl)` + `revalidateTag(comments:<issueNumber>)`
   - Aggregates also revalidate `/feed.xml` and `/sitemap.xml` on post changes.
 - Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
- - GraphQL parent-issue lookups fall back to the last successful snapshot to avoid series parents leaking into posts during transient failures.
+- GraphQL parent-issue lookups fall back to the last successful snapshot to avoid view parents leaking into posts during transient failures.
 
 ## Commit & Pull Request Guidelines
 There is no established commit convention yet (only the initial scaffold commit exists). Use short, imperative messages (e.g., "Add hero section"). For pull requests:

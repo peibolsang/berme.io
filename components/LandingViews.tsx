@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { Book, Post, Series } from "../types";
+import type { Book, Post, View } from "../types";
 import { PostsIndex } from "./PostsIndex";
+import { Markdown } from "./Markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
-const viewOptions = ["posts", "series", "books"] as const;
+const viewOptions = ["posts", "views", "books"] as const;
 type ViewOption = (typeof viewOptions)[number];
 const viewLabels: Record<ViewOption, string> = {
   posts: "Posts",
-  series: "Series",
+  views: "Views",
   books: "Books",
 };
 
@@ -26,11 +27,11 @@ const formatDate = (iso: string) => {
 type LandingViewsProps = {
   posts: Post[];
   pinned: Post[];
-  series: Series[];
+  views: View[];
   books: Book[];
 };
 
-export const LandingViews = ({ posts, pinned, series, books }: LandingViewsProps) => {
+export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -117,47 +118,58 @@ export const LandingViews = ({ posts, pinned, series, books }: LandingViewsProps
         </div>
       </TabsContent>
 
-      <TabsContent value="series">
-        <div id="panel-series">
-          {series.length === 0 ? (
+      <TabsContent value="views">
+        <div id="panel-views">
+          <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
+            Long-lived thinking organized by concept and refined over time.
+          </p>
+          {views.length === 0 ? (
             <div className="rounded-xl border border-dashed border-zinc-200 bg-white/70 px-4 py-6 text-sm text-zinc-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-400">
-              No series available yet.
+              No views available yet.
             </div>
           ) : (
             <div className="space-y-10">
-              {series.map((entry) => (
+              {views.map((entry) => (
                 <section key={entry.number}>
-                  <h2 className="mb-4 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                  <h2 className="mb-4 text-base font-semibold text-zinc-600 dark:text-zinc-300">
                     <Link
-                      href={`${entry.url}?view=series`}
+                      href={`${entry.url}?view=views`}
                       className="hover:text-zinc-900 dark:hover:text-white"
                     >
                       {entry.title}
                     </Link>
                   </h2>
+                  {entry.body ? (
+                    <div className="markdown-body mb-4 text-sm text-zinc-600 dark:text-zinc-300">
+                      <Markdown content={entry.body} />
+                    </div>
+                  ) : null}
                   {entry.posts.length === 0 ? (
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
                       No articles yet.
                     </p>
                   ) : (
-                    <ul className="space-y-2 text-sm">
-                      {entry.posts.map((post, index) => (
-                        <li
-                          key={post.url}
-                          className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
-                        >
-                          <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                            Part {index + 1}
-                          </span>
-                          <Link
-                            href={`${post.url}?view=series`}
-                            className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                        How I got here
+                      </p>
+                      <ul className="ml-2 space-y-2 text-sm">
+                        {entry.posts.map((post) => (
+                          <li
+                            key={post.url}
+                            className="relative pl-4 after:absolute after:left-0 after:top-0 after:h-[calc(100%+0.5rem)] after:w-px after:bg-zinc-200 last:after:h-3 dark:after:bg-slate-700"
                           >
-                            {post.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                            <span className="absolute left-0 top-3 h-px w-3 bg-zinc-200 dark:bg-slate-700" />
+                            <Link
+                              href={`${post.url}?view=views`}
+                              className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                            >
+                              {post.title}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </section>
               ))}

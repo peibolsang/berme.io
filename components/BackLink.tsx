@@ -8,7 +8,7 @@ export const BackLink = () => {
   const searchParams = useSearchParams();
   const backHref = useMemo(() => {
     const view = searchParams.get("view");
-    return view === "series" ? "/?view=series" : "/";
+    return view === "views" ? "/?view=views" : "/";
   }, [searchParams]);
 
   return (

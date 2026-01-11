@@ -65,7 +65,7 @@ const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
 const revalidateContentTags = async () => {
   await Promise.all([
     revalidateTag("posts", "max"),
-    revalidateTag("series", "max"),
+    revalidateTag("views", "max"),
     revalidateTag("github-issues", "max"),
     revalidateTag("github-issues-with-parents", "max"),
     revalidateTag("github-pinned-issues", "max"),

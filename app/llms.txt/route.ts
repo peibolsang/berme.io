@@ -8,7 +8,7 @@ export async function GET() {
 
 ## Core Resources
 - [Home / Posts](${baseUrl}/?view=posts): Latest articles and writing.
-- [Series](${baseUrl}/?view=series): Post series collections.
+- [Views](${baseUrl}/?view=views): Post view collections.
 - [Books](${baseUrl}/?view=books): Reading list and recommendations.
 
 ## Documentation (if applicable)

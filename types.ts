@@ -14,16 +14,14 @@ export type Post = {
   excerpt?: string;
   image?: string;
   pinned?: boolean;
-  seriesTitle?: string;
-  seriesNumber?: number;
-  seriesPart?: number;
-  seriesTotal?: number;
+  viewTitle?: string;
+  viewNumber?: number;
   body: string;
   labels: string[];
   url: string;
 };
 
-export type Series = {
+export type View = {
   number: number;
   title: string;
   description?: string;

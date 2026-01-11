@@ -57,21 +57,12 @@ const fetchPosts = async (): Promise<Post[]> => {
       .filter((value): value is number => typeof value === "number"),
   );
   const childToParent = new Map<number, { number: number; title: string }>();
-  const parentToChildren = new Map<number, number[]>();
-  const parentTitles = new Map<number, string>();
   issuesWithParents.forEach((issue) => {
     const parent = issue.parent;
     if (!parent?.title) {
       return;
     }
     childToParent.set(issue.number, { number: parent.number, title: parent.title });
-    parentTitles.set(parent.number, parent.title);
-    const existing = parentToChildren.get(parent.number);
-    if (existing) {
-      existing.push(issue.number);
-    } else {
-      parentToChildren.set(parent.number, [issue.number]);
-    }
   });
   const postEntries: Array<Post | null> = await Promise.all(
     issues.map(async (issue) => {
@@ -108,8 +99,8 @@ const fetchPosts = async (): Promise<Post[]> => {
         excerpt: data.excerpt,
         image: data.image,
         pinned: pinnedNumbers.has(issue.number),
-        seriesTitle: childToParent.get(issue.number)?.title,
-        seriesNumber: childToParent.get(issue.number)?.number,
+        viewTitle: childToParent.get(issue.number)?.title,
+        viewNumber: childToParent.get(issue.number)?.number,
         body,
         labels,
         url,
@@ -118,26 +109,6 @@ const fetchPosts = async (): Promise<Post[]> => {
   );
 
   const posts = postEntries.filter((post): post is Post => Boolean(post));
-
-  const postsByNumber = new Map(posts.map((post) => [post.number, post]));
-  parentToChildren.forEach((childNumbers, parentNumber) => {
-    const parentTitle = parentTitles.get(parentNumber);
-    if (!parentTitle) {
-      return;
-    }
-    const seriesPosts = childNumbers
-      .map((number) => postsByNumber.get(number))
-      .filter((post): post is Post => Boolean(post))
-      .sort((a, b) => a.publishedAt.localeCompare(b.publishedAt));
-    if (seriesPosts.length === 0) {
-      return;
-    }
-    seriesPosts.forEach((post, index) => {
-      post.seriesTitle = parentTitle;
-      post.seriesPart = index + 1;
-      post.seriesTotal = seriesPosts.length;
-    });
-  });
 
   posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
