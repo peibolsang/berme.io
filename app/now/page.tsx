@@ -19,12 +19,6 @@ const formatDate = (iso: string) => {
   });
 };
 
-const getReadingTime = (text: string) => {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
-};
-
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair-display",
@@ -157,9 +151,7 @@ export default async function NowPage() {
                   )
                 ) : null}
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span>Posted on {formatDate(post.publishedAt)}</span>
-                  <span aria-hidden="true">•</span>
-                  <span>{getReadingTime(post.body)}</span>
+                  <span>Updated {formatDate(post.updatedAt)}</span>
                   <span aria-hidden="true">•</span>
                   <a
                     className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
