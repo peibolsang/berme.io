@@ -3,6 +3,7 @@ import { getGithubUser, getIssuesWithParents } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { getAllPosts } from "./posts";
 import { config } from "./config";
+import { renderMarkdownToHtml } from "./markdown-render";
 import type { Post, View } from "../types";
 import type { GitHubIssueParent } from "./github";
 
@@ -65,12 +66,14 @@ const fetchViews = async (): Promise<View[]> => {
       const { body } = parseFrontmatter(parent.body ?? "");
       const trimmedBody = body.trim();
       const description = buildDescription(body);
+      const bodyHtml = trimmedBody ? await renderMarkdownToHtml(body) : undefined;
       const author = await resolveViewAuthor(parent);
       viewsByNumber.set(parent.number, {
         number: parent.number,
         title: parent.title,
         description: description ? description : undefined,
         body: trimmedBody ? body : undefined,
+        bodyHtml,
         updatedAt: parent.updatedAt,
         author,
         url: buildViewUrl(parent.number),

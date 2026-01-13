@@ -6,7 +6,6 @@ import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Book, Post, View } from "../types";
 import { PostsIndex } from "./PostsIndex";
-import { Markdown } from "./Markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 const viewOptions = ["posts", "views", "books"] as const;
@@ -140,10 +139,11 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
                       {entry.title}
                     </Link>
                   </h2>
-                  {entry.body ? (
-                    <div className="markdown-body mb-4 text-sm text-zinc-600 dark:text-zinc-300">
-                      <Markdown content={entry.body} />
-                    </div>
+                  {entry.bodyHtml ? (
+                    <div
+                      className="markdown-body mb-4 text-sm text-zinc-600 dark:text-zinc-300"
+                      dangerouslySetInnerHTML={{ __html: entry.bodyHtml }}
+                    />
                   ) : null}
                   {entry.posts.length === 0 ? (
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">

@@ -26,6 +26,7 @@ export type View = {
   title: string;
   description?: string;
   body?: string;
+  bodyHtml?: string;
   updatedAt: string;
   author?: {
     name: string;
