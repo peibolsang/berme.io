@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { Book, Post, View } from "../types";
 import { PostsIndex } from "./PostsIndex";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -34,12 +34,23 @@ type LandingViewsProps = {
 export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
 
-  const activeView = useMemo(
-    () => normalizeView(searchParams.get("view")),
-    [searchParams],
+  const [activeView, setActiveView] = useState<ViewOption>(() =>
+    normalizeView(searchParams.get("view")),
   );
+
+  useEffect(() => {
+    setActiveView(normalizeView(searchParams.get("view")));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setActiveView(normalizeView(params.get("view")));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const handleViewChange = useCallback(
     (value: string) => {
@@ -47,7 +58,11 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
       if (nextView === activeView) {
         return;
       }
-      const params = new URLSearchParams(searchParams.toString());
+      setActiveView(nextView);
+      const params =
+        typeof window === "undefined"
+          ? new URLSearchParams(searchParams.toString())
+          : new URLSearchParams(window.location.search);
       if (nextView === "posts") {
         params.delete("view");
       } else {
@@ -55,9 +70,11 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
       }
       const query = params.toString();
       const href = query ? `${pathname}?${query}` : pathname;
-      router.push(href, { scroll: false });
+      if (typeof window !== "undefined") {
+        window.history.pushState(null, "", href);
+      }
     },
-    [activeView, pathname, router, searchParams],
+    [activeView, pathname, searchParams],
   );
 
   return (
