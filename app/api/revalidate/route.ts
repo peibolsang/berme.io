@@ -1,6 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getAllPosts } from "../../../lib/posts";
+import { getAllViews } from "../../../lib/views";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
   const payload = JSON.parse(body);
   const revalidated: string[] = [];
   let posts: Awaited<ReturnType<typeof getAllPosts>> | null = null;
+  let views: Awaited<ReturnType<typeof getAllViews>> | null = null;
   let contentTagsRevalidated = false;
   const ensureContentTagsRevalidated = async () => {
     if (contentTagsRevalidated) {
@@ -126,6 +128,29 @@ export async function POST(request: Request) {
     }
     return posts;
   };
+  const getCachedViews = async () => {
+    if (views) {
+      return views;
+    }
+    try {
+      views = await getAllViews();
+    } catch {
+      views = [];
+    }
+    return views;
+  };
+  const revalidateViewUrlByIssueNumber = async (issueNumber: number) => {
+    if (!Number.isFinite(issueNumber)) {
+      return null;
+    }
+    const cachedViews = await getCachedViews();
+    const viewUrl = cachedViews.find((item) => item.number === issueNumber)?.url;
+    if (!viewUrl) {
+      return null;
+    }
+    await revalidatePath(viewUrl);
+    return viewUrl;
+  };
 
   if (event === "issues") {
     const action = String(payload.action ?? "");
@@ -139,6 +164,10 @@ export async function POST(request: Request) {
         const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
         revalidated.push(...urls);
         await ensureContentTagsRevalidated();
+        const viewUrl = await revalidateViewUrlByIssueNumber(issueNumber);
+        if (viewUrl) {
+          revalidated.push(viewUrl);
+        }
         await revalidateAggregates();
         revalidated.push("/", "/feed.xml", "/sitemap.xml");
       }
@@ -156,6 +185,10 @@ export async function POST(request: Request) {
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
       await ensureContentTagsRevalidated();
+      const viewUrl = await revalidateViewUrlByIssueNumber(issueNumber);
+      if (viewUrl) {
+        revalidated.push(viewUrl);
+      }
       await revalidateAggregates();
       revalidated.push("/", "/feed.xml", "/sitemap.xml");
       if (hasNowLabel(payload.issue?.labels)) {

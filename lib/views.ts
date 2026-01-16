@@ -4,6 +4,7 @@ import { parseFrontmatter } from "./frontmatter";
 import { getAllPosts } from "./posts";
 import { config } from "./config";
 import { renderMarkdownToHtml } from "./markdown-render";
+import { buildViewSlug } from "./view-slug";
 import type { Post, View } from "../types";
 import type { GitHubIssueParent } from "./github";
 
@@ -29,7 +30,7 @@ const getLatestTimestamp = (timestamps: string[]) => {
   return latest.toISOString();
 };
 
-const buildViewUrl = (number: number) => `/views/${number}`;
+const buildViewUrl = (slug: string) => `/views/${slug}`;
 
 const resolveViewAuthor = async (
   parent: GitHubIssueParent,
@@ -68,15 +69,17 @@ const fetchViews = async (): Promise<View[]> => {
       const description = buildDescription(body);
       const bodyHtml = trimmedBody ? await renderMarkdownToHtml(body) : undefined;
       const author = await resolveViewAuthor(parent);
+      const slug = buildViewSlug(parent.title, parent.number);
       viewsByNumber.set(parent.number, {
         number: parent.number,
         title: parent.title,
+        slug,
         description: description ? description : undefined,
         body: trimmedBody ? body : undefined,
         bodyHtml,
         updatedAt: parent.updatedAt,
         author,
-        url: buildViewUrl(parent.number),
+        url: buildViewUrl(slug),
         posts: [],
       });
     }
@@ -111,7 +114,7 @@ export const getAllViews = unstable_cache(fetchViews, ["views"], {
   tags: ["views", "github-issues-with-parents", "posts"],
 });
 
-export const getViewByNumber = async (number: string): Promise<View | null> => {
+export const getViewBySlug = async (slug: string): Promise<View | null> => {
   const views = await getAllViews();
-  return views.find((entry) => String(entry.number) === number) ?? null;
+  return views.find((entry) => entry.slug === slug) ?? null;
 };

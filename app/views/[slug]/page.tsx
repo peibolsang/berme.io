@@ -2,14 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
-import { getAllViews, getViewByNumber } from "../../../lib/views";
+import { getAllViews, getViewBySlug } from "../../../lib/views";
 import { Markdown } from "../../../components/Markdown";
 import { BackLink } from "../../../components/BackLink";
 import { config } from "../../../lib/config";
 
 type PageProps = {
   params: Promise<{
-    number: string;
+    slug: string;
   }>;
 };
 
@@ -31,8 +31,8 @@ const playfairDisplay = Playfair_Display({
 export const generateMetadata = async ({
   params,
 }: PageProps): Promise<Metadata> => {
-  const { number } = await params;
-  const view = await getViewByNumber(number);
+  const { slug } = await params;
+  const view = await getViewBySlug(slug);
   if (!view) {
     return {};
   }
@@ -63,13 +63,13 @@ export const dynamic = "force-static";
 export const generateStaticParams = async () => {
   const views = await getAllViews();
   return views.map((entry) => ({
-    number: String(entry.number),
+    slug: entry.slug,
   }));
 };
 
 export default async function ViewPage({ params }: PageProps) {
-  const { number } = await params;
-  const view = await getViewByNumber(number);
+  const { slug } = await params;
+  const view = await getViewBySlug(slug);
 
   if (!view) {
     notFound();

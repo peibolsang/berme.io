@@ -8,6 +8,7 @@ import {
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
 import { config } from "./config";
+import { buildViewSlug } from "./view-slug";
 import type { Post } from "../types";
 import type { GitHubIssue } from "./github";
 
@@ -56,13 +57,20 @@ const fetchPosts = async (): Promise<Post[]> => {
       .map((issue) => issue.parent?.number)
       .filter((value): value is number => typeof value === "number"),
   );
-  const childToParent = new Map<number, { number: number; title: string }>();
+  const childToParent = new Map<
+    number,
+    { number: number; title: string; slug: string }
+  >();
   issuesWithParents.forEach((issue) => {
     const parent = issue.parent;
     if (!parent?.title) {
       return;
     }
-    childToParent.set(issue.number, { number: parent.number, title: parent.title });
+    childToParent.set(issue.number, {
+      number: parent.number,
+      title: parent.title,
+      slug: buildViewSlug(parent.title, parent.number),
+    });
   });
   const postEntries: Array<Post | null> = await Promise.all(
     issues.map(async (issue) => {
@@ -101,6 +109,7 @@ const fetchPosts = async (): Promise<Post[]> => {
         pinned: pinnedNumbers.has(issue.number),
         viewTitle: childToParent.get(issue.number)?.title,
         viewNumber: childToParent.get(issue.number)?.number,
+        viewSlug: childToParent.get(issue.number)?.slug,
         body,
         labels,
         url,

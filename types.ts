@@ -16,6 +16,7 @@ export type Post = {
   pinned?: boolean;
   viewTitle?: string;
   viewNumber?: number;
+  viewSlug?: string;
   body: string;
   labels: string[];
   url: string;
@@ -24,6 +25,7 @@ export type Post = {
 export type View = {
   number: number;
   title: string;
+  slug: string;
   description?: string;
   body?: string;
   bodyHtml?: string;
