@@ -177,6 +177,12 @@ export async function POST(request: Request) {
       }
     }
 
+    if (action === "pinned" || action === "unpinned") {
+      await ensureContentTagsRevalidated();
+      await revalidateAggregates();
+      revalidated.push("/", "/feed.xml", "/sitemap.xml");
+    }
+
     if (action === "edited" || action === "closed" || action === "reopened") {
       const issueNumber = Number(payload.issue?.number);
       const urlFromPayload = getPostUrlFromIssue(payload.issue);
