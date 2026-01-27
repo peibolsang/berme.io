@@ -70,10 +70,39 @@ const CommandItem = React.forwardRef<
 ));
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
+const CommandInput = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Input
+    ref={ref}
+    className={cn(
+      "w-full border-b border-zinc-200 bg-transparent px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 dark:border-slate-700 dark:text-zinc-100 dark:placeholder:text-zinc-500",
+      className,
+    )}
+    {...props}
+  />
+));
+CommandInput.displayName = CommandPrimitive.Input.displayName;
+
+const CommandSeparator = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Separator
+    ref={ref}
+    className={cn("h-px bg-zinc-200 dark:bg-slate-700", className)}
+    {...props}
+  />
+));
+CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
+
 export {
   Command,
   CommandList,
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandInput,
+  CommandSeparator,
 };

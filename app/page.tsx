@@ -4,6 +4,7 @@ import { getAllPosts } from "../lib/posts";
 import { config } from "../lib/config";
 import { KnowPablo } from "../components/KnowPablo";
 import { LandingViews } from "../components/LandingViews";
+import { CommandPalette } from "../components/CommandPalette";
 import { getAllViews } from "../lib/views";
 import { getBooks } from "../lib/books";
 import { getNowPost } from "../lib/now";
@@ -133,6 +134,7 @@ export default async function Home() {
                 ) : null}
               </div>
               <Suspense fallback={<div className="h-6" />}>
+                <CommandPalette posts={posts} showTrigger={false} />
                 <LandingViews
                   posts={posts}
                   pinned={pinned}
