@@ -26,11 +26,18 @@ type CommandPaletteProps = {
 
 const stripMarkdownInline = (value: string) =>
   value
+    // Keep link + image alt text while dropping the URL.
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    // Drop code blocks / inline code.
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`]*`/g, " ")
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
-    .replace(/\[[^\]]*\]\([^)]+\)/g, " ")
-    .replace(/[#>*_~]+/g, " ")
+    // Strip common markdown formatting while keeping inner text.
+    .replace(/(\*\*|__)(.*?)\1/g, "$2")
+    .replace(/(\*|_)(.*?)\1/g, "$2")
+    .replace(/~~(.*?)~~/g, "$1")
+    .replace(/#+\s*/g, " ")
+    .replace(/[>*~]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
