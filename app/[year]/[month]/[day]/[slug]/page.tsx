@@ -8,6 +8,7 @@ import type { GitHubComment } from "../../../../../lib/github";
 import { Markdown } from "../../../../../components/Markdown";
 import { config } from "../../../../../lib/config";
 import { BackLink } from "../../../../../components/BackLink";
+import { CommandActionsPalette } from "../../../../../components/CommandActionsPalette";
 
 type PageProps = {
   params: Promise<{
@@ -120,7 +121,10 @@ export const generateStaticParams = async () => {
 export default async function PostPage({ params }: PageProps) {
   const { year, month, day, slug } = await params;
   try {
-    const post = await getPostByPermalink(year, month, day, slug);
+    const [post, allPosts] = await Promise.all([
+      getPostByPermalink(year, month, day, slug),
+      getAllPosts(),
+    ]);
 
     if (!post) {
       notFound();
@@ -133,8 +137,35 @@ export default async function PostPage({ params }: PageProps) {
       comments = [];
     }
 
+    const normalizeLabel = (label: string) => label.trim().toLowerCase();
+    const relatedLabels = new Set(formatLabels(post.labels).map(normalizeLabel));
+    const relatedPosts = allPosts
+      .filter((entry) => entry.id !== post.id)
+      .filter((entry) =>
+        formatLabels(entry.labels).some((label) => relatedLabels.has(normalizeLabel(label))),
+      )
+      .map((entry) => ({ title: entry.title, url: entry.url }));
+
     return (
       <div className="min-h-screen">
+        <CommandActionsPalette
+          title={post.title}
+          url={post.url}
+          githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
+          markdown={post.body}
+          readingTime={getReadingTime(post.body)}
+          relatedPosts={relatedPosts}
+          metadataLines={[
+            `Title: ${post.title}`,
+            `Published: ${formatDate(post.publishedAt)}`,
+            `Updated: ${formatDate(post.updatedAt)}`,
+            `Reading time: ${getReadingTime(post.body)}`,
+            `Word count: ${post.body.trim().split(/\s+/).filter(Boolean).length}`,
+            `Labels: ${formatLabels(post.labels).join(", ") || "None"}`,
+            `URL: ${post.url}`,
+            `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`,
+          ]}
+        />
         <section
           className={`bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 ${
             post.image ? "pt-0" : "pt-12"

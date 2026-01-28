@@ -6,6 +6,7 @@ import { getAllViews, getViewBySlug } from "../../../lib/views";
 import { Markdown } from "../../../components/Markdown";
 import { BackLink } from "../../../components/BackLink";
 import { config } from "../../../lib/config";
+import { CommandActionsPalette } from "../../../components/CommandActionsPalette";
 
 type PageProps = {
   params: Promise<{
@@ -21,6 +22,12 @@ const formatDate = (iso: string) => {
     day: "2-digit",
     timeZone: "UTC",
   });
+};
+
+const getReadingTime = (text: string) => {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} min read`;
 };
 
 const playfairDisplay = Playfair_Display({
@@ -77,6 +84,24 @@ export default async function ViewPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
+      <CommandActionsPalette
+        title={view.title}
+        url={view.url}
+        githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${view.number}`}
+        markdown={view.body ?? ""}
+        readingTime={view.body ? getReadingTime(view.body) : undefined}
+        metadataLines={[
+          `Title: ${view.title}`,
+          `Updated: ${formatDate(view.updatedAt)}`,
+          view.body ? `Reading time: ${getReadingTime(view.body)}` : "Reading time: N/A",
+          view.body
+            ? `Word count: ${view.body.trim().split(/\s+/).filter(Boolean).length}`
+            : "Word count: N/A",
+          `Posts: ${view.posts.length}`,
+          `URL: ${view.url}`,
+          `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${view.number}`,
+        ]}
+      />
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
         <div className="mx-auto w-full max-w-2xl">
           <BackLink />
