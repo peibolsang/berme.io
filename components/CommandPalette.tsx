@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 import type { Post } from "../types";
 import {
   Command,
@@ -97,16 +98,62 @@ const buildHighlightPartsAll = (
   indices: number[],
   needleLength: number,
 ) => {
-  const maxContext = 60;
+  const maxContext = 80;
   const first = indices[0];
   const last = indices[indices.length - 1] + needleLength;
-  const start = Math.max(0, first - maxContext);
-  const end = Math.min(line.length, last + maxContext);
-  const prefix = start > 0 ? "…" : "";
-  const suffix = end < line.length ? "…" : "";
-  const sliced = line.slice(start, end);
+
+  const sentenceChars = ".!?";
+  const findSentenceStart = (value: string, from: number) => {
+    for (let i = from; i >= 0; i -= 1) {
+      if (sentenceChars.includes(value[i])) {
+        return i + 1;
+      }
+    }
+    return 0;
+  };
+  const findSentenceEnd = (value: string, from: number) => {
+    for (let i = from; i < value.length; i += 1) {
+      if (sentenceChars.includes(value[i])) {
+        return i + 1;
+      }
+    }
+    return value.length;
+  };
+
+  let start = findSentenceStart(line, first - 1);
+  let end = findSentenceEnd(line, last);
+
+  const adjustToWordBoundary = () => {
+    let adjustedStart = Math.max(0, first - maxContext);
+    let adjustedEnd = Math.min(line.length, last + maxContext);
+    if (adjustedStart > 0) {
+      const nextSpace = line.indexOf(" ", adjustedStart);
+      if (nextSpace !== -1 && nextSpace < adjustedEnd) {
+        adjustedStart = nextSpace + 1;
+      }
+    }
+    if (adjustedEnd < line.length) {
+      const prevSpace = line.lastIndexOf(" ", adjustedEnd);
+      if (prevSpace !== -1 && prevSpace > adjustedStart) {
+        adjustedEnd = prevSpace;
+      }
+    }
+    if (adjustedEnd <= adjustedStart) {
+      return { start: Math.max(0, first - maxContext), end: Math.min(line.length, last + maxContext) };
+    }
+    return { start: adjustedStart, end: adjustedEnd };
+  };
+
+  if (end - start > maxContext * 3) {
+    const adjusted = adjustToWordBoundary();
+    start = adjusted.start;
+    end = adjusted.end;
+  }
+
+  const sliced = line.slice(start, end).trim();
+  const sliceOffset = line.indexOf(sliced, start);
   const relativeIndices = indices
-    .map((index) => index - start)
+    .map((index) => index - sliceOffset)
     .filter((index) => index >= 0 && index <= sliced.length);
 
   const parts: Array<{ text: string; highlight: boolean }> = [];
@@ -123,16 +170,18 @@ const buildHighlightPartsAll = (
     parts.push({ text: sliced.slice(cursor), highlight: false });
   }
 
-  if (parts.length > 0) {
-    parts[0].text = `${prefix}${parts[0].text}`;
-    parts[parts.length - 1].text = `${parts[parts.length - 1].text}${suffix}`;
-  }
-
-  return parts;
+  return { parts, fragmentText: sliced };
 };
 
-const getMatchedText = (line: string, index: number, needleLength: number) =>
-  line.slice(index, index + needleLength);
+const buildTextFragmentUrl = (url: string, text: string) => {
+  const cleaned = text.replace(/^…/, "").replace(/…$/, "").replace(/\s+/g, " ").trim();
+  if (!cleaned) {
+    return url;
+  }
+  const encoded = encodeURIComponent(cleaned);
+  const [base] = url.split("#");
+  return `${base}#:~:text=${encoded}`;
+};
 
 const isEditableElement = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) {
@@ -148,6 +197,7 @@ const isEditableElement = (target: EventTarget | null) => {
 };
 
 export const CommandPalette = ({ posts, showTrigger = true }: CommandPaletteProps) => {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -312,49 +362,41 @@ export const CommandPalette = ({ posts, showTrigger = true }: CommandPaletteProp
                         {entry.title}
                       </div>
                       {matches.map((match) => {
-                        const parts = buildHighlightPartsAll(
+                        const { parts, fragmentText } = buildHighlightPartsAll(
                           match.line,
                           [match.matchIndex],
                           match.needle.length,
                         );
-                        const matchedText = getMatchedText(
-                          match.line,
-                          match.matchIndex,
-                          match.needle.length,
-                        );
-                        const fragment = `#:~:text=${encodeURIComponent(matchedText)}`;
-                        const href = `${entry.url}${fragment}`;
+                        const targetUrl = buildTextFragmentUrl(entry.url, fragmentText);
                         return (
                           <CommandItem
                             key={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
                             value={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
                             onSelect={() => {
-                              window.location.assign(href);
+                              if (typeof window !== "undefined") {
+                                window.location.assign(targetUrl);
+                              } else {
+                                router.push(targetUrl);
+                              }
+                              closePalette();
                             }}
                             className="flex items-start gap-2 pl-3"
-                            asChild
                           >
-                            <a
-                              href={href}
-                              onClick={() => closePalette()}
-                              className="flex w-full items-start gap-2"
-                            >
-                              <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-amber-300/80 dark:bg-amber-300/60" />
-                              <span className="text-xs text-zinc-600 dark:text-zinc-300">
-                                {parts.map((part, index) =>
-                                  part.highlight ? (
+                            <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-amber-300/80 dark:bg-amber-300/60" />
+                            <span className="text-xs text-zinc-600 dark:text-zinc-300">
+                              {parts.map((part, index) =>
+                                part.highlight ? (
                                   <mark
-                                      key={`${entry.id}-h-${index}`}
-                                      className="rounded bg-amber-200/70 px-1 py-0.5 text-zinc-900 dark:bg-amber-400/25 dark:text-amber-100"
-                                    >
-                                      {part.text}
-                                    </mark>
-                                  ) : (
-                                    <span key={`${entry.id}-t-${index}`}>{part.text}</span>
-                                  ),
-                                )}
-                              </span>
-                            </a>
+                                    key={`${entry.id}-h-${index}`}
+                                    className="rounded bg-amber-200/70 px-1 py-0.5 text-zinc-900 dark:bg-amber-400/25 dark:text-amber-100"
+                                  >
+                                    {part.text}
+                                  </mark>
+                                ) : (
+                                  <span key={`${entry.id}-t-${index}`}>{part.text}</span>
+                                ),
+                              )}
+                            </span>
                           </CommandItem>
                         );
                       })}
