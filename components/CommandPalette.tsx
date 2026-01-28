@@ -224,6 +224,7 @@ export const CommandPalette = ({ posts, showTrigger = true }: CommandPaletteProp
       posts.map((post) => ({
         id: post.id,
         title: post.title,
+        titleLine: stripMarkdownLine(post.title || ""),
         url: post.url,
         snippet: buildSnippet(post),
         searchText: buildSearchText(post),
@@ -363,52 +364,126 @@ export const CommandPalette = ({ posts, showTrigger = true }: CommandPaletteProp
               <CommandList className="max-h-[60vh]">
                 <CommandEmpty>{emptyMessage}</CommandEmpty>
                 <CommandGroup>
-                  {filteredEntries.map(({ entry, matches }) => (
-                    <CommandGroup key={entry.id}>
-                      <div className="px-2 pb-1 pt-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
-                        {entry.title}
-                      </div>
-                      {matches.map((match) => {
-                        const { parts, fragmentText } = buildHighlightPartsAll(
-                          match.line,
-                          [match.matchIndex],
-                          match.needle.length,
-                        );
-                        const targetUrl = buildTextFragmentUrl(entry.url, fragmentText);
-                        return (
-                          <CommandItem
-                            key={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
-                            value={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
-                            onSelect={() => {
-                              if (typeof window !== "undefined") {
-                                window.location.assign(targetUrl);
-                              } else {
-                                router.push(targetUrl);
-                              }
-                              closePalette();
-                            }}
-                            className="flex items-start gap-2 pl-3"
+      {filteredEntries.map(({ entry, matches }) => {
+        const titleMatches = entry.titleLine
+          ? findAllMatchLines([entry.titleLine], debouncedQuery.trim()).flatMap((match) => match.indices)
+          : [];
+        const titleHasMatch = titleMatches.length > 0;
+        const titleHighlight = entry.titleLine
+          ? titleHasMatch
+            ? buildHighlightPartsAll(entry.titleLine, titleMatches, debouncedQuery.trim().length)
+            : { parts: [{ text: entry.titleLine, highlight: false }], fragmentText: entry.titleLine }
+          : { parts: [], fragmentText: "" };
+        const titleTargetUrl = titleHasMatch
+          ? buildTextFragmentUrl(entry.url, titleHighlight.fragmentText)
+          : entry.url;
+
+        return (
+          <CommandGroup key={entry.id}>
+            <CommandItem
+              value={`${entry.id}-title`}
+              onSelect={() => {
+                if (typeof window !== "undefined") {
+                  window.location.assign(titleTargetUrl);
+                } else {
+                  router.push(titleTargetUrl);
+                }
+                closePalette();
+              }}
+              className="px-2 py-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300"
+            >
+              <span className="flex w-full items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+                  {titleHighlight.parts.map((part, index) =>
+                    part.highlight ? (
+                      <mark
+                        key={`${entry.id}-title-h-${index}`}
+                        className="rounded bg-amber-200/70 px-1 py-0.5 text-zinc-900 dark:bg-amber-400/25 dark:text-amber-100"
+                      >
+                        {part.text}
+                      </mark>
+                    ) : (
+                      <span key={`${entry.id}-title-t-${index}`}>{part.text}</span>
+                    ),
+                  )}
+                </span>
+                <span className="shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 16 16"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M13 4v4.5c0 1.4-1.1 2.5-2.5 2.5H3" />
+                    <path d="M5.5 8.5 3 11 5.5 13.5" />
+                  </svg>
+                </span>
+              </span>
+            </CommandItem>
+            {matches.map((match) => {
+              if (match.lineIndex === 0) {
+                return null;
+              }
+              const { parts, fragmentText } = buildHighlightPartsAll(
+                match.line,
+                [match.matchIndex],
+                match.needle.length,
+              );
+              const targetUrl = buildTextFragmentUrl(entry.url, fragmentText);
+              return (
+                <CommandItem
+                  key={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
+                  value={`${entry.id}-${match.lineIndex}-${match.matchIndex}`}
+                  onSelect={() => {
+                    if (typeof window !== "undefined") {
+                      window.location.assign(targetUrl);
+                    } else {
+                      router.push(targetUrl);
+                    }
+                    closePalette();
+                  }}
+                  className="flex items-start gap-2 pl-3"
+                >
+                  <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-amber-300/80 dark:bg-amber-300/60" />
+                  <span className="flex w-full items-start justify-between gap-3">
+                    <span className="text-xs text-zinc-600 dark:text-zinc-300">
+                      {parts.map((part, index) =>
+                        part.highlight ? (
+                          <mark
+                            key={`${entry.id}-h-${index}`}
+                            className="rounded bg-amber-200/70 px-1 py-0.5 text-zinc-900 dark:bg-amber-400/25 dark:text-amber-100"
                           >
-                            <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-amber-300/80 dark:bg-amber-300/60" />
-                            <span className="text-xs text-zinc-600 dark:text-zinc-300">
-                              {parts.map((part, index) =>
-                                part.highlight ? (
-                                  <mark
-                                    key={`${entry.id}-h-${index}`}
-                                    className="rounded bg-amber-200/70 px-1 py-0.5 text-zinc-900 dark:bg-amber-400/25 dark:text-amber-100"
-                                  >
-                                    {part.text}
-                                  </mark>
-                                ) : (
-                                  <span key={`${entry.id}-t-${index}`}>{part.text}</span>
-                                ),
-                              )}
-                            </span>
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  ))}
+                            {part.text}
+                          </mark>
+                        ) : (
+                          <span key={`${entry.id}-t-${index}`}>{part.text}</span>
+                        ),
+                      )}
+                    </span>
+                    <span className="shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M13 4v4.5c0 1.4-1.1 2.5-2.5 2.5H3" />
+                        <path d="M5.5 8.5 3 11 5.5 13.5" />
+                      </svg>
+                    </span>
+                  </span>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        );
+      })}
                 </CommandGroup>
               </CommandList>
             </Command>
