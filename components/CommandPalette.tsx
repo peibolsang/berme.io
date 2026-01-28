@@ -20,6 +20,15 @@ import {
   CommandList,
   CommandSeparator,
 } from "./ui/command";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as MenubarMenuSeparator,
+  MenubarTrigger,
+} from "./ui/menubar";
 
 type CommandPaletteProps = {
   posts: Post[];
@@ -76,6 +85,7 @@ type SearchEntry = {
   titleLine: string;
   url: string;
   kind: "post" | "view" | "book";
+  createdAt: string | null;
   searchText: string;
   bodyLines: string[];
 };
@@ -302,6 +312,18 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [shortcutLabel, setShortcutLabel] = useState("Cmd+K");
+  const [sortOrder, setSortOrder] = useState<"best" | "newest" | "oldest">("best");
+  const [titleOnly, setTitleOnly] = useState(false);
+  const [kindFilter, setKindFilter] = useState<"all" | "post" | "view" | "book">("all");
+  const [dateFilter, setDateFilter] = useState<
+    | { type: "year"; year: number }
+    | { type: "month"; year: number; month: number }
+    | null
+  >(null);
+  const hasTitleFilter = titleOnly;
+  const hasTypeFilter = kindFilter !== "all";
+  const hasDateFilter = Boolean(dateFilter);
+  const sortIsDefault = sortOrder === "best";
 
   useEffect(() => {
     if (typeof navigator === "undefined") {
@@ -319,6 +341,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
         titleLine: stripMarkdownLine(post.title || ""),
         url: post.url,
         kind: "post",
+        createdAt: post.publishedAt,
         searchText: buildSearchText(post.title, post.body),
         bodyLines: buildBodyLines(post.title, post.body),
       })),
@@ -335,6 +358,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
           titleLine: stripMarkdownLine(view.title || ""),
           url: `${view.url}?view=views`,
           kind: "view",
+          createdAt: view.updatedAt,
           searchText: buildSearchText(view.title, body),
           bodyLines: buildBodyLines(view.title, body),
         };
@@ -350,10 +374,67 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
         titleLine: stripMarkdownLine(book.title || ""),
         url: book.url,
         kind: "book",
+        createdAt: null,
         searchText: buildSearchText(book.title, book.description),
         bodyLines: buildBodyLines(book.title, book.description),
       })),
     [books],
+  );
+
+  const isSameDay = (left: Date, right: Date) =>
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate();
+
+
+  const filterEntries = useCallback(
+    (entries: SearchEntry[]) =>
+      entries.filter((entry) => {
+        if (kindFilter !== "all" && entry.kind !== kindFilter) {
+          return false;
+        }
+        if (dateFilter) {
+          if (!entry.createdAt) {
+            return false;
+          }
+          const created = new Date(entry.createdAt);
+          if (Number.isNaN(created.getTime())) {
+            return false;
+          }
+          if (dateFilter.type === "year") {
+            return created.getFullYear() === dateFilter.year;
+          }
+          return (
+            created.getFullYear() === dateFilter.year &&
+            created.getMonth() === dateFilter.month
+          );
+        }
+        return true;
+      }),
+    [dateFilter, kindFilter],
+  );
+
+  const sortEntries = useCallback(
+    (entries: SearchEntry[]) => {
+      const sorted = [...entries];
+      if (sortOrder !== "best") {
+        sorted.sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : Number.NaN;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : Number.NaN;
+          const aValid = !Number.isNaN(aTime);
+          const bValid = !Number.isNaN(bTime);
+          if (aValid && bValid && aTime !== bTime) {
+            return sortOrder === "newest" ? bTime - aTime : aTime - bTime;
+          }
+          if (aValid !== bValid) {
+            return aValid ? -1 : 1;
+          }
+          return a.title.localeCompare(b.title);
+        });
+      }
+      return sorted;
+    },
+    [sortOrder],
   );
 
   useEffect(() => {
@@ -374,14 +455,18 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       };
     }
 
-    const postData = buildMatchesForEntries(postEntries, needle, MAX_TOTAL_MATCHES);
+    const postData = buildMatchesForEntries(
+      sortEntries(filterEntries(postEntries)),
+      needle,
+      MAX_TOTAL_MATCHES,
+    );
     const viewData = buildMatchesForEntries(
-      viewEntries,
+      sortEntries(filterEntries(viewEntries)),
       needle,
       MAX_TOTAL_MATCHES - postData.used,
     );
     const bookData = buildMatchesForEntries(
-      bookEntries,
+      sortEntries(filterEntries(bookEntries)),
       needle,
       MAX_TOTAL_MATCHES - postData.used - viewData.used,
     );
@@ -392,7 +477,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       bookResults: bookData.results,
       hasResults: postData.results.length + viewData.results.length + bookData.results.length > 0,
     };
-  }, [bookEntries, debouncedQuery, postEntries, viewEntries]);
+  }, [bookEntries, debouncedQuery, filterEntries, postEntries, sortEntries, viewEntries]);
 
   const emptyMessage =
     debouncedQuery.trim().length >= MIN_QUERY_LENGTH && !hasResults
@@ -478,6 +563,205 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                 />
               </div>
               <CommandList className="max-h-[60vh]">
+                <div className="border-b border-zinc-200 bg-white/80 px-1 py-2 backdrop-blur dark:border-slate-700 dark:bg-slate-950/80">
+                  <Menubar className="w-full justify-between">
+                    <div className="flex items-center gap-2">
+                      <MenubarMenu>
+                        <MenubarTrigger className={!sortIsDefault ? "text-zinc-900 dark:text-white" : undefined}>
+                          {sortIsDefault
+                            ? "Sort"
+                            : `Sort: ${sortOrder === "newest" ? "Newest" : "Oldest"}`}
+                        </MenubarTrigger>
+                        <MenubarContent>
+                          <MenubarRadioGroup
+                            value={sortOrder}
+                            onValueChange={(value) =>
+                              setSortOrder(
+                                value === "newest" || value === "oldest" ? value : "best",
+                              )
+                            }
+                          >
+                            <MenubarRadioItem value="best">Best Match</MenubarRadioItem>
+                            <MenubarRadioItem value="newest">
+                              Created: Newest first
+                            </MenubarRadioItem>
+                            <MenubarRadioItem value="oldest">
+                              Created: Oldest first
+                            </MenubarRadioItem>
+                          </MenubarRadioGroup>
+                          {!sortIsDefault ? (
+                            <>
+                              <MenubarMenuSeparator />
+                              <button
+                                type="button"
+                                className="w-full rounded-lg px-2 py-2 text-left text-xs text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-slate-800"
+                                onClick={() => setSortOrder("best")}
+                              >
+                                Reset sort
+                              </button>
+                            </>
+                          ) : null}
+                        </MenubarContent>
+                      </MenubarMenu>
+                      <MenubarMenu>
+                        <MenubarTrigger
+                          onClick={() => setTitleOnly((prev) => !prev)}
+                          className={titleOnly ? "text-zinc-900 dark:text-white" : undefined}
+                        >
+                          {titleOnly ? "Title only: On" : "Title only"}
+                        </MenubarTrigger>
+                      </MenubarMenu>
+                      <MenubarMenu>
+                        <MenubarTrigger className={hasTypeFilter ? "text-zinc-900 dark:text-white" : undefined}>
+                          {kindFilter === "all"
+                            ? "In"
+                            : `In: ${kindFilter === "post" ? "Posts" : kindFilter === "view" ? "Views" : "Books"}`}
+                        </MenubarTrigger>
+                        <MenubarContent>
+                          <MenubarRadioGroup
+                            value={kindFilter}
+                            onValueChange={(value) =>
+                              setKindFilter(
+                                value === "post" || value === "view" || value === "book"
+                                  ? value
+                                  : "all",
+                              )
+                            }
+                          >
+                            <MenubarRadioItem value="all">All</MenubarRadioItem>
+                            <MenubarRadioItem
+                              value="post"
+                              onSelect={() =>
+                                setKindFilter((prev) => (prev === "post" ? "all" : "post"))
+                              }
+                            >
+                              Posts
+                            </MenubarRadioItem>
+                            <MenubarRadioItem
+                              value="view"
+                              onSelect={() =>
+                                setKindFilter((prev) => (prev === "view" ? "all" : "view"))
+                              }
+                            >
+                              Views
+                            </MenubarRadioItem>
+                            <MenubarRadioItem
+                              value="book"
+                              onSelect={() =>
+                                setKindFilter((prev) => (prev === "book" ? "all" : "book"))
+                              }
+                            >
+                              Books
+                            </MenubarRadioItem>
+                          </MenubarRadioGroup>
+                        </MenubarContent>
+                      </MenubarMenu>
+                      <MenubarMenu>
+                        <MenubarTrigger className={hasDateFilter ? "text-zinc-900 dark:text-white" : undefined}>
+                          {dateFilter
+                            ? dateFilter.type === "year"
+                              ? `Date: ${dateFilter.year}`
+                              : `Date: ${new Date(
+                                  dateFilter.year,
+                                  dateFilter.month,
+                                  1,
+                                ).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`
+                            : "Date"}
+                        </MenubarTrigger>
+                        <MenubarContent className="w-[320px] min-w-[320px] border-zinc-200 bg-white p-2 text-zinc-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-100">
+                          <div className="flex items-center justify-end px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                            <button
+                              type="button"
+                              className="text-zinc-400 transition hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                              onClick={() => setDateFilter(null)}
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <div className="px-2 pb-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-base font-semibold text-zinc-700 dark:text-zinc-100">
+                                {dateFilter?.type === "month"
+                                  ? new Date(dateFilter.year, dateFilter.month, 1).toLocaleDateString(
+                                      "en-US",
+                                      { month: "short", year: "numeric" },
+                                    )
+                                  : dateFilter?.type === "year"
+                                    ? dateFilter.year
+                                    : new Date().getFullYear()}
+                              </span>
+                              <select
+                                value={
+                                  dateFilter?.type === "month" || dateFilter?.type === "year"
+                                    ? dateFilter.year
+                                    : new Date().getFullYear()
+                                }
+                                onChange={(event) =>
+                                  setDateFilter({
+                                    type: "year",
+                                    year: Number(event.target.value),
+                                  })
+                                }
+                                className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200"
+                              >
+                                {Array.from({ length: 12 }).map((_, index) => {
+                                  const year = new Date().getFullYear() - index;
+                                  return (
+                                    <option key={year} value={year}>
+                                      {year}
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                            </div>
+                            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                              {[
+                                "Jan",
+                                "Feb",
+                                "Mar",
+                                "Apr",
+                                "May",
+                                "Jun",
+                                "Jul",
+                                "Aug",
+                                "Sep",
+                                "Oct",
+                                "Nov",
+                                "Dec",
+                              ].map((label, month) => {
+                                const selected =
+                                  dateFilter?.type === "month" && dateFilter.month === month;
+                                return (
+                                  <button
+                                    key={label}
+                                    type="button"
+                                    className={`rounded-lg px-2 py-2 text-center ${
+                                      selected
+                                        ? "bg-zinc-900 text-white dark:bg-amber-300 dark:text-zinc-900"
+                                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-slate-800"
+                                    }`}
+                                    onClick={() =>
+                                      setDateFilter((prev) => ({
+                                        type: "month",
+                                        year:
+                                          prev?.type === "year" || prev?.type === "month"
+                                            ? prev.year
+                                            : new Date().getFullYear(),
+                                        month,
+                                      }))
+                                    }
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </MenubarContent>
+                      </MenubarMenu>
+                    </div>
+                  </Menubar>
+                </div>
                 <CommandEmpty>{emptyMessage}</CommandEmpty>
                 {(() => {
                   const needle = debouncedQuery.trim();
@@ -553,12 +837,13 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                             </span>
                           </span>
                         </CommandItem>
-                        {matches.map((match) => {
-                          if (match.lineIndex === 0) {
-                            return null;
-                          }
-                          const { parts, fragmentText } = buildHighlightPartsAll(
-                            match.line,
+                        {!titleOnly &&
+                          matches.map((match) => {
+                            if (match.lineIndex === 0) {
+                              return null;
+                            }
+                            const { parts, fragmentText } = buildHighlightPartsAll(
+                              match.line,
                             [match.matchIndex],
                             match.needle.length,
                           );
