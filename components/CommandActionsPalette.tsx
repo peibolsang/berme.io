@@ -9,6 +9,7 @@ import {
   ArrowLeftIcon,
   InfoCircledIcon,
   Link1Icon,
+  MagicWandIcon,
 } from "@radix-ui/react-icons";
 import Link from "next/link";
 import {
@@ -27,6 +28,7 @@ type CommandActionsPaletteProps = {
   readingTime?: string;
   metadataLines?: string[];
   relatedPosts?: Array<{ title: string; url: string }>;
+  geminiPrompt?: string;
   showTrigger?: boolean;
 };
 
@@ -51,6 +53,7 @@ export const CommandActionsPalette = ({
   readingTime,
   metadataLines,
   relatedPosts,
+  geminiPrompt,
   showTrigger = false,
 }: CommandActionsPaletteProps) => {
   const [open, setOpen] = useState(false);
@@ -149,7 +152,7 @@ export const CommandActionsPalette = ({
     {
       id: "metadata",
       label: "View Metadata",
-      letter: "D",
+      letter: "V",
       icon: InfoCircledIcon,
       action: () => {},
       confirmation: metadataLines?.length ? (
@@ -189,7 +192,7 @@ export const CommandActionsPalette = ({
     {
       id: "related-posts",
       label: "Show Related Posts",
-      letter: "S",
+      letter: "R",
       icon: Link1Icon,
       action: () => {},
       confirmation: relatedPosts?.length ? (
@@ -216,6 +219,41 @@ export const CommandActionsPalette = ({
       ),
       closeOnRun: false,
     },
+    ...(geminiPrompt
+      ? [
+          {
+            id: "gemini",
+            label: "Discuss with Gemini",
+            letter: "D",
+            icon: MagicWandIcon,
+            action: () =>
+              copyToClipboard(geminiPrompt),
+            confirmation: (
+              <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  Prompt ready
+                </div>
+                <p className="mb-4">
+                  A prompt has been copied to your clipboard. Open Gemini and paste it
+                  to start the conversation.
+                </p>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600 transition hover:text-zinc-900 dark:border-slate-700 dark:text-zinc-300 dark:hover:text-white"
+                    onClick={() =>
+                      window.open("https://gemini.google.com/", "_blank", "noopener,noreferrer")
+                    }
+                  >
+                    Open in Gemini
+                  </button>
+                </div>
+              </div>
+            ),
+            closeOnRun: false,
+          },
+        ]
+      : []),
   ];
 
   const commandByLetter = new Map(commands.map((command) => [command.letter, command]));

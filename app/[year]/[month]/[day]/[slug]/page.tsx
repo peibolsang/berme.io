@@ -155,6 +155,7 @@ export default async function PostPage({ params }: PageProps) {
           markdown={post.body}
           readingTime={getReadingTime(post.body)}
           relatedPosts={relatedPosts}
+          geminiPrompt={`You are an expert summarizer. Provide:\n1) A 2-3 sentence TL;DR.\n2) Exactly 5 crisp takeaways as bullet points.\nBe concise and avoid fluff.\n\nPost:\n${post.body}`}
           metadataLines={[
             `Title: ${post.title}`,
             `Published: ${formatDate(post.publishedAt)}`,
