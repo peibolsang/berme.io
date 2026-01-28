@@ -318,6 +318,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const [dateFilter, setDateFilter] = useState<
     | { type: "year"; year: number }
     | { type: "month"; year: number; month: number }
+    | { type: "range"; label: "Last 30 days" | "Last 90 days" | "Last 365 days"; from: Date; to: Date }
     | null
   >(null);
   const hasTitleFilter = titleOnly;
@@ -403,6 +404,9 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
           }
           if (dateFilter.type === "year") {
             return created.getFullYear() === dateFilter.year;
+          }
+          if (dateFilter.type === "range") {
+            return created >= dateFilter.from && created <= dateFilter.to;
           }
           return (
             created.getFullYear() === dateFilter.year &&
@@ -661,15 +665,60 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                           {dateFilter
                             ? dateFilter.type === "year"
                               ? `Date: ${dateFilter.year}`
-                              : `Date: ${new Date(
-                                  dateFilter.year,
-                                  dateFilter.month,
-                                  1,
-                                ).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`
+                              : dateFilter.type === "range"
+                                ? `Date: ${dateFilter.label}`
+                                : `Date: ${new Date(
+                                    dateFilter.year,
+                                    dateFilter.month,
+                                    1,
+                                  ).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`
                             : "Date"}
                         </MenubarTrigger>
                         <MenubarContent className="w-[320px] min-w-[320px] border-zinc-200 bg-white p-2 text-zinc-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-100">
-                          <div className="flex items-center justify-between px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                          <div className="flex items-start justify-between px-2 pb-2 pt-1">
+                            <div className="grid grid-cols-1 gap-1 text-xs">
+                              {[
+                                { label: "Last 30 days", days: 30 },
+                                { label: "Last 90 days", days: 90 },
+                                { label: "Last 365 days", days: 365 },
+                              ].map(({ label, days }) => (
+                                <button
+                                  key={label}
+                                  type="button"
+                                  className="w-full rounded-lg px-2 py-1 text-left text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-slate-800"
+                                  onClick={() => {
+                                    const today = new Date();
+                                    const from = new Date(
+                                      today.getFullYear(),
+                                      today.getMonth(),
+                                      today.getDate() - (days - 1),
+                                    );
+                                    const to = new Date(
+                                      today.getFullYear(),
+                                      today.getMonth(),
+                                      today.getDate(),
+                                      23,
+                                      59,
+                                      59,
+                                      999,
+                                    );
+                                    setDateFilter({ type: "range", label: label as any, from, to });
+                                  }}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400 transition hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                              onClick={() => setDateFilter(null)}
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <div className="px-2 pb-0">
+                            <MenubarMenuSeparator className="mb-2 bg-zinc-200 dark:bg-slate-700" />
                             <select
                               value={
                                 dateFilter?.type === "month" || dateFilter?.type === "year"
@@ -682,7 +731,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                                   year: Number(event.target.value),
                                 })
                               }
-                              className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200"
+                              className="mb-3 mt-1 w-auto rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200"
                             >
                               {Array.from({ length: 12 }).map((_, index) => {
                                 const year = new Date().getFullYear() - index;
@@ -693,15 +742,6 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                                 );
                               })}
                             </select>
-                            <button
-                              type="button"
-                              className="text-zinc-400 transition hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                              onClick={() => setDateFilter(null)}
-                            >
-                              Clear
-                            </button>
-                          </div>
-                          <div className="px-2 pb-0">
                             <div className="flex items-center justify-between">
                               <span className="text-base font-semibold text-zinc-700 dark:text-zinc-100">
                                 {dateFilter?.type === "month"

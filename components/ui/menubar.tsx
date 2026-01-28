@@ -83,7 +83,7 @@ const MenubarItem = React.forwardRef<
   <MenubarPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-lg px-2 py-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800",
+      "relative flex cursor-pointer select-none items-center rounded-lg px-2 py-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-zinc-100",
       className,
     )}
     {...props}
@@ -98,7 +98,7 @@ const MenubarCheckboxItem = React.forwardRef<
   <MenubarPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800",
+      "relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-zinc-100",
       className,
     )}
     {...props}
@@ -120,7 +120,7 @@ const MenubarRadioItem = React.forwardRef<
   <MenubarPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800",
+      "relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-xs text-zinc-600 outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-zinc-100",
       className,
     )}
     {...props}
@@ -154,7 +154,7 @@ const MenubarSubTrigger = React.forwardRef<
   <MenubarPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-pointer select-none items-center rounded-lg px-2 py-2 text-xs text-zinc-600 outline-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800",
+      "flex cursor-pointer select-none items-center rounded-lg px-2 py-2 text-xs text-zinc-600 outline-none data-[highlighted]:bg-zinc-100 data-[highlighted]:text-zinc-900 dark:text-zinc-200 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-zinc-100",
       className,
     )}
     {...props}
