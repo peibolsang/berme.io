@@ -8,7 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import {
+  Link1Icon,
+  MagnifyingGlassIcon,
+  ReaderIcon,
+} from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import type { Book, Post, View } from "../types";
 import {
@@ -483,6 +487,8 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     };
   }, [bookEntries, debouncedQuery, filterEntries, postEntries, sortEntries, viewEntries]);
 
+  const showFilters = true;
+
   const emptyMessage =
     debouncedQuery.trim().length >= MIN_QUERY_LENGTH && !hasResults
       ? "No matches found."
@@ -525,6 +531,44 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     };
   }, [open]);
 
+  const openSitemap = useCallback(() => {
+    window.open("/sitemap.xml", "_blank", "noopener,noreferrer");
+  }, []);
+
+  const openRss = useCallback(() => {
+    window.open("/feed.xml", "_blank", "noopener,noreferrer");
+  }, []);
+
+  const actions = useMemo(() => [
+    {
+      id: "sitemap",
+      label: "View Sitemap",
+      letter: "S",
+      icon: Link1Icon,
+      action: openSitemap,
+    },
+    {
+      id: "rss",
+      label: "View RSS",
+      letter: "R",
+      icon: ReaderIcon,
+      action: openRss,
+    },
+  ], [openRss, openSitemap]);
+
+  const actionByLetter = useMemo(
+    () => new Map(actions.map((action) => [action.letter, action])),
+    [actions],
+  );
+
+  const filteredActions = useMemo(() => {
+    const needle = debouncedQuery.trim().toLowerCase();
+    if (!needle) {
+      return actions;
+    }
+    return actions.filter((action) => action.label.toLowerCase().includes(needle));
+  }, [actions, debouncedQuery]);
+
   return (
     <>
       {showTrigger ? (
@@ -563,13 +607,48 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                   placeholder="Search posts by title or content..."
                   value={query}
                   onValueChange={setQuery}
+                  onKeyDown={(event) => {
+                    if (query.length > 0) {
+                      return;
+                    }
+                    const action = actionByLetter.get(event.key);
+                    if (!action) {
+                      return;
+                    }
+                    event.preventDefault();
+                    action.action();
+                  }}
                   className="pl-10"
                 />
               </div>
-              <CommandList className="max-h-[60vh]">
-                <div className="border-b border-zinc-200 bg-white/80 px-1 py-2 backdrop-blur dark:border-slate-700 dark:bg-slate-950/80">
-                  <Menubar className="w-full justify-between">
-                    <div className="flex items-center gap-2">
+              <CommandList className="max-h-[60vh] p-1">
+                <div className="-mx-1 bg-white/80 px-2 py-2 backdrop-blur dark:bg-slate-950/80">
+                    <CommandGroup>
+                      <div className="space-y-1 px-2 pb-2">
+                        {filteredActions.map((action) => (
+                          <CommandItem
+                            key={action.id}
+                            value={action.label}
+                            onSelect={() => {
+                              action.action();
+                            }}
+                            className="flex items-center justify-between gap-3 px-2 py-2"
+                          >
+                            <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+                              <action.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                              {action.label}
+                            </span>
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[11px] font-semibold uppercase text-zinc-500 dark:border-slate-700 dark:text-zinc-400">
+                              {action.letter}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </div>
+                    </CommandGroup>
+                    <div className="pb-2" />
+                    {showFilters ? (
+                      <Menubar className="w-full justify-between">
+                        <div className="flex items-center gap-2">
                       <MenubarMenu>
                         <MenubarTrigger className={!sortIsDefault ? "text-zinc-900 dark:text-white" : undefined}>
                           {sortIsDefault
@@ -744,17 +823,17 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                             </select>
                             <div className="flex items-center justify-between">
                               <span className="text-base font-semibold text-zinc-700 dark:text-zinc-100">
-                                {dateFilter?.type === "month"
-                                  ? new Date(dateFilter.year, dateFilter.month, 1).toLocaleDateString(
-                                      "en-US",
-                                      { month: "short" },
-                                    )
-                                  : ""}
-                              </span>
-                            </div>
-                            <div className="mt-1 grid grid-cols-3 gap-2 text-sm">
-                              {[
-                                "Jan",
+                              {dateFilter?.type === "month"
+                                ? new Date(dateFilter.year, dateFilter.month, 1).toLocaleDateString(
+                                    "en-US",
+                                    { month: "short" },
+                                  )
+                                : ""}
+                            </span>
+                          </div>
+                          <div className="mt-1 grid grid-cols-3 gap-2 text-sm">
+                            {[
+                              "Jan",
                                 "Feb",
                                 "Mar",
                                 "Apr",
@@ -798,9 +877,10 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                         </MenubarContent>
                       </MenubarMenu>
                     </div>
-                  </Menubar>
-                </div>
-                <CommandEmpty>{emptyMessage}</CommandEmpty>
+                    </Menubar>
+                    ) : null}
+                  </div>
+                <div className="-mx-1 h-px bg-zinc-200 dark:bg-slate-700" />
                 {(() => {
                   const needle = debouncedQuery.trim();
                   const renderEntryGroup = (entry: SearchEntry, matches: EntryMatch[]) => {

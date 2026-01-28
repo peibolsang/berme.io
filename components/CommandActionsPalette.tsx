@@ -300,29 +300,31 @@ export const CommandActionsPalette = ({
                 ) : (
                   <>
                     <CommandEmpty>No commands match that query.</CommandEmpty>
-                    {commands.map((command) => (
-                      <CommandItem
-                        key={command.id}
-                        value={command.label}
-                        onSelect={() => {
-                          command.action();
-                          if (command.closeOnRun) {
-                            closePalette();
-                            return;
-                          }
-                          setConfirmation(command.confirmation ?? "Done.");
-                        }}
-                        className="flex items-center justify-between gap-3 px-3 py-3"
-                      >
-                        <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-                          <command.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-                          {command.label}
-                        </span>
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[11px] font-semibold uppercase text-zinc-500 dark:border-slate-700 dark:text-zinc-400">
-                          {command.letter}
-                        </span>
-                      </CommandItem>
-                    ))}
+                    <div className="space-y-1 px-3 pb-2 pt-3">
+                      {commands.map((command) => (
+                        <CommandItem
+                          key={command.id}
+                          value={command.label}
+                          onSelect={() => {
+                            command.action();
+                            if (command.closeOnRun) {
+                              closePalette();
+                              return;
+                            }
+                            setConfirmation(command.confirmation ?? "Done.");
+                          }}
+                          className="flex items-center justify-between gap-3 px-2 py-2"
+                        >
+                          <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+                            <command.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                            {command.label}
+                          </span>
+                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[11px] font-semibold uppercase text-zinc-500 dark:border-slate-700 dark:text-zinc-400">
+                            {command.letter}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </div>
                   </>
                 )}
               </CommandList>

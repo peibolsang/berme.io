@@ -25,7 +25,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn("max-h-64 overflow-y-auto p-1", className)}
+    className={cn("max-h-64 overflow-y-auto px-2 py-1", className)}
     {...props}
   />
 ));
