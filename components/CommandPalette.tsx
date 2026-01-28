@@ -669,7 +669,30 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                             : "Date"}
                         </MenubarTrigger>
                         <MenubarContent className="w-[320px] min-w-[320px] border-zinc-200 bg-white p-2 text-zinc-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-100">
-                          <div className="flex items-center justify-end px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                          <div className="flex items-center justify-between px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                            <select
+                              value={
+                                dateFilter?.type === "month" || dateFilter?.type === "year"
+                                  ? dateFilter.year
+                                  : new Date().getFullYear()
+                              }
+                              onChange={(event) =>
+                                setDateFilter({
+                                  type: "year",
+                                  year: Number(event.target.value),
+                                })
+                              }
+                              className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200"
+                            >
+                              {Array.from({ length: 12 }).map((_, index) => {
+                                const year = new Date().getFullYear() - index;
+                                return (
+                                  <option key={year} value={year}>
+                                    {year}
+                                  </option>
+                                );
+                              })}
+                            </select>
                             <button
                               type="button"
                               className="text-zinc-400 transition hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
@@ -678,43 +701,18 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                               Clear
                             </button>
                           </div>
-                          <div className="px-2 pb-2">
+                          <div className="px-2 pb-0">
                             <div className="flex items-center justify-between">
                               <span className="text-base font-semibold text-zinc-700 dark:text-zinc-100">
                                 {dateFilter?.type === "month"
                                   ? new Date(dateFilter.year, dateFilter.month, 1).toLocaleDateString(
                                       "en-US",
-                                      { month: "short", year: "numeric" },
+                                      { month: "short" },
                                     )
-                                  : dateFilter?.type === "year"
-                                    ? dateFilter.year
-                                    : new Date().getFullYear()}
+                                  : ""}
                               </span>
-                              <select
-                                value={
-                                  dateFilter?.type === "month" || dateFilter?.type === "year"
-                                    ? dateFilter.year
-                                    : new Date().getFullYear()
-                                }
-                                onChange={(event) =>
-                                  setDateFilter({
-                                    type: "year",
-                                    year: Number(event.target.value),
-                                  })
-                                }
-                                className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200"
-                              >
-                                {Array.from({ length: 12 }).map((_, index) => {
-                                  const year = new Date().getFullYear() - index;
-                                  return (
-                                    <option key={year} value={year}>
-                                      {year}
-                                    </option>
-                                  );
-                                })}
-                              </select>
                             </div>
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                            <div className="mt-1 grid grid-cols-3 gap-2 text-sm">
                               {[
                                 "Jan",
                                 "Feb",
