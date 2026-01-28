@@ -134,7 +134,7 @@ export default async function Home() {
                 ) : null}
               </div>
               <Suspense fallback={<div className="h-6" />}>
-                <CommandPalette posts={posts} showTrigger={false} />
+                <CommandPalette posts={posts} views={views} books={books} showTrigger={false} />
                 <LandingViews
                   posts={posts}
                   pinned={pinned}
