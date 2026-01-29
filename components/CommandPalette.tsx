@@ -2,6 +2,7 @@
 
 import {
   Fragment,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -9,8 +10,9 @@ import {
   useState,
 } from "react";
 import {
-  Link1Icon,
   MagnifyingGlassIcon,
+  ArrowLeftIcon,
+  InfoCircledIcon,
   ReaderIcon,
 } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
@@ -316,6 +318,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [shortcutLabel, setShortcutLabel] = useState("Cmd+K");
+  const [confirmation, setConfirmation] = useState<ReactNode | null>(null);
   const [sortOrder, setSortOrder] = useState<"best" | "newest" | "oldest">("best");
   const [titleOnly, setTitleOnly] = useState(false);
   const [kindFilter, setKindFilter] = useState<"all" | "post" | "view" | "book">("all");
@@ -329,6 +332,13 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const hasTypeFilter = kindFilter !== "all";
   const hasDateFilter = Boolean(dateFilter);
   const sortIsDefault = sortOrder === "best";
+
+  const closePalette = useCallback(() => {
+    setOpen(false);
+    setQuery("");
+    setDebouncedQuery("");
+    setConfirmation(null);
+  }, []);
 
   useEffect(() => {
     if (typeof navigator === "undefined") {
@@ -494,16 +504,10 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       ? "No matches found."
       : "";
 
-  const closePalette = useCallback(() => {
-    setOpen(false);
-    setQuery("");
-    setDebouncedQuery("");
-  }, []);
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        closePalette();
         return;
       }
       if (isEditableElement(event.target)) {
@@ -511,12 +515,16 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setOpen((prev) => !prev);
+        if (open) {
+          closePalette();
+        } else {
+          setOpen(true);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [closePalette, open]);
 
   useEffect(() => {
     if (!open) {
@@ -531,30 +539,105 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     };
   }, [open]);
 
-  const openSitemap = useCallback(() => {
-    window.open("/sitemap.xml", "_blank", "noopener,noreferrer");
-  }, []);
-
   const openRss = useCallback(() => {
     window.open("/feed.xml", "_blank", "noopener,noreferrer");
   }, []);
 
-  const actions = useMemo(() => [
-    {
-      id: "sitemap",
-      label: "View Sitemap",
-      letter: "S",
-      icon: Link1Icon,
-      action: openSitemap,
+  const actions = useMemo(
+    () => [
+      {
+        id: "full-bio",
+        label: "View Full Bio",
+        letter: "B",
+        icon: InfoCircledIcon,
+        action: () => {},
+        confirmation: (
+          <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+              Bio
+            </div>
+            <div className="space-y-4">
+              <p>
+                With 20+ years in IT, I have led global enterprise software initiatives
+                from concept to scale, taking on technical leadership roles to drive peak
+                team performance. As a product leader specialized in the foundational
+                platforms that power global enterprise SaaS, I bring hands-on technical
+                expertise with a strategic product perspective to drive lasting financial
+                impact.
+              </p>
+              <p>
+                I lead by example, fostering high personal and community growth that
+                supports sustained success across organizations. I am a developer advocate
+                who shaped and helped implement a company-wide developers portal, and I
+                have launched enterprise-grade frontend development tools into open source
+                to empower developers worldwide.
+              </p>
+              <p>
+                As a certified AWS Solutions Architect, I design and build enterprise-grade
+                software using full-stack JavaScript (React, Next.js, Node) and cloud
+                services. I also build side projects like Octotype.app, a blogging platform
+                that lets developers publish stories using GitHub Issues as a CMS.
+              </p>
+              <div>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  Specialties
+                </div>
+                <p>
+                  Technical Product Management & Strategy, Technology & Talent Management,
+                  Software Architecture & Engineering, Systems Integration, Cloud and
+                  Infrastructure, AI Platforms, SaaS Platforms, Developer tools and
+                  frameworks.
+                </p>
+              </div>
+              <div>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  Significant Accomplishments
+                </div>
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>
+                    Partnered with a global research organization (2008-2010) to analyze
+                    the impact of new web technologies on the enterprise.
+                  </li>
+                  <li>
+                    Earned multiple tech honors at DXC Technology, including the
+                    Distinguished Technologist award in 2021, for advancing technical
+                    excellence and talent growth.
+                  </li>
+                  <li>
+                    Published a book (2021), authored articles and technical whitepapers,
+                    and presented at global developer conferences and university seminars.
+                  </li>
+                  <li>
+                    Led globally-distributed teams to launch two major enterprise cloud
+                    platforms in the last 6 years, from ideation to scale, driving
+                    meaningful business impact.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "rss",
+        label: "View RSS",
+        letter: "R",
+        icon: ReaderIcon,
+        action: openRss,
+      },
+    ],
+    [openRss],
+  );
+
+  const runAction = useCallback(
+    (action: (typeof actions)[number]) => {
+      action.action();
+      if (action.confirmation) {
+        setConfirmation(action.confirmation);
+      }
     },
-    {
-      id: "rss",
-      label: "View RSS",
-      letter: "R",
-      icon: ReaderIcon,
-      action: openRss,
-    },
-  ], [openRss, openSitemap]);
+    [actions],
+  );
 
   const actionByLetter = useMemo(
     () => new Map(actions.map((action) => [action.letter, action])),
@@ -599,38 +682,59 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
             <Command shouldFilter={false}>
               <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
-                  <MagnifyingGlassIcon className="h-4 w-4" aria-hidden="true" />
-                </span>
-                <CommandInput
-                  ref={inputRef}
-                  placeholder="Search posts by title or content..."
-                  value={query}
-                  onValueChange={setQuery}
-                  onKeyDown={(event) => {
-                    if (query.length > 0) {
-                      return;
-                    }
-                    const action = actionByLetter.get(event.key);
-                    if (!action) {
-                      return;
-                    }
-                    event.preventDefault();
-                    action.action();
-                  }}
-                  className="pl-10"
-                />
+                {confirmation ? (
+                  <div className="flex items-center gap-3 border-b border-zinc-200 px-4 py-2.5 text-sm text-zinc-600 dark:border-slate-700 dark:text-zinc-300">
+                    <button
+                      type="button"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition hover:text-zinc-700 dark:border-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      onClick={() => setConfirmation(null)}
+                    >
+                      <ArrowLeftIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="text-sm">Back to search</span>
+                  </div>
+                ) : (
+                  <>
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
+                      <MagnifyingGlassIcon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <CommandInput
+                      ref={inputRef}
+                      placeholder="Search posts by title or content..."
+                      value={query}
+                      onValueChange={setQuery}
+                      onKeyDown={(event) => {
+                        if (query.length > 0) {
+                          return;
+                        }
+                        const action = actionByLetter.get(event.key);
+                        if (!action) {
+                          return;
+                        }
+                        event.preventDefault();
+                        runAction(action);
+                      }}
+                      className="pl-10"
+                    />
+                  </>
+                )}
               </div>
               <CommandList className="max-h-[60vh] p-1">
-                <div className="-mx-1 bg-white/80 px-2 py-2 backdrop-blur dark:bg-slate-950/80">
-                    <CommandGroup>
+                {confirmation ? (
+                  <div className="flex max-h-[50vh] items-start justify-center px-6 py-6 text-sm text-zinc-600 dark:text-zinc-300">
+                    <div className="w-full break-words">{confirmation}</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="-mx-1 bg-white/80 px-2 py-2 backdrop-blur dark:bg-slate-950/80">
+                      <CommandGroup>
                       <div className="space-y-1 px-2 pb-2">
                         {filteredActions.map((action) => (
                           <CommandItem
                             key={action.id}
                             value={action.label}
                             onSelect={() => {
-                              action.action();
+                              runAction(action);
                             }}
                             className="flex items-center justify-between gap-3 px-2 py-2"
                           >
@@ -880,13 +984,13 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                     </Menubar>
                     ) : null}
                   </div>
-                <div className="-mx-1 h-px bg-zinc-200 dark:bg-slate-700" />
-                {(() => {
-                  const needle = debouncedQuery.trim();
-                  const renderEntryGroup = (entry: SearchEntry, matches: EntryMatch[]) => {
-                    const titleMatches = entry.titleLine
-                      ? findAllMatchLines([entry.titleLine], needle).flatMap(
-                          (match) => match.indices,
+                  <div className="-mx-1 h-px bg-zinc-200 dark:bg-slate-700" />
+                  {(() => {
+                    const needle = debouncedQuery.trim();
+                    const renderEntryGroup = (entry: SearchEntry, matches: EntryMatch[]) => {
+                      const titleMatches = entry.titleLine
+                        ? findAllMatchLines([entry.titleLine], needle).flatMap(
+                            (match) => match.indices,
                         )
                       : [];
                     const titleHasMatch = titleMatches.length > 0;
@@ -1052,6 +1156,8 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                     </Fragment>
                   ));
                 })()}
+                  </>
+                )}
               </CommandList>
             </Command>
             <div className="mt-6 flex items-center justify-between border-t border-zinc-200 px-4 py-2 text-[11px] text-zinc-400 dark:border-slate-700 dark:text-zinc-500">
