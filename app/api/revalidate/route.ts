@@ -77,7 +77,7 @@ const revalidateAggregates = async () => {
   await Promise.all([
     revalidatePath("/"),
     revalidatePath("/feed.xml"),
-    revalidatePath("/sitemap.xml"),
+    revalidatePath("/sitemap.md"),
   ]);
 };
 
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
           revalidated.push(viewUrl);
         }
         await revalidateAggregates();
-        revalidated.push("/", "/feed.xml", "/sitemap.xml");
+        revalidated.push("/", "/feed.xml", "/sitemap.md");
       }
       if (label === "now") {
         await revalidateNow();
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
     if (action === "pinned" || action === "unpinned") {
       await ensureContentTagsRevalidated();
       await revalidateAggregates();
-      revalidated.push("/", "/feed.xml", "/sitemap.xml");
+      revalidated.push("/", "/feed.xml", "/sitemap.md");
     }
 
     if (action === "edited" || action === "closed" || action === "reopened") {
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
         revalidated.push(viewUrl);
       }
       await revalidateAggregates();
-      revalidated.push("/", "/feed.xml", "/sitemap.xml");
+      revalidated.push("/", "/feed.xml", "/sitemap.md");
       if (hasNowLabel(payload.issue?.labels)) {
         await revalidateNow();
         revalidated.push("/now");

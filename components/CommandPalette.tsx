@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   InfoCircledIcon,
   ReaderIcon,
+  Link2Icon,
 } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import type { Book, Post, View } from "../types";
@@ -543,6 +544,10 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     window.open("/feed.xml", "_blank", "noopener,noreferrer");
   }, []);
 
+  const openSitemap = useCallback(() => {
+    window.open("/sitemap.md", "_blank", "noopener,noreferrer");
+  }, []);
+
   const actions = useMemo(
     () => [
       {
@@ -625,8 +630,15 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
         icon: ReaderIcon,
         action: openRss,
       },
+      {
+        id: "sitemap",
+        label: "View Sitemap",
+        letter: "S",
+        icon: Link2Icon,
+        action: openSitemap,
+      },
     ],
-    [openRss],
+    [openRss, openSitemap],
   );
 
   const runAction = useCallback(

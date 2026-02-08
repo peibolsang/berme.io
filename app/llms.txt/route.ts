@@ -16,7 +16,7 @@ export async function GET() {
 
 ## Optional
 - [RSS Feed](${baseUrl}/feed.xml): Syndicated posts feed.
-- [Sitemap](${baseUrl}/sitemap.xml): All site URLs.
+- [Sitemap](${baseUrl}/sitemap.md): All site URLs in Markdown.
 `;
 
   return new Response(body, {

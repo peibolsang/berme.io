@@ -4,6 +4,7 @@
 This repository is a Next.js App Router project.
 - `app/` contains route modules and layouts (e.g., `app/page.tsx`, `app/layout.tsx`) and global styles in `app/globals.css`.
 - `app/api/revalidate/route.ts` handles GitHub webhook revalidation.
+- SEO + machine-readable endpoints live in `app/feed.xml/route.ts`, `app/sitemap.md/route.ts`, `app/robots.txt/route.ts`, and `app/llms.txt/route.ts`.
 - `public/` stores static assets served at the site root.
 - Config lives at the top level: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, and `postcss.config.mjs`.
 - Data access lives in `lib/` (GitHub DAL, posts, comments, caching utilities).
@@ -35,19 +36,37 @@ No test framework is currently configured. If you add tests, document the runner
 - Comments rendered from GitHub issue comments, with Markdown.
 - Optional post cover image via frontmatter `image` rendered above the post title.
 - Dark mode with toggle (Radix icons) and split header/body backgrounds.
-- SEO routes: `sitemap.xml`, `feed.xml`, `robots.txt`.
+- SEO routes: `sitemap.md`, `feed.xml`, `robots.txt`, and `llms.txt`.
 
 ## Caching & Revalidation Strategy
-- Post pages are statically generated (`dynamic = "force-static"` with `generateStaticParams`) and updated only via webhook revalidation.
-- Aggregation data (posts list, views, pinned issues, issues-with-parents) cached via `unstable_cache` with TTL `REVALIDATE_SECONDS` (default 3600).
-- Comments cached via `unstable_cache` in `lib/comments.ts` with tag `comments:<issueNumber>` and TTL 300s.
-- Revalidation webhook in `app/api/revalidate/route.ts`:
-  - Issue labeled `published` → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/views/pinned/issues-with-parents)`
-  - Issue edited → `revalidatePath(postUrl)` + `revalidatePath("/")` + `revalidateTag(posts/views/pinned/issues-with-parents)`
-  - Comment created → `revalidatePath(postUrl)` + `revalidateTag(comments:<issueNumber>)`
-  - Aggregates also revalidate `/feed.xml` and `/sitemap.xml` on post changes.
-- Webhook signature validated with `GITHUB_WEBHOOK_SECRET`.
-- GraphQL parent-issue lookups fall back to the last successful snapshot to avoid view parents leaking into posts during transient failures.
+- Rendering model:
+  - Post pages (`app/[year]/[month]/[day]/[slug]/page.tsx`) and view pages (`app/views/[slug]/page.tsx`) are statically generated (`dynamic = "force-static"` + `generateStaticParams`).
+  - `/now` is also static (`dynamic = "force-static"`), but without params.
+  - Home (`app/page.tsx`) is server-rendered from cached data fetchers.
+- Data caches (`unstable_cache`, TTL = `REVALIDATE_SECONDS`, default `3600`):
+  - `lib/github.ts`: `getAllBlogIssues`, `getPinnedIssueNumbers`, `getIssuesWithParents`, `getGithubUser`.
+  - `lib/posts.ts`: `getAllPosts` (`tags: ["posts"]`).
+  - `lib/views.ts`: `getAllViews` (`tags: ["views", "github-issues-with-parents", "posts"]`).
+  - `lib/now.ts`: `getNowPost` (`tags: ["now"]`).
+- Comments cache:
+  - `lib/comments.ts`: `getIssueComments(issueNumber)` uses `unstable_cache` with TTL `300` and tag `comments:<issueNumber>`.
+- Route-level revalidation:
+  - `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` export `revalidate = 3600` (fixed value, not `REVALIDATE_SECONDS`).
+- Webhook invalidation (`app/api/revalidate/route.ts`):
+  - Validates `x-hub-signature-256` using `GITHUB_WEBHOOK_SECRET`.
+  - Revalidates aggregate paths via `revalidatePath("/")`, `revalidatePath("/feed.xml")`, `revalidatePath("/sitemap.md")`.
+  - Revalidates content tags: `posts`, `views`, `github-issues`, `github-issues-with-parents`, `github-pinned-issues`.
+  - `issues` events:
+    - `labeled`/`unlabeled` with label `published`: revalidates resolved post URL(s), related view URL (if mapped), content tags, and aggregate paths.
+    - `pinned`/`unpinned`: revalidates content tags and aggregate paths.
+    - `edited`/`closed`/`reopened`: revalidates resolved post URL(s), related view URL (if mapped), content tags, and aggregate paths.
+    - `labeled`/`unlabeled` with label `now`, or edited issue carrying `now` label: revalidates `/`, `/now`, and tag `now`.
+  - `issue_comment` `created` event:
+    - revalidates resolved post URL(s),
+    - revalidates tag `comments:<issueNumber>`,
+    - and if the issue has the `now` label, revalidates `/` and `/now`.
+- Resilience:
+  - `fetchIssuesWithParents()` keeps an in-memory `lastIssuesWithParents` snapshot and falls back to it when GraphQL fails, reducing transient parent-link regressions.
 
 ## Commit & Pull Request Guidelines
 There is no established commit convention yet (only the initial scaffold commit exists). Use short, imperative messages (e.g., "Add hero section"). For pull requests:

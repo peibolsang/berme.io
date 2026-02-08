@@ -4,7 +4,7 @@ export async function GET() {
   const baseUrl = await getBaseUrl();
   const body = `User-agent: *
 Allow: /
-Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: ${baseUrl}/sitemap.md
 `;
 
   return new Response(body, {
