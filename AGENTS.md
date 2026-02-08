@@ -51,7 +51,7 @@ No test framework is currently configured. If you add tests, document the runner
 - Comments cache:
   - `lib/comments.ts`: `getIssueComments(issueNumber)` uses `unstable_cache` with TTL `300` and tag `comments:<issueNumber>`.
 - Route-level revalidation:
-  - `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` export `revalidate = 3600` (fixed value, not `REVALIDATE_SECONDS`).
+  - `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` export `revalidate = config.revalidateSeconds` (driven by `REVALIDATE_SECONDS`, default `3600`).
 - Webhook invalidation (`app/api/revalidate/route.ts`):
   - Validates `x-hub-signature-256` using `GITHUB_WEBHOOK_SECRET`.
   - Revalidates aggregate paths via `revalidatePath("/")`, `revalidatePath("/feed.xml")`, `revalidatePath("/sitemap.md")`.
