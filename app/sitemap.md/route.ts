@@ -1,9 +1,8 @@
 import { getAllPosts } from "../../lib/posts";
-import { config } from "../../lib/config";
 import { getBaseUrl } from "../../lib/site";
 import { getAllViews } from "../../lib/views";
 
-export const revalidate = config.revalidateSeconds;
+export const revalidate = 3600;
 
 const asIsoDate = (value: string | null | undefined) => {
   if (!value) {

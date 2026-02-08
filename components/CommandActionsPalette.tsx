@@ -14,8 +14,8 @@ import {
 import Link from "next/link";
 import {
   Command,
-  CommandEmpty,
   CommandInput,
+  CommandGroup,
   CommandItem,
   CommandList,
 } from "./ui/command";
@@ -59,16 +59,13 @@ export const CommandActionsPalette = ({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [shortcutLabel, setShortcutLabel] = useState("Cmd+K");
-  const [confirmation, setConfirmation] = useState<React.ReactNode | null>(null);
-
-  useEffect(() => {
+  const [shortcutLabel] = useState(() => {
     if (typeof navigator === "undefined") {
-      return;
+      return "Cmd+K";
     }
-    const platform = navigator.platform.toLowerCase();
-    setShortcutLabel(platform.includes("mac") ? "Cmd+K" : "Ctrl+K");
-  }, []);
+    return navigator.platform.toLowerCase().includes("mac") ? "Cmd+K" : "Ctrl+K";
+  });
+  const [confirmation, setConfirmation] = useState<React.ReactNode | null>(null);
 
   const closePalette = useCallback(() => {
     setOpen(false);
@@ -256,7 +253,14 @@ export const CommandActionsPalette = ({
       : []),
   ];
 
-  const commandByLetter = new Map(commands.map((command) => [command.letter, command]));
+  const commandByLetter = new Map(
+    commands.map((command) => [command.letter.toLowerCase(), command]),
+  );
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredCommands =
+    normalizedQuery.length === 0
+      ? commands
+      : commands.filter((command) => command.label.toLowerCase().includes(normalizedQuery));
 
   return (
     <>
@@ -286,7 +290,7 @@ export const CommandActionsPalette = ({
           }}
         >
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
-            <Command>
+            <Command shouldFilter={false}>
               <div className="relative">
                 {confirmation ? (
                   <div className="flex items-center gap-3 border-b border-zinc-200 px-4 py-2.5 text-sm text-zinc-600 dark:border-slate-700 dark:text-zinc-300">
@@ -313,7 +317,7 @@ export const CommandActionsPalette = ({
                         if (query.length > 0) {
                           return;
                         }
-                        const command = commandByLetter.get(event.key);
+                        const command = commandByLetter.get(event.key.toLowerCase());
                         if (!command) {
                           return;
                         }
@@ -337,32 +341,37 @@ export const CommandActionsPalette = ({
                   </div>
                 ) : (
                   <>
-                    <CommandEmpty>No commands match that query.</CommandEmpty>
-                    <div className="space-y-1 px-3 pb-2 pt-3">
-                      {commands.map((command) => (
-                        <CommandItem
-                          key={command.id}
-                          value={command.label}
-                          onSelect={() => {
-                            command.action();
-                            if (command.closeOnRun) {
-                              closePalette();
-                              return;
-                            }
-                            setConfirmation(command.confirmation ?? "Done.");
-                          }}
-                          className="flex items-center justify-between gap-3 px-2 py-2"
-                        >
-                          <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-                            <command.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-                            {command.label}
-                          </span>
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[11px] font-semibold uppercase text-zinc-500 dark:border-slate-700 dark:text-zinc-400">
-                            {command.letter}
-                          </span>
-                        </CommandItem>
-                      ))}
-                    </div>
+                    {filteredCommands.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-zinc-500">
+                        No commands match that query.
+                      </div>
+                    ) : (
+                      <CommandGroup className="space-y-1 px-3 pb-2 pt-3">
+                        {filteredCommands.map((command) => (
+                          <CommandItem
+                            key={command.id}
+                            value={command.label}
+                            onSelect={() => {
+                              command.action();
+                              if (command.closeOnRun) {
+                                closePalette();
+                                return;
+                              }
+                              setConfirmation(command.confirmation ?? "Done.");
+                            }}
+                            className="flex items-center justify-between gap-3 px-2 py-2"
+                          >
+                            <span className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+                              <command.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                              {command.label}
+                            </span>
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[11px] font-semibold uppercase text-zinc-500 dark:border-slate-700 dark:text-zinc-400">
+                              {command.letter}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
                   </>
                 )}
               </CommandList>
