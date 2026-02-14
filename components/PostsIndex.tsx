@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Post } from "../types";
 import {
@@ -110,9 +110,6 @@ const intersectSize = (left: Set<string>, right: Set<string>) => {
 const toUniqueSorted = (values: string[]) =>
   Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
 
-const arraysEqual = (left: string[], right: string[]) =>
-  left.length === right.length && left.every((value, index) => value === right[index]);
-
 const buildLabelIndex = (posts: Post[]) => {
   const labelToPostIds = new Map<string, Set<string>>();
   const displayNames = new Map<string, string>();
@@ -182,70 +179,47 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const initialSelectedLabels = useMemo(
+  const selectedLabels = useMemo(
     () =>
       labelKeys.size === 0
         ? []
-        : readLabelsFromParams(new URLSearchParams(searchParams.toString()), labelKeys),
+        : readLabelsFromParams(
+            new URLSearchParams(searchParams.toString()),
+            labelKeys,
+          ),
     [labelKeys, searchParams],
   );
-  const [selectedLabels, setSelectedLabels] = useState<string[]>(initialSelectedLabels);
-  const [showAllLabels, setShowAllLabels] = useState(
-    () => initialSelectedLabels.length > 0,
+  const [showAllLabels, setShowAllLabels] = useState(false);
+  const showLabelCloud = showAllLabels || selectedLabels.length > 0;
+  const maxLabelLength = useMemo(
+    () => allLabels.reduce((max, label) => Math.max(max, label.displayName.length), 0),
+    [allLabels],
   );
-  const [chipWidth, setChipWidth] = useState<number | null>(null);
-  const measureButtonRef = useRef<HTMLButtonElement | null>(null);
-  const measureLabelRef = useRef<HTMLSpanElement | null>(null);
-  const isSyncingFromSearch = useRef(false);
-  const hasInitialized = useRef(false);
+  const chipWidthStyle = maxLabelLength
+    ? { width: `calc(${maxLabelLength}ch + 6.5rem)` }
+    : undefined;
 
-  const getLabelsFromSearch = useCallback(
-    () => readLabelsFromParams(new URLSearchParams(searchParams.toString()), labelKeys),
-    [searchParams, labelKeys],
-  );
-
-  useEffect(() => {
-    if (labelKeys.size === 0) {
-      setSelectedLabels([]);
-      hasInitialized.current = true;
-      return;
-    }
-    const fromSearch = getLabelsFromSearch();
-    setSelectedLabels((prev) => {
-      if (arraysEqual(prev, fromSearch)) {
-        return prev;
+  const setSelectedLabelsInUrl = useCallback(
+    (nextSelected: string[]) => {
+      if (labelKeys.size === 0) {
+        return;
       }
-      isSyncingFromSearch.current = true;
-      return fromSearch;
-    });
-    hasInitialized.current = true;
-  }, [getLabelsFromSearch, labelKeys]);
-
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      return;
-    }
-    if (labelKeys.size === 0) {
-      return;
-    }
-    if (isSyncingFromSearch.current) {
-      isSyncingFromSearch.current = false;
-      return;
-    }
-    const fromSearch = getLabelsFromSearch();
-    if (arraysEqual(fromSearch, selectedLabels)) {
-      return;
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedLabels.length === 0) {
+      if (labelKeys.size === 0) {
+        return;
+      }
+      const normalized = toUniqueSorted(nextSelected);
+      const params = new URLSearchParams(searchParams.toString());
+      if (normalized.length === 0) {
       params.delete("labels");
-    } else {
-      params.set("labels", selectedLabels.join(","));
-    }
-    const query = params.toString();
-    const href = query ? `${pathname}?${query}` : pathname;
-    router.replace(href, { scroll: false });
-  }, [selectedLabels, searchParams, pathname, router, getLabelsFromSearch, labelKeys]);
+      } else {
+        params.set("labels", normalized.join(","));
+      }
+      const query = params.toString();
+      const href = query ? `${pathname}?${query}` : pathname;
+      router.replace(href, { scroll: false });
+    },
+    [labelKeys, pathname, router, searchParams],
+  );
 
   const selectedSet = useMemo(() => new Set(selectedLabels), [selectedLabels]);
 
@@ -301,34 +275,11 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
     return { enabled, counts };
   }, [allLabels, labelToPostIds, matchingIds, selectedSet]);
 
-  useLayoutEffect(() => {
-    if (!measureButtonRef.current || !measureLabelRef.current) {
-      return;
-    }
-    const button = measureButtonRef.current;
-    const labelSpan = measureLabelRef.current;
-    const originalText = labelSpan.textContent ?? "";
-    let maxWidth = 0;
-
-    allLabels.forEach((label) => {
-      labelSpan.textContent = label.displayName;
-      const width = button.getBoundingClientRect().width;
-      if (width > maxWidth) {
-        maxWidth = width;
-      }
-    });
-
-    labelSpan.textContent = originalText;
-    setChipWidth(maxWidth || null);
-  }, [allLabels]);
-
   const toggleLabel = (labelKey: string) => {
-    setSelectedLabels((prev) => {
-      const next = prev.includes(labelKey)
-        ? prev.filter((label) => label !== labelKey)
-        : [...prev, labelKey];
-      return toUniqueSorted(next);
-    });
+    const next = selectedLabels.includes(labelKey)
+      ? selectedLabels.filter((label) => label !== labelKey)
+      : [...selectedLabels, labelKey];
+    setSelectedLabelsInUrl(next);
   };
 
   if (posts.length === 0) {
@@ -419,13 +370,13 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
               type="button"
               onClick={() => setShowAllLabels((prev) => !prev)}
               className="group inline-flex w-fit items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-              aria-expanded={showAllLabels}
+              aria-expanded={showLabelCloud}
               aria-controls="label-cloud"
             >
               <ChevronDownIcon
                 className={[
                   "h-4 w-4 transition",
-                  showAllLabels ? "rotate-180 text-zinc-700 dark:text-zinc-200" : "",
+                  showLabelCloud ? "rotate-180 text-zinc-700 dark:text-zinc-200" : "",
                 ].join(" ")}
               />
               <span className="underline-offset-4 group-hover:underline">
@@ -435,29 +386,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                 {allLabels.length}
               </span>
             </button>
-            <button
-              ref={measureButtonRef}
-              type="button"
-              tabIndex={-1}
-              aria-hidden="true"
-              className="absolute -left-[9999px] top-0 inline-flex items-center gap-2 rounded-full border border-zinc-900/70 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700/40 bg-white/70 text-zinc-800">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 16 16"
-                  className="h-3 w-3"
-                  fill="currentColor"
-                >
-                  <path d="M6.2 11.2 3 8l1.1-1.1 2.1 2.1 5-5L12.3 5l-6.1 6.2Z" />
-                </svg>
-              </span>
-              <span ref={measureLabelRef} className="whitespace-nowrap text-left" />
-              <span className="inline-flex h-4 w-[2.5ch] shrink-0 items-center justify-center rounded-full border border-current/20 text-[9px]">
-                88
-              </span>
-            </button>
-            {showAllLabels && (
+            {showLabelCloud && (
               <div id="label-cloud" className="flex flex-wrap gap-2">
                 {allLabels.map((label) => {
                   const selected = selectedSet.has(label.key);
@@ -472,7 +401,7 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                       aria-pressed={selected}
                       disabled={disabled}
                       onClick={() => toggleLabel(label.key)}
-                      style={chipWidth ? { width: `${chipWidth}px` } : undefined}
+                      style={chipWidthStyle}
                       className={[
                         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
                         selected

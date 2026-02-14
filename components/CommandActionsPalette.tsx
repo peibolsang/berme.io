@@ -118,6 +118,21 @@ export const CommandActionsPalette = ({
     document.execCommand("copy");
     document.body.removeChild(textarea);
   };
+  const canonicalUrl =
+    typeof window === "undefined"
+      ? url
+      : url.startsWith("http")
+        ? url
+        : `${window.location.origin}${url}`;
+  const resolvedMetadataLines =
+    metadataLines && metadataLines.length > 0
+      ? metadataLines
+      : [
+          `Title: ${title}`,
+          readingTime ? `Reading time: ${readingTime}` : "Reading time: N/A",
+          `URL: ${url}`,
+          `GitHub: ${githubUrl}`,
+        ];
 
   const commands = [
     {
@@ -133,7 +148,7 @@ export const CommandActionsPalette = ({
       label: "Copy Link",
       letter: "L",
       icon: Link2Icon,
-      action: () => copyToClipboard(window.location.href),
+      action: () => copyToClipboard(canonicalUrl),
       confirmation: "Link copied to clipboard.",
       closeOnRun: false,
     },
@@ -152,7 +167,7 @@ export const CommandActionsPalette = ({
       letter: "V",
       icon: InfoCircledIcon,
       action: () => {},
-      confirmation: metadataLines?.length ? (
+      confirmation: resolvedMetadataLines.length ? (
         <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
             Metadata
@@ -160,7 +175,7 @@ export const CommandActionsPalette = ({
           <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-slate-700">
             <table className="w-full text-left text-xs">
               <tbody>
-                {metadataLines.map((line) => {
+                {resolvedMetadataLines.map((line) => {
                   const [label, ...rest] = line.split(":");
                   const value = rest.join(":").trim();
                   return (

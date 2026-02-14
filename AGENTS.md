@@ -10,11 +10,8 @@ This repository is a Next.js App Router project.
 - Data access lives in `lib/` (GitHub DAL, posts, comments, caching utilities).
 - Shared UI lives in `components/` (Markdown renderer, theme toggle).
 
-## Build, Test, and Development Commands
+## Development Commands
 Use npm scripts from `package.json`:
-- `npm run dev` starts the local dev server on `http://localhost:3000`.
-- `npm run build` creates the production build.
-- `npm run start` serves the production build locally (run after `build`).
 - `npm run lint` runs ESLint for code quality checks.
 
 ## Coding Style & Naming Conventions
@@ -77,3 +74,8 @@ There is no established commit convention yet (only the initial scaffold commit 
 ## Security & Configuration Tips
 Store secrets in environment files (e.g., `.env.local`) and avoid committing them. Update `next.config.ts` only when project-level behavior changes.
 Required env vars for production: `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`. Optional: `GITHUB_OWNER`, `GITHUB_REPO`, `REVALIDATE_SECONDS`. Note: pinned posts require `GITHUB_TOKEN` (GraphQL).
+
+## IMPORTANT: Self-Improvement
+
+- Build a markdown file (@AGENT_NOTES.md) where you log what goes right, what goes wrong, what I corrected, what worked and what didn't. It's kind of scratchpad to take notes on yourself during every session.
+- Check these evolving notes in @AGENT_NOTES.md as an input of your implementation.

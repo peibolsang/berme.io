@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 export const KnowPablo = () => {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return null;
@@ -69,7 +69,7 @@ export const KnowPablo = () => {
               Bio
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              I am a product leader, distinguished technologist, and writer. I've been
+              I am a product leader, distinguished technologist, and writer. I&apos;ve been
               building enterprise software platforms and applications for the last 20 years,
               and I love sharing what I learn.
             </p>

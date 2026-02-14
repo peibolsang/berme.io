@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import type { Book, Post, View } from "../types";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -318,7 +317,12 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [shortcutLabel, setShortcutLabel] = useState("Cmd+K");
+  const [shortcutLabel] = useState(() => {
+    if (typeof navigator === "undefined") {
+      return "Cmd+K";
+    }
+    return navigator.platform.toLowerCase().includes("mac") ? "Cmd+K" : "Ctrl+K";
+  });
   const [confirmation, setConfirmation] = useState<ReactNode | null>(null);
   const [sortOrder, setSortOrder] = useState<"best" | "newest" | "oldest">("best");
   const [titleOnly, setTitleOnly] = useState(false);
@@ -329,7 +333,6 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     | { type: "range"; label: "Last 30 days" | "Last 90 days" | "Last 365 days"; from: Date; to: Date }
     | null
   >(null);
-  const hasTitleFilter = titleOnly;
   const hasTypeFilter = kindFilter !== "all";
   const hasDateFilter = Boolean(dateFilter);
   const sortIsDefault = sortOrder === "best";
@@ -339,14 +342,6 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     setQuery("");
     setDebouncedQuery("");
     setConfirmation(null);
-  }, []);
-
-  useEffect(() => {
-    if (typeof navigator === "undefined") {
-      return;
-    }
-    const platform = navigator.platform.toLowerCase();
-    setShortcutLabel(platform.includes("mac") ? "Cmd+K" : "Ctrl+K");
   }, []);
 
   const postEntries = useMemo<SearchEntry[]>(
@@ -396,12 +391,6 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       })),
     [books],
   );
-
-  const isSameDay = (left: Date, right: Date) =>
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate();
-
 
   const filterEntries = useCallback(
     (entries: SearchEntry[]) =>
@@ -463,7 +452,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     return () => window.clearTimeout(timer);
   }, [query]);
 
-  const { postResults, viewResults, bookResults, hasResults } = useMemo(() => {
+  const { postResults, viewResults, bookResults } = useMemo(() => {
     const needle = debouncedQuery.trim();
     if (!needle || needle.length < MIN_QUERY_LENGTH) {
       return {
@@ -499,11 +488,6 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   }, [bookEntries, debouncedQuery, filterEntries, postEntries, sortEntries, viewEntries]);
 
   const showFilters = true;
-
-  const emptyMessage =
-    debouncedQuery.trim().length >= MIN_QUERY_LENGTH && !hasResults
-      ? "No matches found."
-      : "";
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -641,15 +625,12 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     [openRss, openSitemap],
   );
 
-  const runAction = useCallback(
-    (action: (typeof actions)[number]) => {
-      action.action();
-      if (action.confirmation) {
-        setConfirmation(action.confirmation);
-      }
-    },
-    [actions],
-  );
+  const runAction = (action: (typeof actions)[number]) => {
+    action.action();
+    if (action.confirmation) {
+      setConfirmation(action.confirmation);
+    }
+  };
 
   const actionByLetter = useMemo(
     () => new Map(actions.map((action) => [action.letter, action])),
@@ -897,7 +878,17 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                                       59,
                                       999,
                                     );
-                                    setDateFilter({ type: "range", label: label as any, from, to });
+                                    setDateFilter({
+                                      type: "range",
+                                      label:
+                                        label === "Last 30 days" ||
+                                        label === "Last 90 days" ||
+                                        label === "Last 365 days"
+                                          ? label
+                                          : "Last 30 days",
+                                      from,
+                                      to,
+                                    });
                                   }}
                                 >
                                   {label}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 
 const STORAGE_KEY = "theme";
@@ -15,22 +15,27 @@ const applyTheme = (theme: "light" | "dark") => {
 };
 
 export const ThemeToggle = () => {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-      applyTheme(stored);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const fallback = prefersDark ? "dark" : "light";
-      setTheme(fallback);
-      applyTheme(fallback);
+      return stored;
     }
-    setMounted(true);
-  }, []);
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";

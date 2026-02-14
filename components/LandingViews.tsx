@@ -19,11 +19,6 @@ const viewLabels: Record<ViewOption, string> = {
 const normalizeView = (value: string | null) =>
   viewOptions.includes(value as ViewOption) ? (value as ViewOption) : "posts";
 
-const formatDate = (iso: string) => {
-  const date = new Date(iso);
-  return String(date.getUTCFullYear());
-};
-
 type LandingViewsProps = {
   posts: Post[];
   pinned: Post[];
