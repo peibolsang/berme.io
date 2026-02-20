@@ -113,6 +113,12 @@ export const CommandActionsPalette = ({
     null,
   );
 
+  const backToCommands = useCallback(() => {
+    setConfirmation(null);
+    setRelatedConfirmation(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [setConfirmation, setRelatedConfirmation]);
+
   const closePalette = useCallback(() => {
     setOpen(false);
     setQuery("");
@@ -224,6 +230,23 @@ export const CommandActionsPalette = ({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [closePalette, open, relatedConfirmation]);
+
+  useEffect(() => {
+    if (!open || (!confirmation && !relatedConfirmation)) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft") {
+        return;
+      }
+      event.preventDefault();
+      backToCommands();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [backToCommands, confirmation, open, relatedConfirmation]);
 
   const copyToClipboard = async (value: string) => {
     if (navigator.clipboard?.writeText) {
@@ -489,10 +512,7 @@ export const CommandActionsPalette = ({
                     <button
                       type="button"
                       className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition hover:text-zinc-700 dark:border-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                      onClick={() => {
-                        setConfirmation(null);
-                        setRelatedConfirmation(null);
-                      }}
+                      onClick={backToCommands}
                     >
                       <ArrowLeftIcon className="h-3.5 w-3.5" />
                     </button>
