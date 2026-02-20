@@ -36,6 +36,13 @@ const getConferenceReadingTime = (
   return `${minutes} min read`;
 };
 
+const toViewerPdfPath = (pdfPath: string) => {
+  if (/^https?:\/\//i.test(pdfPath)) {
+    return `/api/conference-pdf?url=${encodeURIComponent(pdfPath)}`;
+  }
+  return pdfPath;
+};
+
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair-display",
@@ -44,7 +51,7 @@ const playfairDisplay = Playfair_Display({
 export const dynamic = "force-static";
 
 export const generateStaticParams = async () =>
-  getConferences().map((conference) => ({
+  (await getConferences()).map((conference) => ({
     slug: conference.slug,
   }));
 
@@ -52,7 +59,7 @@ export const generateMetadata = async ({
   params,
 }: PageProps): Promise<Metadata> => {
   const { slug } = await params;
-  const conference = getConferenceBySlug(slug);
+  const conference = await getConferenceBySlug(slug);
   if (!conference) {
     return {};
   }
@@ -79,7 +86,7 @@ export const generateMetadata = async ({
 
 export default async function ConferenceDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const conference = getConferenceBySlug(slug);
+  const conference = await getConferenceBySlug(slug);
   if (!conference) {
     notFound();
   }
@@ -88,6 +95,7 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
     conference.pageCount,
     conference.contentDensity,
   );
+  const viewerPdfPath = toViewerPdfPath(conference.pdfPath);
 
   return (
     <div className="min-h-screen">
@@ -110,14 +118,14 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
             id: "open-pdf",
             label: "Open PDF in new tab",
             letter: "P",
-            url: conference.pdfPath,
+            url: viewerPdfPath,
             mode: "open",
           },
           {
             id: "download-pdf",
             label: "Download PDF",
             letter: "D",
-            url: conference.pdfPath,
+            url: viewerPdfPath,
             mode: "download",
           },
         ]}
@@ -183,7 +191,7 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
           <section className="mt-8">
             <div>
               <ConferencePdfViewerClient
-                pdfPath={conference.pdfPath}
+                pdfPath={viewerPdfPath}
                 title={conference.title}
               />
             </div>

@@ -132,6 +132,11 @@ export type GitHubIssueWithParent = {
   body: string | null;
   createdAt: string;
   updatedAt: string;
+  labels?: {
+    nodes?: Array<{
+      name?: string | null;
+    } | null> | null;
+  } | null;
   author?: {
     login?: string | null;
     avatarUrl?: string | null;
@@ -238,6 +243,11 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
             body
             createdAt
             updatedAt
+            labels(first: 20) {
+              nodes {
+                name
+              }
+            }
             author {
               login
               avatarUrl

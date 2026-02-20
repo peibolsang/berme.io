@@ -19,6 +19,11 @@ const buildUrl = (date: Date, slug: string) => {
   return `/${year}/${month}/${day}/${slug}`;
 };
 
+const hasConferenceLabel = (labels: Array<{ name?: string }>) =>
+  labels.some(
+    (label) => String(label.name ?? "").trim().toLowerCase() === "conference",
+  );
+
 const asDate = (value: string) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
@@ -74,6 +79,9 @@ const fetchPosts = async (): Promise<Post[]> => {
   });
   const postEntries: Array<Post | null> = await Promise.all(
     issues.map(async (issue) => {
+      if (hasConferenceLabel(issue.labels)) {
+        return null;
+      }
       if (parentNumbers.has(issue.number)) {
         return null;
       }

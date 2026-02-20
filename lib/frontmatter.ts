@@ -6,6 +6,12 @@ type FrontmatterData = {
   excerpt?: string;
   image?: string;
   draft?: boolean;
+  event?: string;
+  location?: string;
+  pdfUrl?: string;
+  pdfPath?: string;
+  pdf?: string;
+  slides?: string;
 };
 
 export type FrontmatterResult = {

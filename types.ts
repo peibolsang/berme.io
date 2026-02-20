@@ -51,6 +51,7 @@ export type Book = {
 
 export type Conference = {
   id: string;
+  number: number;
   slug: string;
   title: string;
   event: string;
@@ -60,4 +61,5 @@ export type Conference = {
   pageCount: number;
   contentDensity: "light" | "medium" | "dense";
   location?: string;
+  url: string;
 };

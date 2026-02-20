@@ -178,3 +178,41 @@
 ### Validation
 - `npx tsc --noEmit` passes.
 - `npm run lint` passes (0 errors; existing warnings unchanged).
+
+## 2026-02-20 (Conferences GitHub spec doc)
+
+### What went right
+- Consolidated the agreed migration/caching/revalidation decisions into a concrete spec document.
+- Added `docs/conferences-github-spec.md` to make implementation plan explicit and reusable.
+
+## 2026-02-20 (Conferences GitHub migration implementation)
+
+### What went right
+- Implemented conferences source migration from local static data to GitHub issues in `lib/conferences.ts` with `unstable_cache` and `conferences` tag.
+- Added conference issue exclusion in posts/views pipelines so `published+conference` items do not leak into post/view surfaces.
+- Updated webhook revalidation strategy to include conference tags and conference detail path invalidation.
+- Updated conference route data access to async GitHub-backed helpers.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes with only pre-existing `no-img-element` warnings.
+
+## 2026-02-20 (Remote conference PDF fetch failure fix)
+
+### Root cause
+- Conference PDFs now come from remote GitHub attachment URLs.
+- `react-pdf` loads files in-browser; remote attachment URLs can fail due to cross-origin/auth/fetch restrictions, yielding `UnknownErrorException: Failed to fetch`.
+
+### Fix
+- Added same-origin proxy endpoint `app/api/conference-pdf/route.ts`:
+  - validates target URL and allowlisted hosts
+  - fetches upstream PDF server-side (optionally with GitHub token)
+  - streams PDF back with PDF-compatible headers
+- Updated conference page to use proxied PDF URL for:
+  - embedded viewer
+  - Open PDF command
+  - Download PDF command
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (existing warnings unchanged).

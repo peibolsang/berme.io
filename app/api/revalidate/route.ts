@@ -2,6 +2,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getAllPosts } from "../../../lib/posts";
 import { getAllViews } from "../../../lib/views";
+import { getConferences } from "../../../lib/conferences";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 
@@ -36,12 +37,28 @@ const asDate = (value: string | null | undefined) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+const hasLabel = (
+  labels: Array<{ name?: string | null }> | null | undefined,
+  name: string,
+) =>
+  (labels ?? []).some(
+    (label) => String(label?.name ?? "").toLowerCase() === name.toLowerCase(),
+  );
+
+const hasConferenceLabel = (
+  labels: Array<{ name?: string | null }> | null | undefined,
+) => hasLabel(labels, "conference");
+
 const getPostUrlFromIssue = (issue: {
   title?: string | null;
   body?: string | null;
   created_at?: string | null;
+  labels?: Array<{ name?: string | null }> | null;
 }) => {
   if (!issue?.title) {
+    return null;
+  }
+  if (hasConferenceLabel(issue.labels)) {
     return null;
   }
   const { data } = parseFrontmatter(issue.body ?? "");
@@ -57,6 +74,30 @@ const getPostUrlFromIssue = (issue: {
   return buildUrl(publishedAt, slug);
 };
 
+const getConferenceUrlFromIssue = (issue: {
+  title?: string | null;
+  body?: string | null;
+  labels?: Array<{ name?: string | null }> | null;
+}) => {
+  if (!issue?.title) {
+    return null;
+  }
+  if (!hasConferenceLabel(issue.labels)) {
+    return null;
+  }
+  const { data } = parseFrontmatter(issue.body ?? "");
+  const event = String(data.event ?? "").trim();
+  if (!event) {
+    return null;
+  }
+  const slugSource = data.slug ? String(data.slug) : issue.title;
+  const slug = slugify(slugSource);
+  if (!slug) {
+    return null;
+  }
+  return `/conferences/${slug}`;
+};
+
 const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
   const unique = Array.from(new Set(urls.filter(Boolean))) as string[];
   await Promise.all(unique.map((url) => revalidatePath(url)));
@@ -67,6 +108,7 @@ const revalidateContentTags = async () => {
   await Promise.all([
     revalidateTag("posts", "max"),
     revalidateTag("views", "max"),
+    revalidateTag("conferences", "max"),
     revalidateTag("github-issues", "max"),
     revalidateTag("github-issues-with-parents", "max"),
     revalidateTag("github-pinned-issues", "max"),
@@ -84,9 +126,7 @@ const revalidateAggregates = async () => {
 const hasNowLabel = (
   labels: Array<{ name?: string | null }> | null | undefined,
 ) =>
-  (labels ?? []).some(
-    (label) => String(label?.name ?? "").toLowerCase() === "now",
-  );
+  hasLabel(labels, "now");
 
 const revalidateNow = async () => {
   await Promise.all([
@@ -109,6 +149,7 @@ export async function POST(request: Request) {
   const revalidated: string[] = [];
   let posts: Awaited<ReturnType<typeof getAllPosts>> | null = null;
   let views: Awaited<ReturnType<typeof getAllViews>> | null = null;
+  let conferences: Awaited<ReturnType<typeof getConferences>> | null = null;
   let contentTagsRevalidated = false;
   const ensureContentTagsRevalidated = async () => {
     if (contentTagsRevalidated) {
@@ -139,6 +180,17 @@ export async function POST(request: Request) {
     }
     return views;
   };
+  const getCachedConferences = async () => {
+    if (conferences) {
+      return conferences;
+    }
+    try {
+      conferences = await getConferences();
+    } catch {
+      conferences = [];
+    }
+    return conferences;
+  };
   const revalidateViewUrlByIssueNumber = async (issueNumber: number) => {
     if (!Number.isFinite(issueNumber)) {
       return null;
@@ -151,22 +203,41 @@ export async function POST(request: Request) {
     await revalidatePath(viewUrl);
     return viewUrl;
   };
+  const revalidateConferenceUrlByIssueNumber = async (issueNumber: number) => {
+    if (!Number.isFinite(issueNumber)) {
+      return null;
+    }
+    const cachedConferences = await getCachedConferences();
+    const conferenceUrl = cachedConferences.find((item) => item.number === issueNumber)?.url;
+    if (!conferenceUrl) {
+      return null;
+    }
+    await revalidatePath(conferenceUrl);
+    return conferenceUrl;
+  };
 
   if (event === "issues") {
     const action = String(payload.action ?? "");
     if (action === "labeled" || action === "unlabeled") {
       const label = String(payload.label?.name ?? "").toLowerCase();
-      if (label === "published") {
+      if (label === "published" || label === "conference") {
         const issueNumber = Number(payload.issue?.number);
         const urlFromPayload = getPostUrlFromIssue(payload.issue);
+        const conferenceUrlFromPayload = getConferenceUrlFromIssue(payload.issue);
         const cached = await getCachedPosts();
         const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
         const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
         revalidated.push(...urls);
+        const conferenceUrls = await revalidatePostUrls([conferenceUrlFromPayload]);
+        revalidated.push(...conferenceUrls);
         await ensureContentTagsRevalidated();
         const viewUrl = await revalidateViewUrlByIssueNumber(issueNumber);
         if (viewUrl) {
           revalidated.push(viewUrl);
+        }
+        const conferenceUrl = await revalidateConferenceUrlByIssueNumber(issueNumber);
+        if (conferenceUrl) {
+          revalidated.push(conferenceUrl);
         }
         await revalidateAggregates();
         revalidated.push("/", "/feed.xml", "/sitemap.md");
@@ -186,14 +257,21 @@ export async function POST(request: Request) {
     if (action === "edited" || action === "closed" || action === "reopened") {
       const issueNumber = Number(payload.issue?.number);
       const urlFromPayload = getPostUrlFromIssue(payload.issue);
+      const conferenceUrlFromPayload = getConferenceUrlFromIssue(payload.issue);
       const cached = await getCachedPosts();
       const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
       const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
       revalidated.push(...urls);
+      const conferenceUrls = await revalidatePostUrls([conferenceUrlFromPayload]);
+      revalidated.push(...conferenceUrls);
       await ensureContentTagsRevalidated();
       const viewUrl = await revalidateViewUrlByIssueNumber(issueNumber);
       if (viewUrl) {
         revalidated.push(viewUrl);
+      }
+      const conferenceUrl = await revalidateConferenceUrlByIssueNumber(issueNumber);
+      if (conferenceUrl) {
+        revalidated.push(conferenceUrl);
       }
       await revalidateAggregates();
       revalidated.push("/", "/feed.xml", "/sitemap.md");

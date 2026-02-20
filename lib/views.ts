@@ -19,6 +19,18 @@ const buildDescription = (body: string) => {
   return `${compact.slice(0, 177)}...`;
 };
 
+const hasConferenceLabel = (
+  labels:
+    | {
+        nodes?: Array<{ name?: string | null } | null> | null;
+      }
+    | null
+    | undefined,
+) =>
+  (labels?.nodes ?? []).some(
+    (node) => String(node?.name ?? "").trim().toLowerCase() === "conference",
+  );
+
 const getLatestTimestamp = (timestamps: string[]) => {
   const valid = timestamps
     .map((value) => new Date(value))
@@ -59,6 +71,9 @@ const fetchViews = async (): Promise<View[]> => {
   const viewsByNumber = new Map<number, View>();
 
   for (const issue of issues) {
+    if (hasConferenceLabel(issue.labels)) {
+      continue;
+    }
     const parent = issue.parent;
     if (!parent) {
       continue;
