@@ -48,3 +48,16 @@ export type Book = {
   cta: string;
   status?: "published" | "upcoming";
 };
+
+export type Conference = {
+  id: string;
+  slug: string;
+  title: string;
+  event: string;
+  date: string;
+  summary: string;
+  pdfPath: string;
+  pageCount: number;
+  contentDensity: "light" | "medium" | "dense";
+  location?: string;
+};

@@ -8,18 +8,21 @@ import { CommandPalette } from "../components/CommandPalette";
 import { getAllViews } from "../lib/views";
 import { getBooks } from "../lib/books";
 import { getNowPost } from "../lib/now";
+import { getConferences } from "../lib/conferences";
 
 export default async function Home() {
   let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
   let views: Awaited<ReturnType<typeof getAllViews>> = [];
   let nowPost: Awaited<ReturnType<typeof getNowPost>> = null;
+  let conferences: Awaited<ReturnType<typeof getConferences>> = [];
   let loadError: string | null = null;
 
   try {
-    [posts, views, nowPost] = await Promise.all([
+    [posts, views, nowPost, conferences] = await Promise.all([
       getAllPosts(),
       getAllViews(),
       getNowPost(),
+      getConferences(),
     ]);
   } catch (error) {
     loadError = error instanceof Error ? error.message : "Unable to load posts.";
@@ -166,12 +169,19 @@ export default async function Home() {
               ) : null}
             </div>
             <Suspense fallback={<div className="h-6" />}>
-              <CommandPalette posts={posts} views={views} books={books} showTrigger={false} />
+              <CommandPalette
+                posts={posts}
+                views={views}
+                books={books}
+                conferences={conferences}
+                showTrigger={false}
+              />
               <LandingViews
                 posts={posts}
                 pinned={pinned}
                 views={views}
                 books={books}
+                conferences={conferences}
               />
             </Suspense>
           </div>

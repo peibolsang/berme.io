@@ -4,12 +4,19 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
-export const BackLink = () => {
+type BackLinkProps = {
+  fallbackView?: "posts" | "views" | "books" | "conferences";
+};
+
+export const BackLink = ({ fallbackView }: BackLinkProps) => {
   const searchParams = useSearchParams();
   const backHref = useMemo(() => {
-    const view = searchParams.get("view");
-    return view === "views" ? "/?view=views" : "/";
-  }, [searchParams]);
+    const view = searchParams.get("view") ?? fallbackView;
+    if (!view || view === "posts") {
+      return "/";
+    }
+    return `/?view=${view}`;
+  }, [fallbackView, searchParams]);
 
   return (
     <Link

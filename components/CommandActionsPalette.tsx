@@ -23,12 +23,21 @@ import {
 type CommandActionsPaletteProps = {
   title: string;
   url: string;
-  githubUrl: string;
+  githubUrl?: string;
   markdown: string;
   readingTime?: string;
   metadataLines?: string[];
   relatedPosts?: Array<{ title: string; url: string }>;
   geminiPrompt?: string;
+  linkCommands?: Array<{
+    id: string;
+    label: string;
+    letter: string;
+    url: string;
+    mode?: "open" | "download";
+  }>;
+  enableCopyMarkdown?: boolean;
+  enableRelatedPosts?: boolean;
   showTrigger?: boolean;
 };
 
@@ -54,6 +63,9 @@ export const CommandActionsPalette = ({
   metadataLines,
   relatedPosts,
   geminiPrompt,
+  linkCommands = [],
+  enableCopyMarkdown = true,
+  enableRelatedPosts = true,
   showTrigger = false,
 }: CommandActionsPaletteProps) => {
   const [open, setOpen] = useState(false);
@@ -71,7 +83,7 @@ export const CommandActionsPalette = ({
     setOpen(false);
     setQuery("");
     setConfirmation(null);
-  }, []);
+  }, [setConfirmation, setOpen, setQuery]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -131,18 +143,45 @@ export const CommandActionsPalette = ({
           `Title: ${title}`,
           readingTime ? `Reading time: ${readingTime}` : "Reading time: N/A",
           `URL: ${url}`,
-          `GitHub: ${githubUrl}`,
+          ...(githubUrl ? [`GitHub: ${githubUrl}`] : []),
         ];
 
+  const triggerDownload = (downloadUrl: string) => {
+    const anchor = document.createElement("a");
+    anchor.href = downloadUrl;
+    anchor.download = "";
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  };
+
   const commands = [
-    {
-      id: "github",
-      label: "Open in GitHub",
-      letter: "G",
-      icon: GitHubLogoIcon,
-      action: () => window.open(githubUrl, "_blank", "noopener,noreferrer"),
+    ...(githubUrl
+      ? [
+          {
+            id: "github",
+            label: "Open in GitHub",
+            letter: "G",
+            icon: GitHubLogoIcon,
+            action: () => window.open(githubUrl, "_blank", "noopener,noreferrer"),
+            closeOnRun: true,
+          },
+        ]
+      : []),
+    ...linkCommands.map((command) => ({
+      id: command.id,
+      label: command.label,
+      letter: command.letter,
+      icon: command.mode === "download" ? Link1Icon : Link2Icon,
+      action: () => {
+        if (command.mode === "download") {
+          triggerDownload(command.url);
+          return;
+        }
+        window.open(command.url, "_blank", "noopener,noreferrer");
+      },
       closeOnRun: true,
-    },
+    })),
     {
       id: "copy-link",
       label: "Copy Link",
@@ -152,15 +191,19 @@ export const CommandActionsPalette = ({
       confirmation: "Link copied to clipboard.",
       closeOnRun: false,
     },
-    {
-      id: "copy-markdown",
-      label: "Copy as Markdown",
-      letter: "M",
-      icon: Pencil1Icon,
-      action: () => copyToClipboard(markdown),
-      confirmation: "Markdown copied to clipboard.",
-      closeOnRun: false,
-    },
+    ...(enableCopyMarkdown
+      ? [
+          {
+            id: "copy-markdown",
+            label: "Copy as Markdown",
+            letter: "M",
+            icon: Pencil1Icon,
+            action: () => copyToClipboard(markdown),
+            confirmation: "Markdown copied to clipboard.",
+            closeOnRun: false,
+          },
+        ]
+      : []),
     {
       id: "metadata",
       label: "View Metadata",
@@ -201,36 +244,40 @@ export const CommandActionsPalette = ({
       ),
       closeOnRun: false,
     },
-    {
-      id: "related-posts",
-      label: "Show Related Posts",
-      letter: "R",
-      icon: Link1Icon,
-      action: () => {},
-      confirmation: relatedPosts?.length ? (
-        <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-            Related posts
-          </div>
-          <ul className="space-y-2 pb-1">
-            {relatedPosts.map((post) => (
-              <li key={post.url}>
-                <Link
-                  href={post.url}
-                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                  onClick={() => closePalette()}
-                >
-                  {post.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        "No related posts found."
-      ),
-      closeOnRun: false,
-    },
+    ...(enableRelatedPosts
+      ? [
+          {
+            id: "related-posts",
+            label: "Show Related Posts",
+            letter: "R",
+            icon: Link1Icon,
+            action: () => {},
+            confirmation: relatedPosts?.length ? (
+              <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  Related posts
+                </div>
+                <ul className="space-y-2 pb-1">
+                  {relatedPosts.map((post) => (
+                    <li key={post.url}>
+                      <Link
+                        href={post.url}
+                        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                        onClick={() => closePalette()}
+                      >
+                        {post.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              "No related posts found."
+            ),
+            closeOnRun: false,
+          },
+        ]
+      : []),
     ...(geminiPrompt
       ? [
           {

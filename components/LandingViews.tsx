@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { Book, Post, View } from "../types";
+import type { Book, Conference, Post, View } from "../types";
 import { PostsIndex } from "./PostsIndex";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
-const viewOptions = ["posts", "views", "books"] as const;
+const viewOptions = ["posts", "views", "books", "conferences"] as const;
 type ViewOption = (typeof viewOptions)[number];
 const viewLabels: Record<ViewOption, string> = {
   posts: "Posts",
   views: "Views",
   books: "Books",
+  conferences: "Conferences",
 };
 
 const normalizeView = (value: string | null) =>
@@ -24,9 +25,48 @@ type LandingViewsProps = {
   pinned: Post[];
   views: View[];
   books: Book[];
+  conferences: Conference[];
 };
 
-export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps) => {
+const formatConferenceDateLabels = (iso: string) => {
+  const date = new Date(iso);
+  const month = date.toLocaleDateString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return {
+    full: `${month} ${day}`,
+    compact: month,
+  };
+};
+
+const groupConferencesByYear = (entries: Conference[]) => {
+  const sorted = [...entries].sort(
+    (left, right) =>
+      new Date(right.date).getTime() - new Date(left.date).getTime(),
+  );
+  const groups = new Map<string, Conference[]>();
+
+  sorted.forEach((conference) => {
+    const year = String(new Date(conference.date).getUTCFullYear());
+    const bucket = groups.get(year) ?? [];
+    bucket.push(conference);
+    groups.set(year, bucket);
+  });
+
+  return Array.from(groups.entries())
+    .sort((left, right) => right[0].localeCompare(left[0]))
+    .map(([year, items]) => ({ year, items }));
+};
+
+export const LandingViews = ({
+  posts,
+  pinned,
+  views,
+  books,
+  conferences,
+}: LandingViewsProps) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
@@ -71,6 +111,7 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
     },
     [activeView, pathname, searchParams],
   );
+  const groupedConferences = groupConferencesByYear(conferences);
 
   return (
     <Tabs value={activeView} onValueChange={handleViewChange} className="space-y-10">
@@ -241,6 +282,69 @@ export const LandingViews = ({ posts, pinned, views, books }: LandingViewsProps)
                   </a>
                 );
               })}
+            </div>
+          )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="conferences">
+        <div id="panel-conferences">
+          <div className="mb-6">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Talks and seminars from conferences, with on-site PDF viewing.
+            </p>
+          </div>
+          {groupedConferences.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-zinc-200 bg-white/70 px-4 py-6 text-sm text-zinc-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-400">
+              No conference presentations yet.
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {groupedConferences.map((group) => (
+                <section key={group.year}>
+                  <h2 className="mb-4 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                    {group.year}
+                  </h2>
+                  <div className="space-y-5">
+                    {group.items.map((conference) => {
+                      const labels = formatConferenceDateLabels(conference.date);
+                      return (
+                        <article
+                          key={conference.id}
+                          className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
+                        >
+                          <span className="pt-1 text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
+                            <span className="sm:hidden">{labels.compact}</span>
+                            <span className="hidden sm:inline">{labels.full}</span>
+                          </span>
+                          <div>
+                            <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+                              <Link
+                                href={`/conferences/${conference.slug}`}
+                                className="hover:text-black dark:hover:text-white"
+                              >
+                                {conference.title}
+                              </Link>
+                            </h3>
+                            <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">
+                              <span>{conference.event}</span>
+                              {conference.location ? (
+                                <>
+                                  <span aria-hidden="true">•</span>
+                                  <span>{conference.location}</span>
+                                </>
+                              ) : null}
+                            </div>
+                            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+                              {conference.summary}
+                            </p>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
           )}
         </div>

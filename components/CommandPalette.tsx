@@ -17,7 +17,7 @@ import {
   Link2Icon,
 } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
-import type { Book, Post, View } from "../types";
+import type { Book, Conference, Post, View } from "../types";
 import {
   Command,
   CommandGroup,
@@ -40,6 +40,7 @@ type CommandPaletteProps = {
   posts: Post[];
   views: View[];
   books: Book[];
+  conferences: Conference[];
   showTrigger?: boolean;
 };
 
@@ -90,7 +91,7 @@ type SearchEntry = {
   title: string;
   titleLine: string;
   url: string;
-  kind: "post" | "view" | "book";
+  kind: "post" | "view" | "book" | "conference";
   createdAt: string | null;
   searchText: string;
   bodyLines: string[];
@@ -311,7 +312,13 @@ const isEditableElement = (target: EventTarget | null) => {
   );
 };
 
-export const CommandPalette = ({ posts, views, books, showTrigger = true }: CommandPaletteProps) => {
+export const CommandPalette = ({
+  posts,
+  views,
+  books,
+  conferences,
+  showTrigger = true,
+}: CommandPaletteProps) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -326,7 +333,9 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
   const [confirmation, setConfirmation] = useState<ReactNode | null>(null);
   const [sortOrder, setSortOrder] = useState<"best" | "newest" | "oldest">("best");
   const [titleOnly, setTitleOnly] = useState(false);
-  const [kindFilter, setKindFilter] = useState<"all" | "post" | "view" | "book">("all");
+  const [kindFilter, setKindFilter] = useState<
+    "all" | "post" | "view" | "book" | "conference"
+  >("all");
   const [dateFilter, setDateFilter] = useState<
     | { type: "year"; year: number }
     | { type: "month"; year: number; month: number }
@@ -392,6 +401,27 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     [books],
   );
 
+  const conferenceEntries = useMemo<SearchEntry[]>(
+    () =>
+      conferences.map((conference) => ({
+        id: `conference-${conference.id}`,
+        title: conference.title,
+        titleLine: stripMarkdownLine(conference.title || ""),
+        url: `/conferences/${conference.slug}`,
+        kind: "conference",
+        createdAt: conference.date,
+        searchText: buildSearchText(
+          `${conference.title} ${conference.event}`,
+          conference.summary,
+        ),
+        bodyLines: buildBodyLines(
+          conference.title,
+          `${conference.event}\n${conference.summary}`,
+        ),
+      })),
+    [conferences],
+  );
+
   const filterEntries = useCallback(
     (entries: SearchEntry[]) =>
       entries.filter((entry) => {
@@ -452,13 +482,14 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
     return () => window.clearTimeout(timer);
   }, [query]);
 
-  const { postResults, viewResults, bookResults } = useMemo(() => {
+  const { postResults, viewResults, bookResults, conferenceResults } = useMemo(() => {
     const needle = debouncedQuery.trim();
     if (!needle || needle.length < MIN_QUERY_LENGTH) {
       return {
         postResults: [] as Array<{ entry: SearchEntry; matches: EntryMatch[] }>,
         viewResults: [] as Array<{ entry: SearchEntry; matches: EntryMatch[] }>,
         bookResults: [] as Array<{ entry: SearchEntry; matches: EntryMatch[] }>,
+        conferenceResults: [] as Array<{ entry: SearchEntry; matches: EntryMatch[] }>,
         hasResults: false,
       };
     }
@@ -478,14 +509,33 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
       needle,
       MAX_TOTAL_MATCHES - postData.used - viewData.used,
     );
+    const conferenceData = buildMatchesForEntries(
+      sortEntries(filterEntries(conferenceEntries)),
+      needle,
+      MAX_TOTAL_MATCHES - postData.used - viewData.used - bookData.used,
+    );
 
     return {
       postResults: postData.results,
       viewResults: viewData.results,
       bookResults: bookData.results,
-      hasResults: postData.results.length + viewData.results.length + bookData.results.length > 0,
+      conferenceResults: conferenceData.results,
+      hasResults:
+        postData.results.length +
+          viewData.results.length +
+          bookData.results.length +
+          conferenceData.results.length >
+        0,
     };
-  }, [bookEntries, debouncedQuery, filterEntries, postEntries, sortEntries, viewEntries]);
+  }, [
+    bookEntries,
+    conferenceEntries,
+    debouncedQuery,
+    filterEntries,
+    postEntries,
+    sortEntries,
+    viewEntries,
+  ]);
 
   const showFilters = true;
 
@@ -693,7 +743,7 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                     </span>
                     <CommandInput
                       ref={inputRef}
-                      placeholder="Search posts by title or content..."
+                      placeholder="Search posts, views, books, conferences..."
                       value={query}
                       onValueChange={setQuery}
                       onKeyDown={(event) => {
@@ -795,14 +845,25 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                         <MenubarTrigger className={hasTypeFilter ? "text-zinc-900 dark:text-white" : undefined}>
                           {kindFilter === "all"
                             ? "In"
-                            : `In: ${kindFilter === "post" ? "Posts" : kindFilter === "view" ? "Views" : "Books"}`}
+                            : `In: ${
+                                kindFilter === "post"
+                                  ? "Posts"
+                                  : kindFilter === "view"
+                                    ? "Views"
+                                    : kindFilter === "conference"
+                                      ? "Conferences"
+                                      : "Books"
+                              }`}
                         </MenubarTrigger>
                         <MenubarContent>
                           <MenubarRadioGroup
                             value={kindFilter}
                             onValueChange={(value) =>
                               setKindFilter(
-                                value === "post" || value === "view" || value === "book"
+                                value === "post" ||
+                                  value === "view" ||
+                                  value === "book" ||
+                                  value === "conference"
                                   ? value
                                   : "all",
                               )
@@ -832,6 +893,16 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                               }
                             >
                               Books
+                            </MenubarRadioItem>
+                            <MenubarRadioItem
+                              value="conference"
+                              onSelect={() =>
+                                setKindFilter((prev) =>
+                                  prev === "conference" ? "all" : "conference",
+                                )
+                              }
+                            >
+                              Conferences
                             </MenubarRadioItem>
                           </MenubarRadioGroup>
                         </MenubarContent>
@@ -1139,6 +1210,11 @@ export const CommandPalette = ({ posts, views, books, showTrigger = true }: Comm
                     { key: "posts", label: "Posts", items: postResults },
                     { key: "views", label: "Views", items: viewResults },
                     { key: "books", label: "Books", items: bookResults },
+                    {
+                      key: "conferences",
+                      label: "Conferences",
+                      items: conferenceResults,
+                    },
                   ];
 
                   const visibleSections = sections.filter(

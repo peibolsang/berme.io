@@ -1,6 +1,7 @@
 import { getAllPosts } from "../../lib/posts";
 import { getBaseUrl } from "../../lib/site";
 import { getAllViews } from "../../lib/views";
+import { getConferences } from "../../lib/conferences";
 
 export const revalidate = 3600;
 
@@ -17,7 +18,7 @@ const asIsoDate = (value: string | null | undefined) => {
 
 type UrlEntry = {
   url: string;
-  kind: "page" | "view" | "post";
+  kind: "page" | "view" | "post" | "conference";
   title: string;
   lastModified?: string;
 };
@@ -53,7 +54,11 @@ const buildMarkdownSitemap = (baseUrl: string, entries: UrlEntry[]) => {
 
 export async function GET() {
   const baseUrl = await getBaseUrl();
-  const [posts, views] = await Promise.all([getAllPosts(), getAllViews()]);
+  const [posts, views, conferences] = await Promise.all([
+    getAllPosts(),
+    getAllViews(),
+    getConferences(),
+  ]);
   const entries: UrlEntry[] = [{ url: `${baseUrl}/`, kind: "page", title: "Home" }];
 
   for (const view of views) {
@@ -71,6 +76,15 @@ export async function GET() {
       kind: "post",
       title: post.title,
       lastModified: asIsoDate(post.updatedAt),
+    });
+  }
+
+  for (const conference of conferences) {
+    entries.push({
+      url: `${baseUrl}/conferences/${conference.slug}`,
+      kind: "conference",
+      title: conference.title,
+      lastModified: asIsoDate(conference.date),
     });
   }
 

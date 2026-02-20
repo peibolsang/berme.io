@@ -10,6 +10,7 @@ export async function GET() {
 - [Home / Posts](${baseUrl}/?view=posts): Latest articles and writing.
 - [Views](${baseUrl}/?view=views): Post view collections.
 - [Books](${baseUrl}/?view=books): Reading list and recommendations.
+- [Conferences](${baseUrl}/?view=conferences): Conference talks and seminar presentations.
 
 ## Documentation (if applicable)
 - Not applicable.
