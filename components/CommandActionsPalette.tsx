@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   MagnifyingGlassIcon,
   GitHubLogoIcon,
@@ -41,6 +41,16 @@ type CommandActionsPaletteProps = {
   showTrigger?: boolean;
 };
 
+type CommandAction = {
+  id: string;
+  label: string;
+  letter: string;
+  icon: typeof GitHubLogoIcon;
+  action: () => void | Promise<void>;
+  closeOnRun: boolean;
+  confirmation?: ReactNode;
+};
+
 const isEditableElement = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) {
     return false;
@@ -77,7 +87,7 @@ export const CommandActionsPalette = ({
     }
     return navigator.platform.toLowerCase().includes("mac") ? "Cmd+K" : "Ctrl+K";
   });
-  const [confirmation, setConfirmation] = useState<React.ReactNode | null>(null);
+  const [confirmation, setConfirmation] = useState<ReactNode | null>(null);
 
   const closePalette = useCallback(() => {
     setOpen(false);
@@ -155,7 +165,7 @@ export const CommandActionsPalette = ({
     document.body.removeChild(anchor);
   };
 
-  const commands = [
+  const commands: CommandAction[] = [
     ...(githubUrl
       ? [
           {

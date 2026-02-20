@@ -94,3 +94,13 @@
 ### What to watch next
 - Validate the transition behavior in a normal networked local run (`npm run dev`) to confirm the white flash is gone in real interaction.
 - If any residual flash remains on very large PDFs, consider pre-rendering adjacent page canvases or moving to an iframe/pdf.js custom viewer route for full transition control.
+
+## 2026-02-20 (Vercel TypeScript build fix)
+
+### What went wrong
+- Vercel `next build` failed on `components/CommandActionsPalette.tsx` because `commands` was inferred as a union where some items lacked `confirmation`, so accessing `command.confirmation` was rejected.
+
+### What worked
+- Added an explicit `CommandAction` type with optional `confirmation` and annotated `commands` as `CommandAction[]`.
+- Switched state typing to `ReactNode` import to keep type usage explicit and consistent.
+- Verified with `npm run lint` and `npx tsc --noEmit` (both pass in this environment).
