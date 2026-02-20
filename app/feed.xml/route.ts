@@ -1,7 +1,8 @@
 import { getAllPosts } from "../../lib/posts";
 import { getBaseUrl } from "../../lib/site";
+import { config } from "../../lib/config";
 
-export const revalidate = 3600;
+export const revalidate = config.revalidateSeconds;
 
 const escapeXml = (value: string) =>
   value
