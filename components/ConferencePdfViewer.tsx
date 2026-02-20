@@ -12,13 +12,22 @@ type ConferencePdfViewerProps = {
   title: string;
 };
 
+type FrozenFrame = {
+  src: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 export const ConferencePdfViewer = ({
   pdfPath,
   title,
 }: ConferencePdfViewerProps) => {
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
-  const [zoom, setZoom] = useState(1);
+  const [inlineZoom, setInlineZoom] = useState(1);
+  const [overlayZoom, setOverlayZoom] = useState(1);
   const [hasError, setHasError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -27,10 +36,11 @@ export const ConferencePdfViewer = ({
   const [lastRenderedPageImage, setLastRenderedPageImage] = useState<string | null>(
     null,
   );
-  const [frozenPageImage, setFrozenPageImage] = useState<string | null>(null);
+  const [frozenFrame, setFrozenFrame] = useState<FrozenFrame | null>(null);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
   const activeCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const activeFrameRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayContainerRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -55,13 +65,19 @@ export const ConferencePdfViewer = ({
   }, []);
 
   useEffect(() => {
+    if (isOverlayOpen) {
+      return;
+    }
     const container = containerRef.current;
     if (!container) {
       return;
     }
 
     const updateWidth = () => {
-      setContainerWidth(Math.floor(container.clientWidth));
+      const nextWidth = Math.floor(container.clientWidth);
+      if (nextWidth > 0) {
+        setContainerWidth(nextWidth);
+      }
     };
 
     updateWidth();
@@ -69,7 +85,7 @@ export const ConferencePdfViewer = ({
     observer.observe(container);
 
     return () => observer.disconnect();
-  }, []);
+  }, [isOverlayOpen]);
 
   useEffect(() => {
     if (!isOverlayOpen) {
@@ -116,6 +132,7 @@ export const ConferencePdfViewer = ({
   const isPreviewMode = isMobile && !isOverlayOpen;
   const visiblePage = isPreviewMode ? 1 : page;
   const maxPage = isPreviewMode ? Math.min(numPages, 1) : numPages;
+  const activeZoom = isOverlayOpen ? overlayZoom : inlineZoom;
 
   const getRenderedWidth = useMemo(
     () => (width: number) => {
@@ -126,9 +143,9 @@ export const ConferencePdfViewer = ({
       if (isPreviewMode) {
         return base;
       }
-      return Math.floor(base * zoom);
+      return Math.floor(base * activeZoom);
     },
-    [isPreviewMode, zoom],
+    [activeZoom, isPreviewMode],
   );
 
   const renderedWidth = getRenderedWidth(containerWidth);
@@ -138,8 +155,8 @@ export const ConferencePdfViewer = ({
       return undefined;
     }
     const baseHeight = Math.max(320, overlayContainerHeight - 24);
-    return Math.floor(baseHeight * zoom);
-  }, [overlayContainerHeight, zoom]);
+    return Math.floor(baseHeight * overlayZoom);
+  }, [overlayContainerHeight, overlayZoom]);
 
   const overlayMaxWidth = useMemo(() => {
     if (!viewportWidth || !overlayRenderedHeight) {
@@ -158,19 +175,36 @@ export const ConferencePdfViewer = ({
       return;
     }
 
-    if (lastRenderedPageImage) {
-      setFrozenPageImage(lastRenderedPageImage);
-    } else {
-      const canvas = activeCanvasRef.current;
+    const canvas = activeCanvasRef.current;
+    const frame = activeFrameRef.current;
+    if (canvas && frame) {
+      const canvasRect = canvas.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
+      let src: string | null = null;
       if (canvas) {
         try {
-          setFrozenPageImage(canvas.toDataURL("image/png"));
+          src = canvas.toDataURL("image/png");
         } catch {
-          setFrozenPageImage(null);
+          src = null;
         }
-      } else {
-        setFrozenPageImage(null);
       }
+      if (!src) {
+        src = lastRenderedPageImage;
+      }
+
+      if (src && canvasRect.width > 0 && canvasRect.height > 0) {
+        setFrozenFrame({
+          src,
+          left: canvasRect.left - frameRect.left,
+          top: canvasRect.top - frameRect.top,
+          width: canvasRect.width,
+          height: canvasRect.height,
+        });
+      } else {
+        setFrozenFrame(null);
+      }
+    } else {
+      setFrozenFrame(null);
     }
 
     setIsPageTransitioning(true);
@@ -180,7 +214,7 @@ export const ConferencePdfViewer = ({
   const renderViewer = (
     width: number | undefined,
     height: number | undefined,
-    container: React.RefObject<HTMLDivElement | null>,
+    variant: "inline" | "overlay",
     expanded = false,
   ) => {
     const frameHeight = height
@@ -189,9 +223,12 @@ export const ConferencePdfViewer = ({
         ? Math.max(360, Math.floor(width / pageAspectRatio))
         : 420;
 
+    const shouldFreezeFrame = isPageTransitioning && Boolean(frozenFrame);
+    const freezeFrame = shouldFreezeFrame ? frozenFrame : null;
+
     return (
       <div
-        ref={container}
+        ref={variant === "overlay" ? overlayContainerRef : containerRef}
         className={`overflow-auto rounded-xl border border-zinc-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900 ${
           expanded ? "h-full" : ""
         }`}
@@ -211,48 +248,67 @@ export const ConferencePdfViewer = ({
           onLoadError={() => {
             setHasError(true);
             setIsPageTransitioning(false);
-            setFrozenPageImage(null);
+            setFrozenFrame(null);
           }}
         >
-          <div className="relative" style={{ minHeight: frameHeight }}>
-            <Page
-              pageNumber={Math.min(visiblePage, Math.max(1, numPages || 1))}
-              width={height ? undefined : width}
-              height={height}
-              canvasRef={(canvas) => {
-                if (canvas) {
-                  activeCanvasRef.current = canvas;
-                }
-              }}
-              onLoadSuccess={(loadedPage) => {
-                const viewport = loadedPage.getViewport({ scale: 1 });
-                if (viewport.height > 0) {
-                  setPageAspectRatio(viewport.width / viewport.height);
-                }
-              }}
-              onRenderSuccess={() => {
-                const canvas = activeCanvasRef.current;
-                if (canvas) {
-                  try {
-                    setLastRenderedPageImage(canvas.toDataURL("image/png"));
-                  } catch {
-                    setLastRenderedPageImage(null);
+          <div
+            ref={(node) => {
+              if (node) {
+                activeFrameRef.current = node;
+              }
+            }}
+            className="relative"
+            style={{ minHeight: frameHeight }}
+          >
+            <div
+              className={shouldFreezeFrame ? "opacity-0" : "opacity-100"}
+              aria-hidden={shouldFreezeFrame}
+            >
+              <Page
+                pageNumber={Math.min(visiblePage, Math.max(1, numPages || 1))}
+                width={height ? undefined : width}
+                height={height}
+                canvasRef={(canvas) => {
+                  if (canvas) {
+                    activeCanvasRef.current = canvas;
                   }
-                }
+                }}
+                onLoadSuccess={(loadedPage) => {
+                  const viewport = loadedPage.getViewport({ scale: 1 });
+                  if (viewport.height > 0) {
+                    setPageAspectRatio(viewport.width / viewport.height);
+                  }
+                }}
+                onRenderSuccess={() => {
+                  const canvas = activeCanvasRef.current;
+                  if (canvas) {
+                    try {
+                      setLastRenderedPageImage(canvas.toDataURL("image/png"));
+                    } catch {
+                      setLastRenderedPageImage(null);
+                    }
+                  }
 
-                setIsPageTransitioning(false);
-                setFrozenPageImage(null);
-              }}
-              renderAnnotationLayer={false}
-              renderTextLayer={false}
-              loading={<div style={{ minHeight: frameHeight }} />}
-            />
-            {isPageTransitioning && frozenPageImage ? (
+                  setIsPageTransitioning(false);
+                  setFrozenFrame(null);
+                }}
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+                loading={<div style={{ minHeight: frameHeight }} />}
+              />
+            </div>
+            {freezeFrame ? (
               <img
-                src={frozenPageImage}
+                src={freezeFrame.src}
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-10 h-full w-full object-contain"
+                className="pointer-events-none absolute z-10 select-none"
+                style={{
+                  left: freezeFrame.left,
+                  top: freezeFrame.top,
+                  width: freezeFrame.width,
+                  height: freezeFrame.height,
+                }}
               />
             ) : null}
           </div>
@@ -299,14 +355,22 @@ export const ConferencePdfViewer = ({
           <>
             <button
               type="button"
-              onClick={() => setZoom((current) => Math.max(0.7, current - 0.1))}
+              onClick={() =>
+                isOverlayOpen
+                  ? setOverlayZoom((current) => Math.max(0.7, current - 0.1))
+                  : setInlineZoom((current) => Math.max(0.7, current - 0.1))
+              }
               className="rounded-md border border-zinc-200 px-2 py-1 dark:border-slate-700"
             >
               Zoom -
             </button>
             <button
               type="button"
-              onClick={() => setZoom((current) => Math.min(2, current + 0.1))}
+              onClick={() =>
+                isOverlayOpen
+                  ? setOverlayZoom((current) => Math.min(2, current + 0.1))
+                  : setInlineZoom((current) => Math.min(2, current + 0.1))
+              }
               className="rounded-md border border-zinc-200 px-2 py-1 dark:border-slate-700"
             >
               Zoom +
@@ -315,7 +379,14 @@ export const ConferencePdfViewer = ({
         ) : null}
         <button
           type="button"
-          onClick={() => setIsOverlayOpen((current) => !current)}
+          onClick={() => {
+            if (isOverlayOpen) {
+              setIsOverlayOpen(false);
+              return;
+            }
+            setOverlayZoom(inlineZoom);
+            setIsOverlayOpen(true);
+          }}
           className="rounded-md border border-zinc-200 px-2 py-1 dark:border-slate-700"
         >
           {isOverlayOpen ? "Close large view" : "Expand viewer"}
@@ -355,7 +426,7 @@ export const ConferencePdfViewer = ({
                 {renderViewer(
                   overlayRenderedWidth,
                   overlayRenderedHeight,
-                  overlayContainerRef,
+                  "overlay",
                   true,
                 )}
               </div>
@@ -368,8 +439,10 @@ export const ConferencePdfViewer = ({
   return (
     <div className="space-y-4">
       {controls}
-      {renderViewer(renderedWidth, undefined, containerRef)}
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{title}</p>
+      {!isOverlayOpen ? renderViewer(renderedWidth, undefined, "inline") : null}
+      {!isOverlayOpen ? (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">{title}</p>
+      ) : null}
       {overlay}
     </div>
   );

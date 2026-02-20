@@ -104,3 +104,77 @@
 - Added an explicit `CommandAction` type with optional `confirmation` and annotated `commands` as `CommandAction[]`.
 - Switched state typing to `ReactNode` import to keep type usage explicit and consistent.
 - Verified with `npm run lint` and `npx tsc --noEmit` (both pass in this environment).
+
+## 2026-02-20 (Expanded PDF viewer frame flicker fix)
+
+### Root cause
+- In expanded mode, the component was rendering both inline and overlay PDF viewers concurrently, sharing a single `activeCanvasRef`.
+- During page transitions, the frozen snapshot could be captured from the wrong viewer size, producing a visible white frame artifact around the page.
+
+### Fix
+- Render only one viewer at a time: hide inline viewer while overlay is open.
+- Keep transition freeze behavior but explicitly hide the live `<Page>` while the frozen snapshot is active, preventing intermediate white frame exposure.
+- Refactored viewer helper signature to choose refs internally and satisfy strict refs linting.
+
+### Validation
+- `npm run lint` passes (0 errors; only existing `no-img-element` warnings).
+
+## 2026-02-20 (Expanded viewer page-shift RCA fix)
+
+### Root cause
+- The transition freeze image was rendered as full-frame `object-contain`, which can re-center/re-scale compared to the live PDF canvas.
+- In overlay mode this caused a small apparent "page move" before next page render completion.
+
+### Fix
+- Replaced freeze state from plain image URL to a geometry-locked frame (`left`, `top`, `width`, `height`, `src`) captured from the live canvas bounds.
+- Render freeze overlay at the exact captured canvas position/size, preventing recentering drift.
+- Kept existing transition logic and controls unchanged.
+
+### Validation
+- `npm run lint` passes (0 errors; existing warnings unchanged).
+- `npx tsc --noEmit` passes.
+
+## 2026-02-20 (Expanded viewer shrink-left follow-up fix)
+
+### Root cause refinement
+- Freeze snapshot selection prioritized `lastRenderedPageImage`, which could come from the prior inline viewer size when overlay had just opened.
+- This stale snapshot produced a visible shrink/left-shift effect before next-page render.
+- Position clamping (`Math.max(0, ...)`) could also force slight left snaps in some layouts.
+
+### Fix
+- Transition now always captures from the current active canvas first (`canvas.toDataURL`) and only falls back to cached image on failure.
+- Removed left/top clamping for freeze overlay geometry to preserve exact measured placement.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (0 errors; existing warnings unchanged).
+
+## 2026-02-20 (Overlay-close scale regression fix)
+
+### Root cause
+- Zoom state was shared between inline and overlay viewers, so expanded-view sizing interactions could leak into normal view and leave horizontal overflow after closing overlay.
+
+### Fix
+- Split zoom into `inlineZoom` and `overlayZoom`.
+- On opening overlay, initialize `overlayZoom` from current `inlineZoom` in the expand button handler.
+- Keep zoom controls mode-aware: adjust overlay zoom only when overlay is open, otherwise inline zoom.
+- Avoided effect-based sync to satisfy strict hooks linting (`react-hooks/set-state-in-effect`).
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (0 errors; existing warnings unchanged).
+
+## 2026-02-20 (Overlay-close width observer RCA fix)
+
+### Root cause
+- Inline viewer width relied on a `ResizeObserver` attached once at mount.
+- Opening overlay unmounted inline viewer; observer lifecycle could emit/retain width `0`.
+- On close, inline viewer remounted but width measurement was stale, so `Page` sometimes rendered with undefined width and default intrinsic PDF size (horizontal overflow).
+
+### Fix
+- Rebind inline width observer whenever inline mode is active (`isOverlayOpen === false`).
+- Ignore zero-width observer updates to avoid poisoning inline width state during unmount transitions.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (0 errors; existing warnings unchanged).
