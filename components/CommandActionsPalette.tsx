@@ -11,7 +11,6 @@ import {
   Link1Icon,
   MagicWandIcon,
 } from "@radix-ui/react-icons";
-import Link from "next/link";
 import {
   Command,
   CommandInput,
@@ -28,6 +27,7 @@ type CommandActionsPaletteProps = {
   readingTime?: string;
   metadataLines?: string[];
   relatedPosts?: Array<{ title: string; url: string }>;
+  relatedConferences?: Array<{ title: string; url: string }>;
   geminiPrompt?: string;
   linkCommands?: Array<{
     id: string;
@@ -38,7 +38,26 @@ type CommandActionsPaletteProps = {
   }>;
   enableCopyMarkdown?: boolean;
   enableRelatedPosts?: boolean;
+  enableRelatedConferences?: boolean;
   showTrigger?: boolean;
+};
+
+type RelatedCommandItem = {
+  title: string;
+  url: string;
+};
+
+type RelatedConfirmationConfig = {
+  title: string;
+  emptyMessage: string;
+  items: RelatedCommandItem[];
+};
+
+type RelatedConfirmation = {
+  title: string;
+  emptyMessage: string;
+  items: RelatedCommandItem[];
+  selectedIndex: number;
 };
 
 type CommandAction = {
@@ -48,7 +67,7 @@ type CommandAction = {
   icon: typeof GitHubLogoIcon;
   action: () => void | Promise<void>;
   closeOnRun: boolean;
-  confirmation?: ReactNode;
+  confirmation?: ReactNode | RelatedConfirmationConfig;
 };
 
 const isEditableElement = (target: EventTarget | null) => {
@@ -72,10 +91,12 @@ export const CommandActionsPalette = ({
   readingTime,
   metadataLines,
   relatedPosts,
+  relatedConferences,
   geminiPrompt,
   linkCommands = [],
   enableCopyMarkdown = true,
   enableRelatedPosts = true,
+  enableRelatedConferences = false,
   showTrigger = false,
 }: CommandActionsPaletteProps) => {
   const [open, setOpen] = useState(false);
@@ -88,12 +109,16 @@ export const CommandActionsPalette = ({
     return navigator.platform.toLowerCase().includes("mac") ? "Cmd+K" : "Ctrl+K";
   });
   const [confirmation, setConfirmation] = useState<ReactNode | null>(null);
+  const [relatedConfirmation, setRelatedConfirmation] = useState<RelatedConfirmation | null>(
+    null,
+  );
 
   const closePalette = useCallback(() => {
     setOpen(false);
     setQuery("");
     setConfirmation(null);
-  }, [setConfirmation, setOpen, setQuery]);
+    setRelatedConfirmation(null);
+  }, [setConfirmation, setOpen, setQuery, setRelatedConfirmation]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -125,6 +150,80 @@ export const CommandActionsPalette = ({
       document.body.style.overflow = previousOverflow;
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !relatedConfirmation) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setRelatedConfirmation((current) => {
+          if (!current) {
+            return current;
+          }
+          if (current.items.length === 0) {
+            return current;
+          }
+          if (current.selectedIndex < 0) {
+            return {
+              ...current,
+              selectedIndex: 0,
+            };
+          }
+          return {
+            ...current,
+            selectedIndex: (current.selectedIndex + 1) % current.items.length,
+          };
+        });
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setRelatedConfirmation((current) => {
+          if (!current) {
+            return current;
+          }
+          if (current.items.length === 0) {
+            return current;
+          }
+          if (current.selectedIndex < 0) {
+            return {
+              ...current,
+              selectedIndex: current.items.length - 1,
+            };
+          }
+          return {
+            ...current,
+            selectedIndex:
+              (current.selectedIndex - 1 + current.items.length) % current.items.length,
+          };
+        });
+      }
+      if (event.key === "Enter") {
+        setRelatedConfirmation((current) => {
+          if (!current) {
+            return current;
+          }
+          if (current.selectedIndex < 0) {
+            return current;
+          }
+          const selected = current.items[current.selectedIndex];
+          if (!selected) {
+            return current;
+          }
+          if (typeof window !== "undefined") {
+            window.location.assign(selected.url);
+          }
+          closePalette();
+          return current;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closePalette, open, relatedConfirmation]);
 
   const copyToClipboard = async (value: string) => {
     if (navigator.clipboard?.writeText) {
@@ -164,6 +263,27 @@ export const CommandActionsPalette = ({
     anchor.click();
     document.body.removeChild(anchor);
   };
+
+  const toRelatedConfirmationConfig = (
+    titleText: string,
+    emptyMessage: string,
+    items: RelatedCommandItem[] | undefined,
+  ): RelatedConfirmationConfig => ({
+    title: titleText,
+    emptyMessage,
+    items: items ?? [],
+  });
+
+  const isRelatedConfirmationConfig = (
+    value: CommandAction["confirmation"],
+  ): value is RelatedConfirmationConfig =>
+    Boolean(
+      value &&
+      typeof value === "object" &&
+      "items" in value &&
+      "title" in value &&
+      "emptyMessage" in value,
+    );
 
   const commands: CommandAction[] = [
     ...(githubUrl
@@ -262,27 +382,27 @@ export const CommandActionsPalette = ({
             letter: "R",
             icon: Link1Icon,
             action: () => {},
-            confirmation: relatedPosts?.length ? (
-              <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                  Related posts
-                </div>
-                <ul className="space-y-2 pb-1">
-                  {relatedPosts.map((post) => (
-                    <li key={post.url}>
-                      <Link
-                        href={post.url}
-                        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                        onClick={() => closePalette()}
-                      >
-                        {post.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              "No related posts found."
+            confirmation: toRelatedConfirmationConfig(
+              "Related posts",
+              "No related posts found.",
+              relatedPosts,
+            ),
+            closeOnRun: false,
+          },
+        ]
+      : []),
+    ...(enableRelatedConferences
+      ? [
+          {
+            id: "related-conferences",
+            label: "Show Related Conferences",
+            letter: "C",
+            icon: Link1Icon,
+            action: () => {},
+            confirmation: toRelatedConfirmationConfig(
+              "Related conferences",
+              "No related conferences found.",
+              relatedConferences,
             ),
             closeOnRun: false,
           },
@@ -364,12 +484,15 @@ export const CommandActionsPalette = ({
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
             <Command shouldFilter={false}>
               <div className="relative">
-                {confirmation ? (
+                {confirmation || relatedConfirmation ? (
                   <div className="flex items-center gap-3 border-b border-zinc-200 px-4 py-2.5 text-sm text-zinc-600 dark:border-slate-700 dark:text-zinc-300">
                     <button
                       type="button"
                       className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition hover:text-zinc-700 dark:border-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                      onClick={() => setConfirmation(null)}
+                      onClick={() => {
+                        setConfirmation(null);
+                        setRelatedConfirmation(null);
+                      }}
                     >
                       <ArrowLeftIcon className="h-3.5 w-3.5" />
                     </button>
@@ -399,7 +522,19 @@ export const CommandActionsPalette = ({
                           closePalette();
                           return;
                         }
-                        setConfirmation(command.confirmation ?? "Done.");
+                        if (isRelatedConfirmationConfig(command.confirmation)) {
+                          setRelatedConfirmation({
+                            ...command.confirmation,
+                            selectedIndex: -1,
+                          });
+                          setConfirmation(null);
+                        } else if (command.confirmation) {
+                          setConfirmation(command.confirmation);
+                          setRelatedConfirmation(null);
+                        } else {
+                          setConfirmation("Done.");
+                          setRelatedConfirmation(null);
+                        }
                       }}
                       className="pl-10"
                     />
@@ -407,9 +542,54 @@ export const CommandActionsPalette = ({
                 )}
               </div>
               <CommandList className="max-h-[60vh] overflow-y-auto">
-                {confirmation ? (
+                {confirmation || relatedConfirmation ? (
                   <div className="flex max-h-[50vh] items-start justify-center px-6 py-6 text-sm text-zinc-600 dark:text-zinc-300">
-                    <div className="w-full break-words">{confirmation}</div>
+                    <div className="w-full break-words">
+                      {relatedConfirmation ? (
+                        <div className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+                          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                            {relatedConfirmation.title}
+                          </div>
+                          {relatedConfirmation.items.length === 0 ? (
+                            <p>{relatedConfirmation.emptyMessage}</p>
+                          ) : (
+                            <ul className="space-y-2 pb-1">
+                              {relatedConfirmation.items.map((item, index) => {
+                                const isSelected = index === relatedConfirmation.selectedIndex;
+                                return (
+                                  <li key={item.url}>
+                                    <button
+                                      type="button"
+                                      className={`w-full rounded px-2 py-1 text-left ${
+                                        isSelected
+                                          ? "bg-zinc-100 text-zinc-900 dark:bg-slate-800 dark:text-white"
+                                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                                      }`}
+                                      onMouseEnter={() =>
+                                        setRelatedConfirmation((current) => {
+                                          if (!current) {
+                                            return current;
+                                          }
+                                          return { ...current, selectedIndex: index };
+                                        })
+                                      }
+                                      onClick={() => {
+                                        window.location.assign(item.url);
+                                        closePalette();
+                                      }}
+                                    >
+                                      {item.title}
+                                    </button>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </div>
+                      ) : (
+                        confirmation
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -429,7 +609,19 @@ export const CommandActionsPalette = ({
                                 closePalette();
                                 return;
                               }
-                              setConfirmation(command.confirmation ?? "Done.");
+                              if (isRelatedConfirmationConfig(command.confirmation)) {
+                                setRelatedConfirmation({
+                                  ...command.confirmation,
+                                  selectedIndex: -1,
+                                });
+                                setConfirmation(null);
+                              } else if (command.confirmation) {
+                                setConfirmation(command.confirmation);
+                                setRelatedConfirmation(null);
+                              } else {
+                                setConfirmation("Done.");
+                                setRelatedConfirmation(null);
+                              }
                             }}
                             className="flex items-center justify-between gap-3 px-2 py-2"
                           >

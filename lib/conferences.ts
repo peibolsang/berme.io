@@ -195,6 +195,9 @@ const fetchConferences = async (): Promise<Conference[]> => {
       const density = inferDensity(body, pageCount);
       const summary = buildSummary(data.excerpt, body);
       const location = typeof data.location === "string" ? data.location.trim() : "";
+      const labels = issue.labels
+        .map((label) => String(label.name ?? "").trim())
+        .filter(Boolean);
       const baseConference: Conference = {
         id: String(issue.id),
         number: issue.number,
@@ -206,6 +209,7 @@ const fetchConferences = async (): Promise<Conference[]> => {
         pdfPath,
         pageCount,
         contentDensity: density,
+        labels,
         url: buildConferenceUrl(slug),
       };
 

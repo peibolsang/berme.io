@@ -216,3 +216,32 @@
 ### Validation
 - `npx tsc --noEmit` passes.
 - `npm run lint` passes (existing warnings unchanged).
+
+## 2026-02-20 (Conference CMDK related content actions)
+
+### What went right
+- Added conference-page command actions for related content using the same confirmation-list UI pattern as post related posts.
+- Implemented:
+  - `Show Related Conferences` (shared conference tags)
+  - `Show Related Posts` (shared conference tags vs post labels)
+- Extended command palette component to support optional related conferences payload.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (existing warnings unchanged).
+
+## 2026-02-20 (Keyboard navigation for related CMDK lists)
+
+### What went right
+- Added keyboard navigation for conference-page related result lists in command confirmation mode:
+  - ArrowUp / ArrowDown cycle selection
+  - Enter opens selected item
+- Preserved existing confirmation UX for non-related commands.
+
+### Implementation notes
+- Introduced explicit `relatedConfirmation` state separate from generic confirmation content to keep type safety and predictable rendering.
+- Added hover-to-select behavior for mouse + keyboard consistency.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes (existing warnings unchanged).

@@ -5,6 +5,7 @@ import { BackLink } from "../../../components/BackLink";
 import { CommandActionsPalette } from "../../../components/CommandActionsPalette";
 import { ConferencePdfViewerClient } from "../../../components/ConferencePdfViewerClient";
 import { getConferenceBySlug, getConferences } from "../../../lib/conferences";
+import { getAllPosts } from "../../../lib/posts";
 
 type PageProps = {
   params: Promise<{
@@ -35,6 +36,14 @@ const getConferenceReadingTime = (
   const minutes = Math.max(1, Math.ceil(pageCount * minutesPerPage));
   return `${minutes} min read`;
 };
+
+const formatLabels = (labels: string[]) =>
+  labels.filter((label) => {
+    const normalized = label.trim().toLowerCase();
+    return normalized !== "published" && normalized !== "conference";
+  });
+
+const normalizeLabel = (label: string) => label.trim().toLowerCase();
 
 const toViewerPdfPath = (pdfPath: string) => {
   if (/^https?:\/\//i.test(pdfPath)) {
@@ -86,7 +95,11 @@ export const generateMetadata = async ({
 
 export default async function ConferenceDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const conference = await getConferenceBySlug(slug);
+  const [conference, allConferences, allPosts] = await Promise.all([
+    getConferenceBySlug(slug),
+    getConferences(),
+    getAllPosts(),
+  ]);
   if (!conference) {
     notFound();
   }
@@ -96,6 +109,25 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
     conference.contentDensity,
   );
   const viewerPdfPath = toViewerPdfPath(conference.pdfPath);
+  const visibleLabels = formatLabels(conference.labels);
+  const relatedLabelSet = new Set(visibleLabels.map(normalizeLabel));
+  const relatedConferences = allConferences
+    .filter((entry) => entry.id !== conference.id)
+    .filter((entry) =>
+      formatLabels(entry.labels).some((label) => relatedLabelSet.has(normalizeLabel(label))),
+    )
+    .map((entry) => ({
+      title: entry.title,
+      url: `/conferences/${entry.slug}`,
+    }));
+  const relatedPosts = allPosts
+    .filter((post) =>
+      post.labels.some((label) => relatedLabelSet.has(normalizeLabel(label))),
+    )
+    .map((post) => ({
+      title: post.title,
+      url: post.url,
+    }));
 
   return (
     <div className="min-h-screen">
@@ -110,9 +142,12 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
           `Reading time: ${readingTime}`,
           `Pages: ${conference.pageCount}`,
           `Density: ${conference.contentDensity}`,
+          `Labels: ${visibleLabels.join(", ") || "None"}`,
           `URL: /conferences/${conference.slug}`,
           `PDF: ${conference.pdfPath}`,
         ]}
+        relatedPosts={relatedPosts}
+        relatedConferences={relatedConferences}
         linkCommands={[
           {
             id: "open-pdf",
@@ -130,7 +165,8 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
           },
         ]}
         enableCopyMarkdown={false}
-        enableRelatedPosts={false}
+        enableRelatedPosts
+        enableRelatedConferences
       />
 
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
@@ -166,7 +202,7 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
                 <span aria-hidden="true">•</span>
                 <a
                   className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                  href={conference.pdfPath}
+                  href={viewerPdfPath}
                   download
                 >
                   Download PDF
@@ -180,6 +216,18 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+          {visibleLabels.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {visibleLabels.map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-200"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 

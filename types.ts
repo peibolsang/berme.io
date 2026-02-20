@@ -61,5 +61,6 @@ export type Conference = {
   pageCount: number;
   contentDensity: "light" | "medium" | "dense";
   location?: string;
+  labels: string[];
   url: string;
 };
