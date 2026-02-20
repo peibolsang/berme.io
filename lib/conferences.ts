@@ -12,10 +12,7 @@ const hasConferenceLabel = (labels: Array<{ name?: string }>) =>
     (label) => String(label.name ?? "").trim().toLowerCase() === CONFERENCE_LABEL,
   );
 
-const asDate = (value: string | null | undefined) => {
-  if (!value) {
-    return null;
-  }
+const asDate = (value: string) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 };
@@ -172,9 +169,8 @@ const fetchConferences = async (): Promise<Conference[]> => {
         return null;
       }
 
-      const date = asDate(
-        typeof data.publishedAt === "string" ? data.publishedAt : issue.created_at,
-      );
+      const publishedAtRaw = data.publishedAt ?? issue.created_at;
+      const date = asDate(publishedAtRaw as string);
       if (!date) {
         return null;
       }
