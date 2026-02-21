@@ -63,10 +63,7 @@ const buildSummary = (excerpt: unknown, body: string) => {
   if (!normalized) {
     return "Presentation slides and conference notes.";
   }
-  if (normalized.length <= 220) {
-    return normalized;
-  }
-  return `${normalized.slice(0, 217).trimEnd()}...`;
+  return normalized;
 };
 
 const resolvePdfUrl = (frontmatter: Record<string, unknown>, body: string) => {
