@@ -245,3 +245,36 @@
 ### Validation
 - `npx tsc --noEmit` passes.
 - `npm run lint` passes (existing warnings unchanged).
+
+## 2026-02-22 (Codebase re-familiarization)
+
+### What went right
+- Fast re-onboarding by reading `app/` route entrypoints first (`app/page.tsx`, post/view/now/conference pages), then `lib/` fetch/cache modules.
+- Confirmed content model boundaries are still clear:
+  - posts from `published` issues excluding `conference`,
+  - views from parent/child issue links excluding `conference`,
+  - conferences from `published+conference` issues with required `event` + PDF URL resolution.
+- Webhook invalidation remains comprehensive across path + tag revalidation, now including conference detail URLs and `conferences` tag.
+
+### Validation
+- `npm run lint` passes with 0 errors and 8 warnings, all `@next/next/no-img-element`.
+
+### What to watch next
+- `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` still hardcode `revalidate = 3600` instead of `config.revalidateSeconds`.
+- `lib/now.ts` still duplicates GitHub REST fetch/header logic from `lib/github.ts`; shared fetch utility would reduce drift risk.
+- PDF page-count estimation in `lib/conferences.ts` depends on naive `/Type /Page` counting and can under/over-count on edge PDFs.
+
+## 2026-02-22 (Webhook label-change revalidation bugfix)
+
+### Root cause
+- In `app/api/revalidate/route.ts`, `issues` events with `action: labeled|unlabeled` only triggered content revalidation when the changed label was exactly `published` or `conference`.
+- Changing any other label (the ones rendered as chips) did trigger the webhook endpoint but skipped `conferences`/`posts` revalidation, so pages could stay stale until TTL expiry.
+
+### Fix
+- Added shared `revalidateIssueContent()` helper and reused it for both `labeled|unlabeled` and `edited|closed|reopened` issue actions.
+- Added `issueExistsInContentCaches()` guard so label-change events revalidate content when the issue is already present in post/view/conference caches, even if `published`/`conference` was just removed.
+- Kept `now` handling intact (`label === "now"` still revalidates `/` and `/now` + `now` tag).
+
+### Validation
+- `npm run lint` passes (0 errors; existing 8 `no-img-element` warnings unchanged).
+- `npx tsc --noEmit` passes.
