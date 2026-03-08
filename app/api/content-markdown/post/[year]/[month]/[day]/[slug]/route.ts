@@ -1,4 +1,3 @@
-import { config } from "../../../../../../../../lib/config";
 import {
   buildPostMarkdownDocument,
   MARKDOWN_CONTENT_TYPE,
@@ -22,7 +21,7 @@ const notFoundResponse = () =>
     },
   });
 
-export const revalidate = config.revalidateSeconds;
+export const revalidate = 3600;
 
 export async function GET(_request: Request, { params }: RouteContext) {
   const { year, month, day, slug } = await params;

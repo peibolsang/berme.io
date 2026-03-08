@@ -346,6 +346,26 @@
 ### What to watch next
 - Because `next.config.ts` changed again, the dev server must be restarted before testing the `.md` URLs.
 
+## 2026-03-08 (Vercel segment config fix)
+
+### Root cause
+- Vercel production build rejected route files that exported `revalidate = config.revalidateSeconds`.
+- In Next.js segment config exports, `revalidate` must be statically analyzable; imported config expressions are invalid even when they evaluate to a number.
+
+### Fix
+- Replaced non-static `revalidate` exports with the literal `3600` in:
+  - `app/sitemap.md/route.ts`
+  - `app/api/content-markdown/post/[year]/[month]/[day]/[slug]/route.ts`
+  - `app/api/content-markdown/view/[slug]/route.ts`
+  - `app/api/content-markdown/conference/[slug]/route.ts`
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes with only the existing 8 `@next/next/no-img-element` warnings.
+
+### What to watch next
+- Keep route/page segment config exports literal. If a shared TTL is needed, use shared cached fetchers for runtime behavior and reserve segment config exports for literal values only.
+
 ### What went right
 - Added conference-page command actions for related content using the same confirmation-list UI pattern as post related posts.
 - Implemented:

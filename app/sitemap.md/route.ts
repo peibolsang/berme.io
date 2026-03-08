@@ -2,10 +2,9 @@ import { getAllPosts } from "../../lib/posts";
 import { getBaseUrl } from "../../lib/site";
 import { getAllViews } from "../../lib/views";
 import { getConferences } from "../../lib/conferences";
-import { config } from "../../lib/config";
 import { toMarkdownUrl } from "../../lib/markdown-exports";
 
-export const revalidate = config.revalidateSeconds;
+export const revalidate = 3600;
 
 const asIsoDate = (value: string | null | undefined) => {
   if (!value) {
