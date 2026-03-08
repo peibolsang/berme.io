@@ -5,6 +5,7 @@ import { getAllViews } from "../../../lib/views";
 import { getConferences } from "../../../lib/conferences";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
+import { toMarkdownUrl } from "../../../lib/markdown-exports";
 
 const verifySignature = (body: string, signature: string | null) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET ?? "";
@@ -99,7 +100,11 @@ const getConferenceUrlFromIssue = (issue: {
 };
 
 const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
-  const unique = Array.from(new Set(urls.filter(Boolean))) as string[];
+  const unique = Array.from(
+    new Set(
+      (urls.filter(Boolean) as string[]).flatMap((url) => [url, toMarkdownUrl(url)]),
+    ),
+  );
   await Promise.all(unique.map((url) => revalidatePath(url)));
   return unique;
 };
@@ -200,7 +205,7 @@ export async function POST(request: Request) {
     if (!viewUrl) {
       return null;
     }
-    await revalidatePath(viewUrl);
+    await Promise.all([revalidatePath(viewUrl), revalidatePath(toMarkdownUrl(viewUrl))]);
     return viewUrl;
   };
   const revalidateConferenceUrlByIssueNumber = async (issueNumber: number) => {
@@ -212,7 +217,10 @@ export async function POST(request: Request) {
     if (!conferenceUrl) {
       return null;
     }
-    await revalidatePath(conferenceUrl);
+    await Promise.all([
+      revalidatePath(conferenceUrl),
+      revalidatePath(toMarkdownUrl(conferenceUrl)),
+    ]);
     return conferenceUrl;
   };
   const issueExistsInContentCaches = async (issueNumber: number) => {

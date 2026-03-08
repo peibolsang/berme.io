@@ -219,6 +219,133 @@
 
 ## 2026-02-20 (Conference CMDK related content actions)
 
+## 2026-03-08
+
+### What went right
+- Re-reading `AGENT_NOTES.md` first made the current architecture and prior problem areas easy to verify instead of rediscovering.
+- The project structure is still coherent: GitHub Issues feed `lib/posts.ts`, `lib/views.ts`, `lib/conferences.ts`, and `lib/now.ts`, and App Router pages stay mostly thin.
+- Webhook invalidation in `app/api/revalidate/route.ts` remains the operational center of the site and cleanly covers posts, views, conferences, comments, and `now`.
+
+### What went wrong
+- `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` still hardcode `revalidate = 3600` instead of sourcing `config.revalidateSeconds`.
+- Lint passes, but warning count is now 8 rather than the previously noted 6; all are `@next/next/no-img-element`.
+
+### Corrections received
+- None this session.
+
+### What worked well
+- Reading the homepage composition (`app/page.tsx`) together with the data modules gave the fastest accurate mental model of the site.
+- A quick lint run after inspection confirmed the repo is currently clean apart from known image warnings.
+
+### What to watch next
+- If cache behavior is adjusted, align route-level revalidation constants with `lib/config.ts` to avoid TTL drift.
+- `lib/now.ts` still duplicates GitHub REST fetch setup already present in `lib/github.ts`; a shared fetch helper would remove duplicate auth/error behavior.
+- If image performance work starts, the warning hotspots are post/view/now detail pages, `components/LandingViews.tsx`, and `components/ConferencePdfViewer.tsx`.
+
+## 2026-03-08 (Bio copy update)
+
+### What went right
+- Updated the bio copy consistently across the two active user-facing surfaces: homepage desktop sidebar and mobile `Know Pablo` drawer.
+- The second paragraph already matched the requested copy and did not need changes.
+
+### What worked well
+- `rg` against the old copy found the exact update scope immediately, avoiding unnecessary edits elsewhere.
+
+## 2026-03-08 (Markdown content URLs)
+
+### What went right
+- Added parallel `.md` route handlers for posts, views, and conferences without changing existing HTML routes or visible navigation.
+- Centralized markdown URL generation and markdown document formatting in `lib/markdown-exports.ts`, which kept sitemap and webhook changes small.
+- Updated `app/sitemap.md/route.ts` to emit markdown URLs for content while leaving top-level page entries unchanged.
+- Extended `app/api/revalidate/route.ts` so markdown variants invalidate together with their HTML counterparts.
+
+### What went wrong
+- Next's generated route validator types dotted dynamic route handlers like `[slug].md` with `params: Promise<{}>`, which rejected narrower typed route contexts.
+
+### What worked well
+- Loosening the route-handler context to `Promise<unknown>` and validating/casting inside the handler resolved the framework typing mismatch cleanly.
+- `npx tsc --noEmit` passes after the route handler adjustment.
+- `npm run lint` still passes with only the existing 8 `@next/next/no-img-element` warnings.
+
+### What to watch next
+- If markdown exports are later expanded to include related links, be explicit about whether those links should point to canonical HTML URLs or the `.md` variants.
+- `app/feed.xml/route.ts` still hardcodes `revalidate = 3600`; `sitemap.md` is now aligned with `config.revalidateSeconds`, but `feed.xml` is not yet.
+
+## 2026-03-08 (Markdown URL routing correction)
+
+### What went wrong
+- The first implementation used dotted App Router folders like `app/views/[slug].md/route.ts`, which interfered with the expected HTML route behavior.
+- The user explicitly corrected that the requirement was an alternative `.md` URL, not a replacement of the existing HTML route behavior.
+
+### Corrections received
+- Keep the existing HTML pages canonical and beautiful.
+- Make `.md` work only as an alternate URL suffix for posts, views, and conferences.
+
+### What worked well
+- Replacing the dotted route folders with `middleware.ts` plus a single internal handler at `app/api/content-markdown/route.ts` preserves `/foo` as HTML and rewrites only `/foo.md`.
+- Keeping sitemap output on public `.md` URLs and revalidation on those public paths still works with the middleware-based approach.
+
+### What to watch next
+- Avoid using dotted dynamic segment folders in App Router for alternate-format URLs unless route precedence is explicitly verified in the running app.
+
+## 2026-03-08 (Markdown URL rewrite fix)
+
+### Root cause
+- The middleware-based interception layer was still too fragile for this use case: the markdown serializer/handler was fine, but public `*.md` content URLs were not resolving consistently through that interception path.
+- For alternate-format URLs, explicit route rewrites are a more reliable fit than middleware pattern interception.
+
+### Fix
+- Removed `middleware.ts`.
+- Added explicit rewrites in `next.config.ts` for:
+  - `/:year/:month/:day/:slug.md`
+  - `/views/:slug.md`
+  - `/conferences/:slug.md`
+- Kept the internal markdown renderer at `app/api/content-markdown/route.ts`.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes with only the existing 8 `@next/next/no-img-element` warnings.
+
+### What to watch next
+- Rewrites require the Next server to restart before they take effect in a running dev session.
+
+## 2026-03-08 (Markdown URL precedence fix)
+
+### Root cause
+- The rewrite config existed, but it was still not taking effect for `*.md` content URLs because plain-array rewrites run as `afterFiles`.
+- That meant existing App Router dynamic pages such as `/views/[slug]` and `/[year]/[month]/[day]/[slug]` matched first, treating `foo.md` as the HTML slug and returning 404 before the markdown rewrite was considered.
+
+### Fix
+- Moved the markdown URL aliases in `next.config.ts` into `beforeFiles` rewrites so they win before filesystem/app-route matching.
+
+### Validation
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes with only the existing 8 `@next/next/no-img-element` warnings.
+
+### What to watch next
+- Any future alternate-format URL that overlaps an existing dynamic route likely needs `beforeFiles`, not the default rewrite phase.
+
+## 2026-03-08 (Markdown URL internal route hardening)
+
+### Root cause
+- After rewrite precedence was fixed, the remaining weak point was the internal destination design: public `.md` URLs were still being funneled through a single query-driven handler, which left one more interpolation hop that could fail at runtime.
+
+### Fix
+- Replaced the single query-based handler `app/api/content-markdown/route.ts` with explicit dynamic internal handlers:
+  - `app/api/content-markdown/post/[year]/[month]/[day]/[slug]/route.ts`
+  - `app/api/content-markdown/view/[slug]/route.ts`
+  - `app/api/content-markdown/conference/[slug]/route.ts`
+- Updated `next.config.ts` rewrites to target those internal paths directly.
+- Regenerated Next route types with `npx next typegen .` so `.next/types/validator.ts` reflects the new internal routes.
+
+### Validation
+- `npx next typegen .` passes.
+- `npx tsc --noEmit` passes.
+- `npm run lint` passes with only the existing 8 `@next/next/no-img-element` warnings.
+
+### What to watch next
+- Because `next.config.ts` changed again, the dev server must be restarted before testing the `.md` URLs.
+
 ### What went right
 - Added conference-page command actions for related content using the same confirmation-list UI pattern as post related posts.
 - Implemented:

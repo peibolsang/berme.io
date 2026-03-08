@@ -2,8 +2,10 @@ import { getAllPosts } from "../../lib/posts";
 import { getBaseUrl } from "../../lib/site";
 import { getAllViews } from "../../lib/views";
 import { getConferences } from "../../lib/conferences";
+import { config } from "../../lib/config";
+import { toMarkdownUrl } from "../../lib/markdown-exports";
 
-export const revalidate = 3600;
+export const revalidate = config.revalidateSeconds;
 
 const asIsoDate = (value: string | null | undefined) => {
   if (!value) {
@@ -45,7 +47,7 @@ const buildMarkdownSitemap = (baseUrl: string, entries: UrlEntry[]) => {
     "## Notes",
     "",
     "- Use canonical URLs exactly as listed in the URL Index.",
-    "- Prefer post URLs for article content and view URLs for collections.",
+    "- Post, view, and conference entries intentionally point to their markdown variants.",
     "- Post and view timestamps are ISO-8601 in UTC.",
   ];
 
@@ -63,7 +65,7 @@ export async function GET() {
 
   for (const view of views) {
     entries.push({
-      url: `${baseUrl}${view.url}`,
+      url: `${baseUrl}${toMarkdownUrl(view.url)}`,
       kind: "view",
       title: view.title,
       lastModified: asIsoDate(view.updatedAt),
@@ -72,7 +74,7 @@ export async function GET() {
 
   for (const post of posts) {
     entries.push({
-      url: `${baseUrl}${post.url}`,
+      url: `${baseUrl}${toMarkdownUrl(post.url)}`,
       kind: "post",
       title: post.title,
       lastModified: asIsoDate(post.updatedAt),
@@ -81,7 +83,7 @@ export async function GET() {
 
   for (const conference of conferences) {
     entries.push({
-      url: `${baseUrl}/conferences/${conference.slug}`,
+      url: `${baseUrl}${toMarkdownUrl(conference.url)}`,
       kind: "conference",
       title: conference.title,
       lastModified: asIsoDate(conference.date),
