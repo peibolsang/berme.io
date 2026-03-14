@@ -740,3 +740,20 @@
 
 ### Validation
 - `npm run lint`
+
+## 2026-03-14 (Vercel segment config build fix)
+
+### Root cause
+- Next.js segment config exports must be statically analyzable. Recent route/page changes exported imported values for `revalidate` (`contentIndexRevalidate` and `config.revalidateSeconds`), which Vercel rejected during page-data collection.
+
+### Fix
+- Replaced the affected segment exports with literal `3600` values in:
+  - `app/sitemap.json/route.ts`
+  - `app/sitemap.md/route.ts`
+  - `app/graph/page.tsx`
+- Removed the now-unused shared revalidate export from `lib/content-index.ts`.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm run build` now gets past the invalid segment-config phase; local build remains blocked only by Google Fonts network fetch restrictions in this environment.

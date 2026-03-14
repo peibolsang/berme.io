@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { ContentRelationshipGraph } from "../../components/ContentRelationshipGraph";
-import { config } from "../../lib/config";
 import { getContentGraphNeighborhood } from "../../lib/content-graph";
 
-export const revalidate = config.revalidateSeconds;
+export const revalidate = 3600;
 
 type GraphPageProps = {
   searchParams?: Promise<{

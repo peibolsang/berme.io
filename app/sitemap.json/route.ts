@@ -1,9 +1,6 @@
-import {
-  contentIndexRevalidate,
-  getContentIndex,
-} from "../../lib/content-index";
+import { getContentIndex } from "../../lib/content-index";
 
-export const revalidate = contentIndexRevalidate;
+export const revalidate = 3600;
 
 export async function GET() {
   const index = await getContentIndex();

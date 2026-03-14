@@ -1,5 +1,4 @@
 import { getConferences } from "./conferences";
-import { config } from "./config";
 import { toMarkdownUrl } from "./markdown-exports";
 import { getAllPosts } from "./posts";
 import { getBaseUrl } from "./site";
@@ -199,5 +198,3 @@ export const getContentIndex = async (): Promise<ContentIndexDocument> => {
     items,
   };
 };
-
-export const contentIndexRevalidate = config.revalidateSeconds;
