@@ -25,6 +25,11 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 main :is(h1, h2, h3) {
   letter-spacing: -0.02em;
 }

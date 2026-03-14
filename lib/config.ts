@@ -11,6 +11,9 @@ export const config = {
     owner: process.env.GITHUB_OWNER ?? "peibolsang",
     repo: process.env.GITHUB_REPO ?? "peibolsang",
   },
+  redis: {
+    url: process.env.REDIS_URL ?? "",
+  },
   revalidateSeconds: Number(process.env.REVALIDATE_SECONDS ?? "3600"),
 };
 

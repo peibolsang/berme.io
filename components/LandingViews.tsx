@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Book, Conference, Post, View } from "../types";
@@ -16,6 +16,7 @@ const viewLabels: Record<ViewOption, string> = {
   books: "Books",
   conferences: "Conferences",
 };
+type HighlightsView = "featured" | "popular";
 
 const normalizeView = (value: string | null) =>
   viewOptions.includes(value as ViewOption) ? (value as ViewOption) : "posts";
@@ -23,6 +24,7 @@ const normalizeView = (value: string | null) =>
 type LandingViewsProps = {
   posts: Post[];
   pinned: Post[];
+  popular: Post[];
   views: View[];
   books: Book[];
   conferences: Conference[];
@@ -60,9 +62,13 @@ const groupConferencesByYear = (entries: Conference[]) => {
     .map(([year, items]) => ({ year, items }));
 };
 
+const editorialCardBaseClassName =
+  "flex h-full flex-col rounded-[1.75rem] border px-5 py-5 md:px-6 md:py-6";
+
 export const LandingViews = ({
   posts,
   pinned,
+  popular,
   views,
   books,
   conferences,
@@ -112,9 +118,68 @@ export const LandingViews = ({
     [activeView, pathname, searchParams],
   );
   const groupedConferences = groupConferencesByYear(conferences);
+  const hasFeatured = pinned.length > 0;
+  const hasPopular = popular.length > 0;
+  const [highlightsView, setHighlightsView] = useState<HighlightsView>(() =>
+    hasFeatured ? "featured" : "popular",
+  );
+  const featuredPaneRef = useRef<HTMLDivElement | null>(null);
+  const popularPaneRef = useRef<HTMLOListElement | null>(null);
+  const [highlightsPaneHeight, setHighlightsPaneHeight] = useState(0);
+
+  useEffect(() => {
+    if (highlightsView === "featured" && !hasFeatured && hasPopular) {
+      setHighlightsView("popular");
+      return;
+    }
+    if (highlightsView === "popular" && !hasPopular && hasFeatured) {
+      setHighlightsView("featured");
+    }
+  }, [hasFeatured, hasPopular, highlightsView]);
+
+  useEffect(() => {
+    if (!hasFeatured && !hasPopular) {
+      setHighlightsPaneHeight(0);
+      return;
+    }
+
+    let frameId = 0;
+    const updateHeight = () => {
+      frameId = window.requestAnimationFrame(() => {
+        const featuredHeight = featuredPaneRef.current?.offsetHeight ?? 0;
+        const popularHeight = popularPaneRef.current?.offsetHeight ?? 0;
+        setHighlightsPaneHeight(Math.max(featuredHeight, popularHeight));
+      });
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    if (featuredPaneRef.current) {
+      observer.observe(featuredPaneRef.current);
+    }
+    if (popularPaneRef.current) {
+      observer.observe(popularPaneRef.current);
+    }
+
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [hasFeatured, hasPopular, pinned, popular]);
 
   return (
-    <Tabs value={activeView} onValueChange={handleViewChange} className="space-y-10">
+    <Tabs
+      value={activeView}
+      onValueChange={handleViewChange}
+      className="min-w-0 overflow-x-hidden space-y-10"
+    >
       <TabsList aria-label="Content views">
         {viewOptions.map((view) => (
           <TabsTrigger key={view} value={view}>
@@ -125,46 +190,146 @@ export const LandingViews = ({
 
       <TabsContent value="posts">
         <div id="panel-posts">
-          {pinned.length > 0 && (
-            <section className="-mx-6 border-y border-zinc-200/70 bg-white px-6 py-5 shadow-sm md:-mx-5 md:rounded-2xl md:border md:border-zinc-200/70 md:px-5 dark:border-slate-700 dark:bg-slate-900/60 md:dark:border-slate-700">
-              <div className="mb-4 flex items-center gap-3">
-                <span className="rounded-full border border-zinc-300 bg-[#f4f1ea] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-100">
-                  Featured
-                </span>
-              </div>
-              <ul className="space-y-3 text-sm">
-                {pinned.map((post) => {
-                  const date = new Date(post.publishedAt);
-                  const year = String(date.getUTCFullYear());
+          {hasFeatured || hasPopular ? (
+            <section className="space-y-5">
+              <div className="flex items-center justify-start">
+                {hasFeatured && hasPopular ? (
+                  <div className="inline-flex w-full max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-slate-700 dark:bg-slate-950/70 sm:w-auto">
+                    {(
+                      [
+                        { key: "featured", label: "Featured", count: pinned.length },
+                        { key: "popular", label: "Popular", count: popular.length },
+                      ] as const
+                    ).map((option) => {
+                      const selected = highlightsView === option.key;
 
-                  return (
-                    <li
-                      key={post.url}
-                      className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-2"
-                    >
-                      <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                        <span className="sm:hidden">{year}</span>
-                        <span className="hidden sm:inline">{year}</span>
-                      </span>
-                      <div className="space-y-1">
-                        <Link
-                          href={post.url}
-                          className="text-sm font-semibold leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                        return (
+                          <button
+                            key={option.key}
+                            type="button"
+                            onClick={() => setHighlightsView(option.key)}
+                            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition md:flex-none ${
+                              selected
+                                ? "bg-zinc-900 text-white dark:bg-amber-300 dark:text-zinc-950"
+                                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                            }`}
+                          aria-pressed={selected}
                         >
-                          {post.title}
-                        </Link>
-                        {post.excerpt && (
-                          <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                          {option.label}
+                          <span className="ml-2 text-[11px] opacity-70">
+                            {option.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-900 dark:border-slate-700 dark:bg-slate-950/70 dark:text-zinc-100">
+                    {hasFeatured ? "Featured" : "Popular"}
+                    <span className="ml-2 text-[11px] opacity-70">
+                      {hasFeatured ? pinned.length : popular.length}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div
+                className="relative"
+                style={
+                  highlightsPaneHeight > 0
+                    ? { minHeight: `${highlightsPaneHeight}px` }
+                    : undefined
+                }
+              >
+                {hasFeatured ? (
+                  <div
+                    ref={featuredPaneRef}
+                    aria-hidden={highlightsView !== "featured"}
+                    className={`grid gap-3 transition-opacity duration-200 md:grid-cols-3 ${
+                      highlightsView === "featured"
+                        ? "relative opacity-100"
+                        : "pointer-events-none absolute inset-0 opacity-0"
+                    }`}
+                  >
+                    {pinned.map((post, index) => (
+                      <article
+                        key={`${post.url}-featured`}
+                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] dark:border-slate-700 dark:bg-slate-950/60`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 bg-white/70 text-sm font-semibold text-zinc-700 dark:border-slate-600 dark:bg-slate-900/60 dark:text-zinc-200">
+                            {index + 1}
+                          </div>
+                          <span className="text-[11px] uppercase tracking-[0.14em] text-zinc-400 dark:text-zinc-500">
+                            {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                              timeZone: "UTC",
+                            })}
+                          </span>
+                        </div>
+                        <h3 className="mt-5 text-lg font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+                          <Link
+                            href={post.url}
+                            className="hover:text-black dark:hover:text-white"
+                          >
+                            {post.title}
+                          </Link>
+                        </h3>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                {hasPopular ? (
+                  <ol
+                    ref={popularPaneRef}
+                    aria-hidden={highlightsView !== "popular"}
+                    className={`grid gap-3 transition-opacity duration-200 md:grid-cols-3 ${
+                      highlightsView === "popular"
+                        ? "relative opacity-100"
+                        : "pointer-events-none absolute inset-0 opacity-0"
+                    }`}
+                  >
+                    {popular.map((post, index) => (
+                      <li
+                        key={`${post.url}-popular`}
+                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] dark:border-slate-700 dark:bg-slate-950/60`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 bg-white/70 text-sm font-semibold text-zinc-700 dark:border-slate-600 dark:bg-slate-900/60 dark:text-zinc-200">
+                            {index + 1}
+                          </div>
+                          <span className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
+                            {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                              timeZone: "UTC",
+                            })}
+                          </span>
+                        </div>
+                        <h3 className="mt-5 text-lg font-semibold leading-snug text-white">
+                          <Link
+                            href={post.url}
+                            className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                          >
+                            {post.title}
+                          </Link>
+                        </h3>
+                        {post.excerpt ? (
+                          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                             {post.excerpt}
                           </p>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+              </div>
             </section>
-          )}
+          ) : null}
           <div className="mt-10">
             <PostsIndex posts={posts} />
           </div>

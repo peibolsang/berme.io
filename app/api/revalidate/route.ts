@@ -6,6 +6,7 @@ import { getConferences } from "../../../lib/conferences";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 import { toMarkdownUrl } from "../../../lib/markdown-exports";
+import { ensurePostReadTracking } from "../../../lib/post-popularity";
 
 const verifySignature = (body: string, signature: string | null) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET ?? "";
@@ -246,8 +247,14 @@ export async function POST(request: Request) {
   ) => {
     const urlFromPayload = getPostUrlFromIssue(issue);
     const conferenceUrlFromPayload = getConferenceUrlFromIssue(issue);
+    if (urlFromPayload) {
+      await ensurePostReadTracking(urlFromPayload);
+    }
     const cached = await getCachedPosts();
     const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
+    if (cachedUrl && cachedUrl !== urlFromPayload) {
+      await ensurePostReadTracking(cachedUrl);
+    }
     const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
     revalidated.push(...urls);
     const conferenceUrls = await revalidatePostUrls([conferenceUrlFromPayload]);

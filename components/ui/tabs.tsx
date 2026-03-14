@@ -13,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex items-end gap-10 border-b border-zinc-200 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:border-slate-700 dark:text-zinc-500",
+      "flex w-full max-w-full min-w-0 items-end gap-6 overflow-x-auto overscroll-x-contain border-b border-zinc-200 text-xs font-semibold uppercase tracking-[0.2em] whitespace-nowrap text-zinc-400 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-700 dark:text-zinc-500 sm:gap-10",
       className,
     )}
     {...props}
@@ -28,7 +28,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "relative -mb-px border-b-2 border-transparent pb-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 data-[state=active]:border-zinc-900 data-[state=active]:text-zinc-900 data-[state=inactive]:text-zinc-500 data-[state=inactive]:hover:text-zinc-900 dark:focus-visible:ring-zinc-500 dark:data-[state=active]:border-amber-300 dark:data-[state=active]:text-zinc-100 dark:data-[state=inactive]:text-zinc-400 dark:data-[state=inactive]:hover:text-white",
+      "relative -mb-px shrink-0 border-b-2 border-transparent pb-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 data-[state=active]:border-zinc-900 data-[state=active]:text-zinc-900 data-[state=inactive]:text-zinc-500 data-[state=inactive]:hover:text-zinc-900 dark:focus-visible:ring-zinc-500 dark:data-[state=active]:border-amber-300 dark:data-[state=active]:text-zinc-100 dark:data-[state=inactive]:text-zinc-400 dark:data-[state=inactive]:hover:text-white",
       className,
     )}
     {...props}

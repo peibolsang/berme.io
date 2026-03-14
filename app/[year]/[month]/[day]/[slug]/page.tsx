@@ -9,6 +9,7 @@ import { Markdown } from "../../../../../components/Markdown";
 import { config } from "../../../../../lib/config";
 import { BackLink } from "../../../../../components/BackLink";
 import { CommandActionsPalette } from "../../../../../components/CommandActionsPalette";
+import { PostPopularity } from "../../../../../components/PostPopularity";
 
 type PageProps = {
   params: Promise<{
@@ -219,6 +220,7 @@ export default async function PostPage({ params }: PageProps) {
                   <span>Posted on {formatDate(post.publishedAt)}</span>
                   <span aria-hidden="true">•</span>
                   <span>{getReadingTime(post.body)}</span>
+                  <PostPopularity postUrl={post.url} />
                   <span aria-hidden="true">•</span>
                   <a
                     className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"

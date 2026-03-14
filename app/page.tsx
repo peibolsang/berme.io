@@ -9,12 +9,14 @@ import { getAllViews } from "../lib/views";
 import { getBooks } from "../lib/books";
 import { getNowPost } from "../lib/now";
 import { getConferences } from "../lib/conferences";
+import { getPopularPosts } from "../lib/post-popularity";
 
 export default async function Home() {
   let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
   let views: Awaited<ReturnType<typeof getAllViews>> = [];
   let nowPost: Awaited<ReturnType<typeof getNowPost>> = null;
   let conferences: Awaited<ReturnType<typeof getConferences>> = [];
+  let popularPosts: Awaited<ReturnType<typeof getPopularPosts>> = [];
   let loadError: string | null = null;
 
   try {
@@ -24,6 +26,7 @@ export default async function Home() {
       getNowPost(),
       getConferences(),
     ]);
+    popularPosts = await getPopularPosts(posts);
   } catch (error) {
     loadError = error instanceof Error ? error.message : "Unable to load posts.";
   }
@@ -51,7 +54,7 @@ export default async function Home() {
     );
   }
 
-  const pinned = posts.filter((post) => post.pinned);
+  const pinned = posts.filter((post) => post.pinned).slice(0, 3);
   const books = getBooks();
 
   return (
@@ -179,6 +182,7 @@ export default async function Home() {
               <LandingViews
                 posts={posts}
                 pinned={pinned}
+                popular={popularPosts}
                 views={views}
                 books={books}
                 conferences={conferences}

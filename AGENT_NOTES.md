@@ -219,6 +219,40 @@
 
 ## 2026-02-20 (Conference CMDK related content actions)
 
+## 2026-03-14 (Highlights toggle typography correction)
+
+### What went wrong
+- The highlights toggle was bumped to `text-base`, which made it visibly larger than nearby UI labels like `Explore reading paths`.
+
+### Correction received
+- Match the toggle typography to the surrounding homepage section-label scale instead of the card title scale.
+
+### Fix
+- Reduced the toggle label size in `components/LandingViews.tsx` from `text-base` to `text-sm`.
+
+## 2026-03-14 (Highlights toggle dark theme consistency)
+
+### What went wrong
+- The dark-mode active nav tab used the amber accent, but the active highlights toggle used a white fill, creating an inconsistent active-state language.
+
+### Correction received
+- Match the toggle active color to the same yellow accent used by the homepage nav underline in dark mode.
+
+### Fix
+- Updated the selected highlights toggle state in `components/LandingViews.tsx` from `dark:bg-white` to `dark:bg-amber-300`.
+
+## 2026-03-14 (Highlights full-title no-shift layout)
+
+### What went wrong
+- The highlights cards were truncating long post titles with ellipses, and the current anti-shift strategy depended on fixed card heights rather than a stable pane layout.
+
+### Correction received
+- Show full post titles in both Featured and Popular cards without introducing UI shift when toggling.
+
+### Fix
+- Removed title line clamps from the highlights cards in `components/LandingViews.tsx`.
+- Replaced the fixed-height card approach with two always-mounted highlight panes inside a measured wrapper that keeps the height of the taller mode while toggling.
+
 ## 2026-03-08
 
 ### What went right
@@ -366,6 +400,17 @@
 ### What to watch next
 - Keep route/page segment config exports literal. If a shared TTL is needed, use shared cached fetchers for runtime behavior and reserve segment config exports for literal values only.
 
+## 2026-03-08 (Product TODO backlog)
+
+### What went right
+- Added a root `TODO.md` with a concrete implementation backlog for three next-step features:
+  - `sitemap.json` structured context index
+  - narrative scaffolding for long-form reading
+  - label-based relationship graphs
+
+### What worked well
+- The backlog was written against the existing route/data architecture so it points to realistic implementation surfaces (`app/`, `lib/`, `components/`) rather than staying at idea level.
+
 ### What went right
 - Added conference-page command actions for related content using the same confirmation-list UI pattern as post related posts.
 - Implemented:
@@ -425,3 +470,81 @@
 ### Validation
 - `npm run lint` passes (0 errors; existing 8 `no-img-element` warnings unchanged).
 - `npx tsc --noEmit` passes.
+
+## 2026-03-14 (Codebase re-familiarization)
+
+### What went right
+- Re-reading `AGENTS.md` and `AGENT_NOTES.md` first made the repo-specific constraints and prior edge cases immediately actionable.
+- The architecture is still cleanly split:
+  - `app/` handles route composition and metadata,
+  - `lib/` handles GitHub ingestion, transformation, caching, and markdown export,
+  - `components/` holds reusable UI and command palette behavior.
+- The content model remains consistent: posts from `published` issues, views from parent-linked published issues, conferences from `published+conference` issues with required `event` and PDF URL, and `/now` from the latest `now` issue.
+- `app/api/revalidate/route.ts` is still the operational center for freshness, covering posts, views, conferences, markdown variants, comments, aggregates, and `/now`.
+
+### Validation
+- `npm run lint` passes with 0 errors and 8 warnings, all `@next/next/no-img-element`.
+
+### What to watch next
+- `app/feed.xml/route.ts`, `app/sitemap.md/route.ts`, and the three markdown content routes still hardcode `revalidate = 3600` instead of sourcing `config.revalidateSeconds`.
+- `lib/now.ts` still duplicates GitHub REST fetch/auth header setup already present in `lib/github.ts`.
+- `lib/conferences.ts` page-count estimation is intentionally heuristic and may miscount some PDFs.
+
+## 2026-03-14 (Popular posts via Redis)
+
+### What went right
+- Preserved the existing static post-page architecture by tracking reads through a client POST after mount rather than trying to mutate counters during prerender.
+- Kept the feature isolated: Redis wiring lives in a dedicated helper, homepage popularity is server-read, and post detail popularity is client-hydrated.
+- Homepage composition stayed clean by adding a second editorial rail instead of mixing dynamic popularity into the main posts index.
+
+### What went wrong
+- The biggest implementation risk was the `redis@5` transaction API shape; reading the installed typings first avoided guesswork around `multi().execTyped()`.
+
+### What worked well
+- Using GitHub issue numbers as Redis keys kept identity stable across permalinks, slug changes, and markdown export variants.
+- Wiring publish-time bootstrap into `app/api/revalidate/route.ts` aligned the new feature with the site’s existing freshness model.
+
+### Validation
+- `npm run lint`
+- `npx tsc --noEmit`
+
+### What to watch next
+- If Redis is unavailable, the site now hides popularity rather than failing; that is resilient, but production observability around that path may still be worth adding.
+- Read counting currently increments on client mount, which is correct for real visits but can overcount during React Strict Mode development remounts.
+
+## 2026-03-14 (Popularity identity switched to canonical URL)
+
+### What changed
+- Switched Redis popularity identity from GitHub issue number to canonical post URL paths like `/2023/12/16/the-job-of-product-managers-is-to-kill-their-jobs`.
+- Updated both the per-post counter key and the ranking member to use the URL path directly.
+
+### Why it matters
+- The storage model now matches the user-facing permalink identity exactly, which makes manual Redis inspection more intuitive.
+
+### Validation
+- `npm run lint`
+- `npx tsc --noEmit`
+
+## 2026-03-14 (CSV popularity import script)
+
+### What went right
+- Added a standalone importer at `scripts/import-post-reads-from-csv.mjs` that reads `temp/top.csv` and writes both Redis counter keys and the ranking sorted set using canonical post URLs.
+- Added a dry-run mode so CSV parsing and Redis key shape can be verified before mutating the database.
+
+### Validation
+- `npm run import:top -- --dry-run`
+- `npm run lint`
+
+## 2026-03-14 (Homepage highlights toggle redesign)
+
+### What changed
+- Replaced the side-by-side `Featured` + `Popular` homepage shelf with a single toggleable highlights module.
+- Capped both `Featured` and `Popular` at 3 items to keep the editorial block compact.
+
+### Why it worked better
+- The previous two-column layout made the homepage feel visually crowded and forced the reader to compare two competing lists at once.
+- A toggle preserves both datasets while restoring a single reading focal point.
+
+### Validation
+- `npm run lint`
+- `npx tsc --noEmit`
