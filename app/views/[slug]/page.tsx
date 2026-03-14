@@ -7,6 +7,11 @@ import { Markdown } from "../../../components/Markdown";
 import { BackLink } from "../../../components/BackLink";
 import { config } from "../../../lib/config";
 import { CommandActionsPalette } from "../../../components/CommandActionsPalette";
+import {
+  extractMarkdownOutline,
+  formatReadingTime,
+} from "../../../lib/markdown-headings";
+import { ReadingShell } from "../../../components/ReadingShell";
 
 type PageProps = {
   params: Promise<{
@@ -22,12 +27,6 @@ const formatDate = (iso: string) => {
     day: "2-digit",
     timeZone: "UTC",
   });
-};
-
-const getReadingTime = (text: string) => {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
 };
 
 const playfairDisplay = Playfair_Display({
@@ -82,6 +81,9 @@ export default async function ViewPage({ params }: PageProps) {
     notFound();
   }
 
+  const outline = view.body ? await extractMarkdownOutline(view.body) : null;
+  const readingTimeLabel = outline ? formatReadingTime(outline.totalWords) : undefined;
+
   return (
     <div className="min-h-screen">
       <CommandActionsPalette
@@ -89,14 +91,12 @@ export default async function ViewPage({ params }: PageProps) {
         url={view.url}
         githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${view.number}`}
         markdown={view.body ?? ""}
-        readingTime={view.body ? getReadingTime(view.body) : undefined}
+        readingTime={readingTimeLabel}
         metadataLines={[
           `Title: ${view.title}`,
           `Updated: ${formatDate(view.updatedAt)}`,
-          view.body ? `Reading time: ${getReadingTime(view.body)}` : "Reading time: N/A",
-          view.body
-            ? `Word count: ${view.body.trim().split(/\s+/).filter(Boolean).length}`
-            : "Word count: N/A",
+          readingTimeLabel ? `Reading time: ${readingTimeLabel}` : "Reading time: N/A",
+          outline ? `Word count: ${outline.totalWords}` : "Word count: N/A",
           `Posts: ${view.posts.length}`,
           `URL: ${view.url}`,
           `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${view.number}`,
@@ -138,6 +138,12 @@ export default async function ViewPage({ params }: PageProps) {
               ) : null}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                 <span>Updated {formatDate(view.updatedAt)}</span>
+                {readingTimeLabel ? (
+                  <>
+                    <span aria-hidden="true">•</span>
+                    <span>{readingTimeLabel}</span>
+                  </>
+                ) : null}
                 <span aria-hidden="true">•</span>
                 <a
                   className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -153,7 +159,13 @@ export default async function ViewPage({ params }: PageProps) {
         </div>
       </section>
       <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
-        <div className="mx-auto w-full max-w-2xl">
+        <ReadingShell
+          contentId="view-content"
+          headings={outline?.headings ?? []}
+          isLongform={outline?.isLongform ?? false}
+          title={view.title}
+          totalMinutes={outline?.totalMinutes ?? 0}
+        >
           {view.body ? (
             <article className="markdown-body mt-0">
               <Markdown content={view.body} />
@@ -189,7 +201,7 @@ export default async function ViewPage({ params }: PageProps) {
               </ul>
             )}
           </section>
-        </div>
+        </ReadingShell>
       </section>
     </div>
   );

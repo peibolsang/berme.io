@@ -10,6 +10,11 @@ import { config } from "../../../../../lib/config";
 import { BackLink } from "../../../../../components/BackLink";
 import { CommandActionsPalette } from "../../../../../components/CommandActionsPalette";
 import { PostPopularity } from "../../../../../components/PostPopularity";
+import {
+  extractMarkdownOutline,
+  formatReadingTime,
+} from "../../../../../lib/markdown-headings";
+import { ReadingShell } from "../../../../../components/ReadingShell";
 
 type PageProps = {
   params: Promise<{
@@ -28,12 +33,6 @@ const formatDate = (iso: string) => {
     day: "2-digit",
     timeZone: "UTC",
   });
-};
-
-const getReadingTime = (text: string) => {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
 };
 
 const playfairDisplay = Playfair_Display({
@@ -131,6 +130,9 @@ export default async function PostPage({ params }: PageProps) {
       notFound();
     }
 
+    const outline = await extractMarkdownOutline(post.body);
+    const readingTimeLabel = formatReadingTime(outline.totalWords);
+
     let comments: GitHubComment[] = [];
     try {
       comments = await getIssueComments(post.number);
@@ -154,15 +156,15 @@ export default async function PostPage({ params }: PageProps) {
           url={post.url}
           githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
           markdown={post.body}
-          readingTime={getReadingTime(post.body)}
+          readingTime={readingTimeLabel}
           relatedPosts={relatedPosts}
           geminiPrompt={`You are an expert summarizer. Provide:\n1) A 2-3 sentence TL;DR.\n2) Exactly 5 crisp takeaways as bullet points.\nBe concise and avoid fluff.\n\nPost:\n${post.body}`}
           metadataLines={[
             `Title: ${post.title}`,
             `Published: ${formatDate(post.publishedAt)}`,
             `Updated: ${formatDate(post.updatedAt)}`,
-            `Reading time: ${getReadingTime(post.body)}`,
-            `Word count: ${post.body.trim().split(/\s+/).filter(Boolean).length}`,
+            `Reading time: ${readingTimeLabel}`,
+            `Word count: ${outline.totalWords}`,
             `Labels: ${formatLabels(post.labels).join(", ") || "None"}`,
             `URL: ${post.url}`,
             `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`,
@@ -219,7 +221,7 @@ export default async function PostPage({ params }: PageProps) {
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                   <span>Posted on {formatDate(post.publishedAt)}</span>
                   <span aria-hidden="true">•</span>
-                  <span>{getReadingTime(post.body)}</span>
+                  <span>{readingTimeLabel}</span>
                   <PostPopularity postUrl={post.url} />
                   <span aria-hidden="true">•</span>
                   <a
@@ -248,7 +250,13 @@ export default async function PostPage({ params }: PageProps) {
           </div>
         </section>
         <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
-          <div className="mx-auto w-full max-w-2xl">
+          <ReadingShell
+            contentId="post-content"
+            headings={outline.headings}
+            isLongform={outline.isLongform}
+            title={post.title}
+            totalMinutes={outline.totalMinutes}
+          >
             {post.viewTitle ? (
               <p className="mb-4 text-xs uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
                 View:{" "}
@@ -298,7 +306,7 @@ export default async function PostPage({ params }: PageProps) {
                 </div>
               )}
             </section>
-          </div>
+          </ReadingShell>
         </section>
       </div>
     );

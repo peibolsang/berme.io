@@ -253,6 +253,46 @@
 - Removed title line clamps from the highlights cards in `components/LandingViews.tsx`.
 - Replaced the fixed-height card approach with two always-mounted highlight panes inside a measured wrapper that keeps the height of the taller mode while toggling.
 
+## 2026-03-14 (Narrative scaffolding for long-form reading)
+
+### What went right
+- A shared markdown outline utility let the heading extractor, HTML renderer, and React markdown component use one stable heading-ID strategy.
+- The reading shell stayed client-only while the article markup remained server-rendered, which kept the integration lightweight and aligned with the existing static page model.
+
+### Product decisions made
+- Long-form scaffolding appears when a piece has at least 900 words and 3 headings.
+- Section effort is based on the word count between one heading and the next.
+- Pull-quote treatment is applied automatically to blockquotes.
+
+### Fix
+- Added `lib/markdown-headings.ts` for heading extraction, reading-time math, and remark heading anchors.
+- Updated `components/Markdown.tsx` to emit stable heading anchors and upgraded blockquotes into a pull-quote treatment.
+- Added `components/ReadingShell.tsx` with a sticky progress bar, active-section tracking, desktop TOC, and mobile reading map.
+- Integrated the reading shell into post and view detail pages.
+
+## 2026-03-14 (Content relationship graph route)
+
+### What went right
+- The existing post, view, and conference loaders already expose canonical HTML URLs and enough label metadata to build a graph without introducing a new content source.
+- A hand-rolled SVG plus positioned HTML nodes was sufficient for a mobile-friendly first version, so no graph dependency was needed.
+
+### What went wrong
+- Views do not carry their own labels directly, so the graph had to derive view topics from the union of child post labels.
+
+### Fix
+- Added `lib/content-graph.ts` to build a cached content/topic graph with label filtering, membership edges, and a one-hop focused neighborhood.
+- Added `app/graph/page.tsx` and `components/ContentRelationshipGraph.tsx` for the dedicated exploration route.
+- Added a command-palette action for `/graph` so the route is discoverable without editing the content pages.
+
+## 2026-03-14 (Structured sitemap JSON index)
+
+### What went right
+- A shared `lib/content-index.ts` normalizer made it possible to add `sitemap.json` without duplicating post/view/conference mapping logic.
+- Reusing the normalized dataset in `app/sitemap.md/route.ts` also removed a hardcoded `revalidate = 3600` in favor of the config-driven pattern already used elsewhere.
+
+### What to watch next
+- The first JSON schema version is intentionally compact and type-discriminated; if future agent consumers need more fields, extend `ContentIndexItem` in `lib/content-index.ts` rather than branching route-specific mapping again.
+
 ## 2026-03-08
 
 ### What went right
@@ -548,3 +588,155 @@
 ### Validation
 - `npm run lint`
 - `npx tsc --noEmit`
+
+## 2026-03-14 (Parallel TODO implementation integration)
+
+### What went right
+- Splitting the three unfinished TODO features into separate workers kept the ownership boundaries clean: sitemap/indexing, narrative scaffolding, and relationship graphs landed without file conflicts.
+- A final main-thread integration pass was still necessary, especially to validate shared markdown and route behavior rather than trusting typecheck alone.
+- The resulting surface area is coherent:
+  - `sitemap.json` now shares normalization logic with `sitemap.md`
+  - long-form posts and views share one heading/reading-shell pipeline
+  - the relationship graph stays isolated behind a dedicated `/graph` route plus command-palette entry
+
+### What went wrong
+- Parallel implementation makes it easier to miss runtime integration edges that static checks do not catch, so shared markdown/anchor handling needed explicit review after the workers finished.
+- Shell inspection of bracketed route paths still requires quoting in zsh.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+### What to watch next
+- The new reading shell and graph route were validated statically here; a manual browser pass would still be useful to confirm mobile behavior, sticky positioning, and graph legibility with real content.
+
+## 2026-03-14 (Disable popularity increments in local dev)
+
+### Correction received
+- Local development page views should not mutate Redis read counters when `LOCAL_DEV` is present in `.env.local`.
+
+### Fix
+- Updated `lib/post-popularity.ts` so `trackPostRead()` short-circuits in local dev and returns the current popularity snapshot without incrementing the counter or ranking score.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-14 (Post metadata popularity simplification)
+
+### Correction received
+- Do not show exact read counts in individual post metadata.
+
+### Fix
+- Updated `components/PostPopularity.tsx` to remove the inline read-count display and keep only the `Popular #n` cue when applicable.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading shell visual de-emphasis)
+
+### Correction received
+- The reading progress UI was stealing focus from the article, shifting the prose left, and turning document headings into noisy link-like elements.
+
+### Fix
+- Updated `components/ReadingShell.tsx` so the article column stays centered at the original reading width and the progress panel sits off to the right as a secondary utility surface.
+- Simplified the reading panel styling: lighter progress bar, quieter borders/backgrounds, and less aggressive active-section treatment.
+- Updated `components/Markdown.tsx` so headings keep stable anchor IDs without rendering as inline links or showing the uppercase `LINK` hover label.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading shell sticky/layout follow-up)
+
+### Correction received
+- The de-emphasized reading shell lost sticky behavior, and the active section treatment should be reduced to a simple yellow straight border rather than a filled state.
+
+### Fix
+- Reworked `components/ReadingShell.tsx` desktop layout into a balanced grid with ghost columns so the article remains centered and the right rail stays sticky in normal flow.
+- Simplified the reading map palette further and changed the active section state to a plain amber left border with no filled background.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading shell top progress removal)
+
+### Correction received
+- The fixed progress line at the top of post pages is unnecessary once the right-side reading map exists.
+
+### Fix
+- Removed the fixed top-edge progress indicator from `components/ReadingShell.tsx` and kept the reading map as the only progress UI.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading map anchor behavior correction)
+
+### Correction received
+- Reading map section items should visibly jump to their target sections, while keeping a neutral non-link visual treatment.
+
+### Fix
+- Updated `components/ReadingShell.tsx` so section items intercept clicks, smoothly scroll to the matching heading, and update the URL hash.
+- Kept the reading map links styled as plain text rows with no blue or underline treatment.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading map runtime bug fix)
+
+### Root cause
+- The reading map was resolving raw heading IDs, but `rehype-sanitize` prefixes heading IDs in the DOM with `user-content-`, so scroll tracking and click navigation were both targeting elements that did not exist.
+- The progress percentage used a heuristic based on viewport fractions and article rect offsets, which could legitimately stop short of 100% even at the bottom of the page.
+
+### Fix
+- Added a shared sanitized-heading helper in `lib/markdown-headings.ts`.
+- Updated `components/ReadingShell.tsx` so both active-section tracking and click navigation resolve the actual sanitized DOM IDs.
+- Replaced progress math with explicit article start/end tracking and a hard 100% once the page bottom is reached.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-14 (Reading map redundancy cleanup)
+
+### Correction received
+- The active section title shown next to overall reading time in the reading map header is redundant because the active section is already highlighted in the list.
+
+### Fix
+- Removed the redundant active-section text from the reading map header in `components/ReadingShell.tsx`, keeping only the overall reading time.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Reading map last-section highlight fix)
+
+### Root cause
+- Active-section selection was based on a fixed viewport threshold. Near the bottom of a page, the reader could already be in the final section while its heading still had not crossed that threshold, so the previous section remained highlighted.
+
+### Fix
+- Updated `components/ReadingShell.tsx` so active-section selection uses absolute heading positions with a reading line inside the viewport, and explicitly promotes the last heading when the page bottom is reached.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Mobile reading progress simplification)
+
+### Correction received
+- On mobile, bring back a sticky top progress bar and remove the full reading map card.
+
+### Fix
+- Updated `components/ReadingShell.tsx` so small screens show a fixed top-edge progress indicator while the mobile reading-map card is removed entirely.
+- Desktop keeps the right-side reading map unchanged.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-14 (Blockquote styling rollback)
+
+### Correction received
+- The upgraded pull-quote card styling was too opinionated; blockquotes should stay in their original simple editorial treatment.
+
+### Fix
+- Reverted `components/Markdown.tsx` blockquotes to the original left-border style instead of the large quote-card treatment.
+
+### Validation
+- `npm run lint`

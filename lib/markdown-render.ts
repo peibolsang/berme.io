@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Schema } from "hast-util-sanitize";
 import rehypeStringify from "rehype-stringify";
+import { remarkHeadingAnchors } from "./markdown-headings";
 
 const sanitizeSchema: Schema = {
   ...defaultSchema,
@@ -30,6 +31,7 @@ export const renderMarkdownToHtml = async (content: string) => {
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkHeadingAnchors)
     .use(remarkRehype)
     .use(rehypeHighlight)
     .use(rehypeSanitize, sanitizeSchema)

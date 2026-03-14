@@ -126,6 +126,7 @@ const revalidateAggregates = async () => {
     revalidatePath("/"),
     revalidatePath("/feed.xml"),
     revalidatePath("/sitemap.md"),
+    revalidatePath("/sitemap.json"),
   ]);
 };
 
@@ -269,7 +270,7 @@ export async function POST(request: Request) {
       revalidated.push(conferenceUrl);
     }
     await revalidateAggregates();
-    revalidated.push("/", "/feed.xml", "/sitemap.md");
+    revalidated.push("/", "/feed.xml", "/sitemap.md", "/sitemap.json");
   };
 
   if (event === "issues") {

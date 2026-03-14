@@ -12,11 +12,6 @@ type PopularityState = {
   isPopular: boolean;
 };
 
-const readCountFormatter = new Intl.NumberFormat("en-US");
-
-const formatReadCount = (readCount: number) =>
-  `${readCountFormatter.format(readCount)} reads`;
-
 export const PostPopularity = ({ postUrl }: PostPopularityProps) => {
   const [popularity, setPopularity] = useState<PopularityState | null>(null);
 
@@ -84,8 +79,6 @@ export const PostPopularity = ({ postUrl }: PostPopularityProps) => {
 
   return (
     <>
-      <span aria-hidden="true">•</span>
-      <span>{formatReadCount(popularity.readCount)}</span>
       {popularity.isPopular && popularity.popularRank ? (
         <>
           <span aria-hidden="true">•</span>

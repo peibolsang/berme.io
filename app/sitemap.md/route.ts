@@ -1,10 +1,9 @@
-import { getAllPosts } from "../../lib/posts";
-import { getBaseUrl } from "../../lib/site";
-import { getAllViews } from "../../lib/views";
-import { getConferences } from "../../lib/conferences";
-import { toMarkdownUrl } from "../../lib/markdown-exports";
+import {
+  contentIndexRevalidate,
+  getContentIndex,
+} from "../../lib/content-index";
 
-export const revalidate = 3600;
+export const revalidate = contentIndexRevalidate;
 
 const asIsoDate = (value: string | null | undefined) => {
   if (!value) {
@@ -54,40 +53,17 @@ const buildMarkdownSitemap = (baseUrl: string, entries: UrlEntry[]) => {
 };
 
 export async function GET() {
-  const baseUrl = await getBaseUrl();
-  const [posts, views, conferences] = await Promise.all([
-    getAllPosts(),
-    getAllViews(),
-    getConferences(),
-  ]);
+  const { baseUrl, items } = await getContentIndex();
   const entries: UrlEntry[] = [{ url: `${baseUrl}/`, kind: "page", title: "Home" }];
 
-  for (const view of views) {
-    entries.push({
-      url: `${baseUrl}${toMarkdownUrl(view.url)}`,
-      kind: "view",
-      title: view.title,
-      lastModified: asIsoDate(view.updatedAt),
-    });
-  }
-
-  for (const post of posts) {
-    entries.push({
-      url: `${baseUrl}${toMarkdownUrl(post.url)}`,
-      kind: "post",
-      title: post.title,
-      lastModified: asIsoDate(post.updatedAt),
-    });
-  }
-
-  for (const conference of conferences) {
-    entries.push({
-      url: `${baseUrl}${toMarkdownUrl(conference.url)}`,
-      kind: "conference",
-      title: conference.title,
-      lastModified: asIsoDate(conference.date),
-    });
-  }
+  entries.push(
+    ...items.map((item) => ({
+      url: item.markdownUrl,
+      kind: item.type,
+      title: item.title,
+      lastModified: asIsoDate(item.updatedAt ?? item.publishedAt),
+    })),
+  );
 
   const uniqueEntries = Array.from(new Map(entries.map((entry) => [entry.url, entry])).values());
   const markdown = buildMarkdownSitemap(baseUrl, uniqueEntries);

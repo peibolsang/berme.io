@@ -13,6 +13,9 @@ const reportPopularityError = (message: string, error: unknown) => {
   }
 };
 
+const isLocalDevReadTrackingDisabled = () =>
+  typeof process.env.LOCAL_DEV !== "undefined";
+
 const getPostReadsKey = (postUrl: string) => `${POST_READS_KEY_PREFIX}${postUrl}`;
 
 const toPostPopularity = (readCount: number, zeroBasedRank: number | null) => {
@@ -115,6 +118,16 @@ export const trackPostRead = async (postUrl: string) => {
   const counterKey = getPostReadsKey(postUrl);
 
   try {
+    if (isLocalDevReadTrackingDisabled()) {
+      const [readCountValue, rank] = await Promise.all([
+        client.get(counterKey),
+        client.zRevRank(POST_READS_RANKING_KEY, member),
+      ]);
+      const readCount = Number.parseInt(readCountValue ?? "0", 10);
+
+      return toPostPopularity(Number.isNaN(readCount) ? 0 : readCount, rank);
+    }
+
     const [readCount, , rank] = await client.multi()
       .incr(counterKey)
       .zIncrBy(POST_READS_RANKING_KEY, 1, member)

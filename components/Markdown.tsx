@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import { remarkHeadingAnchors } from "../lib/markdown-headings";
 
 const sanitizeSchema = {
   ...defaultSchema,
@@ -30,7 +31,7 @@ type MarkdownProps = {
 export const Markdown = ({ content }: MarkdownProps) => {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={[remarkGfm, remarkHeadingAnchors]}
       rehypePlugins={[rehypeHighlight, [rehypeSanitize, sanitizeSchema]]}
       components={{
         ul: (props: ComponentPropsWithoutRef<"ul">) => (
@@ -56,16 +57,28 @@ export const Markdown = ({ content }: MarkdownProps) => {
           />
         ),
         h1: (props: ComponentPropsWithoutRef<"h1">) => (
-          <h1 {...props} className="mt-8 text-3xl font-semibold" />
+          <h1
+            {...props}
+            className="scroll-mt-28 mt-8 text-3xl font-semibold text-zinc-900 dark:text-zinc-100"
+          />
         ),
         h2: (props: ComponentPropsWithoutRef<"h2">) => (
-          <h2 {...props} className="mt-8 text-2xl font-semibold" />
+          <h2
+            {...props}
+            className="scroll-mt-28 mt-10 text-2xl font-semibold text-zinc-900 dark:text-zinc-100"
+          />
         ),
         h3: (props: ComponentPropsWithoutRef<"h3">) => (
-          <h3 {...props} className="mt-6 text-xl font-semibold" />
+          <h3
+            {...props}
+            className="scroll-mt-28 mt-8 text-xl font-semibold text-zinc-900 dark:text-zinc-100"
+          />
         ),
         h4: (props: ComponentPropsWithoutRef<"h4">) => (
-          <h4 {...props} className="mt-6 text-lg font-semibold" />
+          <h4
+            {...props}
+            className="scroll-mt-28 mt-6 text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+          />
         ),
       }}
     >

@@ -18,6 +18,7 @@ export async function GET() {
 ## Optional
 - [RSS Feed](${baseUrl}/feed.xml): Syndicated posts feed.
 - [Sitemap](${baseUrl}/sitemap.md): All site URLs in Markdown.
+- [Structured Sitemap JSON](${baseUrl}/sitemap.json): Machine-readable content index with canonical and markdown URLs.
 `;
 
   return new Response(body, {

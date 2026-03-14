@@ -582,6 +582,10 @@ export const CommandPalette = ({
     window.open("/sitemap.md", "_blank", "noopener,noreferrer");
   }, []);
 
+  const openGraph = useCallback(() => {
+    window.location.assign("/graph");
+  }, []);
+
   const actions = useMemo(
     () => [
       {
@@ -671,8 +675,15 @@ export const CommandPalette = ({
         icon: Link2Icon,
         action: openSitemap,
       },
+      {
+        id: "graph",
+        label: "Open Graph",
+        letter: "G",
+        icon: Link2Icon,
+        action: openGraph,
+      },
     ],
-    [openRss, openSitemap],
+    [openGraph, openRss, openSitemap],
   );
 
   const runAction = (action: (typeof actions)[number]) => {
