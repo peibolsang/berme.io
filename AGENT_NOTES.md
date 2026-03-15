@@ -1,5 +1,46 @@
 # Agent Notes
 
+## 2026-03-15 (Full graph layout redesign)
+
+### What went right
+- The full graph requirement was better served by widening the canvas and showing the complete label network at once instead of a neighborhood-only orbit.
+- Replacing the right-side recenter rail with a selector freed enough horizontal space to make the network readable.
+- Keeping focus as visual emphasis rather than cropping the dataset aligned the graph with the product goal: explore adjacent ideas across the whole site.
+
+### Corrections received
+- The user clarified that the graph should not be a cropped neighborhood and should show all posts/conferences connected through labels.
+- The user explicitly asked to remove the right vertical "recenter graph" rail and replace it with a dropdown.
+
+### What to watch next
+- If the content graph grows substantially beyond the current label/topic count, the static column layout may need another pass or a more interactive zoom/pan treatment.
+- Focus options now include the full content set; keep an eye on selector usability if the catalog grows much larger.
+
+## 2026-03-15 (True graph interaction redesign)
+
+### What went right
+- The graph became substantially more legible once the model switched from content/topic cards to a content-only network with shared-label edges.
+- `d3-force` was the right level of abstraction: enough to produce a real graph layout without pulling in a heavy graph framework.
+- Pan/zoom, click-to-focus, and hover detail made the route feel like an actual exploratory map instead of a static diagram.
+
+### Corrections received
+- The user explicitly rejected the card-based graph UI and asked for a true draggable/zoomable graph with dots/balls as nodes and labels represented on the connections.
+
+### What to watch next
+- If the graph size increases significantly, edge-label density may need another pass or progressive disclosure based on zoom level.
+- The current layout is deterministic and stable per dataset; if future edits introduce jitter across focus changes, revisit the initial seeding/tick strategy before changing the interaction model.
+
+## 2026-03-15 (Graph pan/zoom controller upgrade)
+
+### What went right
+- Replacing the hand-rolled pointer/wheel camera with `d3-zoom` made the graph interaction model more coherent and maintainable.
+- Wiring the button controls into the same zoom behavior removed mismatch between manual drag state and button-based transforms.
+
+### Corrections received
+- The user correctly called out that the original custom drag layer felt unresponsive.
+
+### What to watch next
+- If node click-to-focus ever feels too sensitive after panning, tune `d3-zoom` click distance rather than reintroducing custom drag guards.
+
 ## 2026-02-14
 
 ### What went right
@@ -757,3 +798,30 @@
 - `npx tsc --noEmit`
 - `npm run lint`
 - `npm run build` now gets past the invalid segment-config phase; local build remains blocked only by Google Fonts network fetch restrictions in this environment.
+
+## 2026-03-15 (Graph UI decluttering)
+
+### Correction received
+- The first graph UI was too busy: oversized cards, too many colors, and too much metadata inside the canvas made the graph itself hard to read.
+
+### Fix
+- Simplified `components/ContentRelationshipGraph.tsx` so the canvas focuses on the current node plus first-hop relationships only.
+- Moved second-hop content into a quieter `Outer ring` list below the canvas.
+- Reduced node chrome, removed in-graph degree badges/extra metadata, and switched to a calmer mostly neutral palette with amber reserved for topic nodes.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-15 (Graph label-only model correction)
+
+### Correction received
+- The graph’s purpose is to surface relationships created by shared labels. `view` nodes should not participate because views do not have first-class labels of their own.
+
+### Fix
+- Removed `view` nodes and post-to-view membership edges from `lib/content-graph.ts`.
+- Updated graph copy and UI in `components/ContentRelationshipGraph.tsx` and `app/graph/page.tsx` so the feature is explicitly framed as a label-based relationship map across posts and conferences.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`

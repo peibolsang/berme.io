@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { BackLink } from "../../components/BackLink";
 import { ContentRelationshipGraph } from "../../components/ContentRelationshipGraph";
-import { getContentGraphNeighborhood } from "../../lib/content-graph";
+import { getContentGraph } from "../../lib/content-graph";
 
 export const revalidate = 3600;
 
@@ -18,34 +18,21 @@ const readFocusParam = async (searchParams?: GraphPageProps["searchParams"]) => 
 
 export default async function GraphPage({ searchParams }: GraphPageProps) {
   const focusId = await readFocusParam(searchParams);
-  const graph = await getContentGraphNeighborhood(focusId);
+  const graph = await getContentGraph(focusId);
 
   return (
     <div className="min-h-screen px-6 py-16">
-      <main className="mx-auto w-full max-w-6xl">
+      <main className="mx-auto w-full max-w-[96rem]">
         <div className="max-w-3xl">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
-            Graph
-          </p>
+          <BackLink fallbackView="posts" />
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-5xl">
-            Explore how ideas connect across posts, views, and conferences.
+            Explore how labels connect ideas across posts and conferences.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-            This route turns shared labels into a navigable map. The graph centers on a
-            single piece, then shows its strongest one-hop relationships through topic
-            labels and view membership without sending you to markdown export routes.
+            The graph turns content labels into a navigable map of the whole site.
+            Pick any post or conference as the center and inspect how labels connect it
+            to the rest of the network without sending you to markdown export routes.
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 font-semibold text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-950 dark:border-slate-700 dark:bg-slate-900/70 dark:text-zinc-200 dark:hover:border-slate-600 dark:hover:text-white"
-            >
-              Back home
-            </Link>
-            <span className="text-zinc-400 dark:text-zinc-500">
-              Pick a different center from the right rail to redraw the neighborhood.
-            </span>
-          </div>
         </div>
 
         <div className="mt-10">

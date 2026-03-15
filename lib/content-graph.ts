@@ -1,12 +1,11 @@
 import { unstable_cache } from "next/cache";
-import type { Conference, Post, View } from "../types";
+import type { Conference, Post } from "../types";
 import { config } from "./config";
 import { getConferences } from "./conferences";
 import { getAllPosts } from "./posts";
-import { getAllViews } from "./views";
 
-type ContentNodeType = "post" | "view" | "conference";
-export type ContentGraphNodeType = ContentNodeType | "topic";
+type ContentNodeType = "post" | "conference";
+export type ContentGraphNodeType = ContentNodeType;
 
 export type ContentGraphNode = {
   id: string;
@@ -15,17 +14,20 @@ export type ContentGraphNode = {
   url?: string;
   meta: string;
   degree: number;
+  labels?: string[];
 };
 
 export type ContentGraphEdge = {
   id: string;
   source: string;
   target: string;
-  kind: "label" | "membership";
+  kind: "shared-labels";
+  labels: string[];
+  weight: number;
 };
 
 export type ContentGraphNeighborhoodNode = ContentGraphNode & {
-  distance: 0 | 1 | 2;
+  distance: number | null;
 };
 
 export type ContentGraphNeighborhood = {
@@ -64,9 +66,6 @@ type CachedContentGraph = {
 
 const IGNORED_LABELS = new Set(["published", "conference", "now"]);
 const MIN_TOPIC_CONNECTIONS = 2;
-const MAX_TOPIC_CONNECTIONS = 6;
-const MAX_SECONDARY_CONTENT_NODES = 10;
-const MAX_FOCUS_OPTIONS = 10;
 
 const normalizeLabel = (label: string) => label.trim().toLowerCase();
 
@@ -86,33 +85,10 @@ const formatPostMeta = (post: Post) =>
     timeZone: "UTC",
   });
 
-const formatViewMeta = (view: View) =>
-  `${view.posts.length} ${view.posts.length === 1 ? "post" : "posts"}`;
-
 const formatConferenceMeta = (conference: Conference) =>
   [conference.event, conference.location].filter(Boolean).join(" · ");
 
-const buildViewLabels = (view: View) => {
-  const labels = new Map<string, string>();
-  view.posts.forEach((post) => {
-    post.labels.forEach((label) => {
-      if (!isUsefulLabel(label)) {
-        return;
-      }
-      const key = normalizeLabel(label);
-      if (!labels.has(key)) {
-        labels.set(key, label.trim());
-      }
-    });
-  });
-  return Array.from(labels.keys());
-};
-
-const toContentSnapshots = (
-  posts: Post[],
-  views: View[],
-  conferences: Conference[],
-) => {
+const toContentSnapshots = (posts: Post[], conferences: Conference[]) => {
   const postSnapshots: ContentSnapshot[] = posts.map((post) => ({
     id: `post:${post.number}`,
     type: "post",
@@ -120,17 +96,7 @@ const toContentSnapshots = (
     url: post.url,
     meta: formatPostMeta(post),
     sortDate: post.publishedAt,
-    labelKeys: post.labels.filter(isUsefulLabel).map(normalizeLabel),
-  }));
-
-  const viewSnapshots: ContentSnapshot[] = views.map((view) => ({
-    id: `view:${view.number}`,
-    type: "view",
-    title: view.title,
-    url: view.url,
-    meta: formatViewMeta(view),
-    sortDate: view.updatedAt,
-    labelKeys: buildViewLabels(view),
+    labelKeys: Array.from(new Set(post.labels.filter(isUsefulLabel).map(normalizeLabel))),
   }));
 
   const conferenceSnapshots: ContentSnapshot[] = conferences.map((conference) => ({
@@ -140,10 +106,10 @@ const toContentSnapshots = (
     url: conference.url,
     meta: formatConferenceMeta(conference),
     sortDate: conference.date,
-    labelKeys: conference.labels.filter(isUsefulLabel).map(normalizeLabel),
+    labelKeys: Array.from(new Set(conference.labels.filter(isUsefulLabel).map(normalizeLabel))),
   }));
 
-  return [...postSnapshots, ...viewSnapshots, ...conferenceSnapshots];
+  return [...postSnapshots, ...conferenceSnapshots];
 };
 
 const compareContentSnapshots = (left: ContentSnapshot, right: ContentSnapshot) => {
@@ -153,15 +119,11 @@ const compareContentSnapshots = (left: ContentSnapshot, right: ContentSnapshot) 
   return left.title.localeCompare(right.title);
 };
 
-const buildGraphIndex = (
-  snapshots: ContentSnapshot[],
-  views: View[],
-): CachedContentGraph => {
+const buildGraphIndex = (snapshots: ContentSnapshot[]): CachedContentGraph => {
   const labelMembers = new Map<string, Set<string>>();
 
   snapshots.forEach((snapshot) => {
-    const uniqueKeys = new Set(snapshot.labelKeys);
-    uniqueKeys.forEach((key) => {
+    snapshot.labelKeys.forEach((key) => {
       if (!labelMembers.has(key)) {
         labelMembers.set(key, new Set());
       }
@@ -173,76 +135,63 @@ const buildGraphIndex = (
     Array.from(labelMembers.entries())
       .filter(([, members]) => {
         const size = members.size;
-        return size >= MIN_TOPIC_CONNECTIONS && size <= MAX_TOPIC_CONNECTIONS;
+        return size >= MIN_TOPIC_CONNECTIONS;
       })
       .map(([key]) => key),
   );
 
-  const nodes: ContentGraphNode[] = snapshots.map((snapshot) => ({
+const filteredSnapshots = snapshots.map((snapshot) => ({
+    ...snapshot,
+    labelKeys: snapshot.labelKeys.filter((key) => validTopicKeys.has(key)),
+  }));
+
+  const nodes: ContentGraphNode[] = filteredSnapshots.map((snapshot) => ({
     id: snapshot.id,
     type: snapshot.type,
     title: snapshot.title,
     url: snapshot.url,
     meta: snapshot.meta,
     degree: 0,
+    labels: snapshot.labelKeys,
   }));
 
-  validTopicKeys.forEach((key) => {
-    nodes.push({
-      id: `topic:${key}`,
-      type: "topic",
-      title: key,
-      meta: `${labelMembers.get(key)?.size ?? 0} connected items`,
-      degree: 0,
-    });
-  });
+  const pairLabels = new Map<string, Set<string>>();
 
-  const nodeById = new Map(nodes.map((node) => [node.id, node]));
-  const edges: ContentGraphEdge[] = [];
-  const edgeIds = new Set<string>();
+  filteredSnapshots.forEach((snapshot) => {
+    snapshot.labelKeys.forEach((label) => {
+      const members = Array.from(labelMembers.get(label) ?? []).filter((id) =>
+        filteredSnapshots.some((item) => item.id === id),
+      );
 
-  const addEdge = (
-    source: string,
-    target: string,
-    kind: ContentGraphEdge["kind"],
-  ) => {
-    const [left, right] = [source, target].sort((a, b) => a.localeCompare(b));
-    const edgeId = `${kind}:${left}:${right}`;
-    if (edgeIds.has(edgeId)) {
-      return;
-    }
-    edgeIds.add(edgeId);
-    edges.push({
-      id: edgeId,
-      source,
-      target,
-      kind,
-    });
-  };
-
-  snapshots.forEach((snapshot) => {
-    const uniqueKeys = new Set(snapshot.labelKeys);
-    uniqueKeys.forEach((key) => {
-      if (!validTopicKeys.has(key)) {
-        return;
+      for (let index = 0; index < members.length; index += 1) {
+        for (let offset = index + 1; offset < members.length; offset += 1) {
+          const [left, right] = [members[index], members[offset]].sort((a, b) =>
+            a.localeCompare(b),
+          );
+          const pairKey = `${left}::${right}`;
+          if (!pairLabels.has(pairKey)) {
+            pairLabels.set(pairKey, new Set());
+          }
+          pairLabels.get(pairKey)?.add(label);
+        }
       }
-      addEdge(snapshot.id, `topic:${key}`, "label");
     });
   });
 
-  views.forEach((view) => {
-    const viewId = `view:${view.number}`;
-    if (!nodeById.has(viewId)) {
-      return;
-    }
-    view.posts.forEach((post) => {
-      const postId = `post:${post.number}`;
-      if (!nodeById.has(postId)) {
-        return;
-      }
-      addEdge(viewId, postId, "membership");
-    });
-  });
+  const edges: ContentGraphEdge[] = Array.from(pairLabels.entries()).map(
+    ([pairKey, labelsSet]) => {
+      const [source, target] = pairKey.split("::");
+      const labels = Array.from(labelsSet).sort((left, right) => left.localeCompare(right));
+      return {
+        id: `shared-labels:${source}:${target}`,
+        source,
+        target,
+        kind: "shared-labels" as const,
+        labels,
+        weight: labels.length,
+      };
+    },
+  );
 
   const degreeByNodeId = new Map<string, number>();
   edges.forEach((edge) => {
@@ -255,9 +204,8 @@ const buildGraphIndex = (
     degree: degreeByNodeId.get(node.id) ?? 0,
   }));
 
-  const snapshotById = new Map(snapshots.map((snapshot) => [snapshot.id, snapshot]));
+  const snapshotById = new Map(filteredSnapshots.map((snapshot) => [snapshot.id, snapshot]));
   const focusOptions = enrichedNodes
-    .filter((node) => node.type !== "topic" && node.degree > 0)
     .sort((left, right) => {
       if (right.degree !== left.degree) {
         return right.degree - left.degree;
@@ -269,7 +217,6 @@ const buildGraphIndex = (
       }
       return left.title.localeCompare(right.title);
     })
-    .slice(0, MAX_FOCUS_OPTIONS)
     .map((node) => ({
       id: node.id,
       title: node.title,
@@ -284,7 +231,7 @@ const buildGraphIndex = (
     edges,
     focusOptions,
     stats: {
-      contentNodes: snapshots.length,
+      contentNodes: filteredSnapshots.length,
       topicNodes: validTopicKeys.size,
       edges: edges.length,
     },
@@ -292,19 +239,14 @@ const buildGraphIndex = (
 };
 
 const fetchContentGraph = async (): Promise<CachedContentGraph> => {
-  const [posts, views, conferences] = await Promise.all([
-    getAllPosts(),
-    getAllViews(),
-    getConferences(),
-  ]);
-
-  const snapshots = toContentSnapshots(posts, views, conferences);
-  return buildGraphIndex(snapshots, views);
+  const [posts, conferences] = await Promise.all([getAllPosts(), getConferences()]);
+  const snapshots = toContentSnapshots(posts, conferences);
+  return buildGraphIndex(snapshots);
 };
 
-const getCachedContentGraph = unstable_cache(fetchContentGraph, ["content-graph"], {
+const getCachedContentGraph = unstable_cache(fetchContentGraph, ["content-graph-v2"], {
   revalidate: config.revalidateSeconds,
-  tags: ["posts", "views", "conferences"],
+  tags: ["posts", "conferences"],
 });
 
 const buildAdjacency = (edges: ContentGraphEdge[]) => {
@@ -325,19 +267,13 @@ const buildAdjacency = (edges: ContentGraphEdge[]) => {
 };
 
 const compareGraphNodes = (left: ContentGraphNode, right: ContentGraphNode) => {
-  if (left.type === "topic" && right.type !== "topic") {
-    return -1;
-  }
-  if (left.type !== "topic" && right.type === "topic") {
-    return 1;
-  }
   if (right.degree !== left.degree) {
     return right.degree - left.degree;
   }
   return left.title.localeCompare(right.title);
 };
 
-export const getContentGraphNeighborhood = async (
+export const getContentGraph = async (
   requestedFocusId?: string,
 ): Promise<ContentGraphNeighborhood | null> => {
   const graph = await getCachedContentGraph();
@@ -345,7 +281,7 @@ export const getContentGraphNeighborhood = async (
   const adjacency = buildAdjacency(graph.edges);
 
   const focusId =
-    requestedFocusId && nodeById.has(requestedFocusId) && nodeById.get(requestedFocusId)?.type !== "topic"
+    requestedFocusId && nodeById.has(requestedFocusId)
       ? requestedFocusId
       : graph.focusOptions[0]?.id;
 
@@ -353,66 +289,48 @@ export const getContentGraphNeighborhood = async (
     return null;
   }
 
-  const visibleIds = new Set<string>([focusId]);
-  const distances = new Map<string, 0 | 1 | 2>([[focusId, 0]]);
-  const directNeighborIds = Array.from(adjacency.get(focusId) ?? [])
-    .sort((leftId, rightId) =>
-      compareGraphNodes(nodeById.get(leftId) as ContentGraphNode, nodeById.get(rightId) as ContentGraphNode),
-    );
+  const distances = new Map<string, number>([[focusId, 0]]);
+  const queue = [focusId];
 
-  directNeighborIds.forEach((nodeId) => {
-    visibleIds.add(nodeId);
-    distances.set(nodeId, 1);
-  });
-
-  const secondaryCandidates = new Map<string, ContentGraphNode>();
-  directNeighborIds.forEach((neighborId) => {
-    Array.from(adjacency.get(neighborId) ?? []).forEach((candidateId) => {
-      if (candidateId === focusId || visibleIds.has(candidateId)) {
+  while (queue.length > 0) {
+    const currentId = queue.shift();
+    if (!currentId) {
+      continue;
+    }
+    const currentDistance = distances.get(currentId) ?? 0;
+    Array.from(adjacency.get(currentId) ?? []).forEach((neighborId) => {
+      if (distances.has(neighborId)) {
         return;
       }
-      const candidate = nodeById.get(candidateId);
-      if (!candidate || candidate.type === "topic") {
-        return;
-      }
-      secondaryCandidates.set(candidateId, candidate);
+      distances.set(neighborId, currentDistance + 1);
+      queue.push(neighborId);
     });
-  });
-
-  Array.from(secondaryCandidates.values())
-    .sort(compareGraphNodes)
-    .slice(0, MAX_SECONDARY_CONTENT_NODES)
-    .forEach((candidate) => {
-      visibleIds.add(candidate.id);
-      distances.set(candidate.id, 2);
-    });
+  }
 
   const nodes = graph.nodes
-    .filter((node) => visibleIds.has(node.id))
     .map((node) => ({
       ...node,
-      distance: distances.get(node.id) ?? 2,
+      distance: distances.get(node.id) ?? null,
     }))
     .sort((left, right) => {
-      if (left.distance !== right.distance) {
-        return left.distance - right.distance;
+      const leftDistance = left.distance ?? Number.MAX_SAFE_INTEGER;
+      const rightDistance = right.distance ?? Number.MAX_SAFE_INTEGER;
+      if (leftDistance !== rightDistance) {
+        return leftDistance - rightDistance;
       }
       return compareGraphNodes(left, right);
     });
 
-  const edges = graph.edges.filter(
-    (edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target),
-  );
-
-  const connectedTopics = nodes
-    .filter((node) => node.type === "topic" && node.distance === 1)
-    .map((node) => node.title)
+  const connectedTopics = graph.edges
+    .filter((edge) => edge.source === focusId || edge.target === focusId)
+    .flatMap((edge) => edge.labels ?? [])
+    .filter((label, index, labels) => labels.indexOf(label) === index)
     .sort((left, right) => left.localeCompare(right));
 
   return {
     focusId,
     nodes,
-    edges,
+    edges: graph.edges,
     focusOptions: graph.focusOptions,
     connectedTopics,
     stats: graph.stats,

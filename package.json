@@ -17,6 +17,9 @@
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.0.0",
     "cmdk": "^1.0.4",
+    "d3-force": "^3.0.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "next": "16.1.1",
@@ -37,12 +40,16 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/d3-force": "^3.0.10",
+    "@types/d3-selection": "^3.0.11",
+    "@types/d3-zoom": "^3.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
