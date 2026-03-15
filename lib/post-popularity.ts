@@ -1,5 +1,5 @@
 import type { Post } from "../types";
-import { getBooleanEnv } from "./config";
+import { config } from "./config";
 import {
   getPostPopularityCatalog,
   hasPublishedPostUrl,
@@ -8,8 +8,9 @@ import {
 import { getRedisClient } from "./redis";
 
 const POPULAR_POST_LIMIT = 3;
-const POST_READS_RANKING_KEY = "post:reads:ranking";
-const POST_READS_KEY_PREFIX = "post:reads:";
+const POPULARITY_NAMESPACE_PREFIX = `site:${config.popularity.namespace}:post:reads`;
+const POST_READS_RANKING_KEY = `${POPULARITY_NAMESPACE_PREFIX}:ranking`;
+const POST_READS_KEY_PREFIX = `${POPULARITY_NAMESPACE_PREFIX}:`;
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
@@ -161,6 +162,8 @@ export const getPopularityCatalog = async (): Promise<PopularityCatalog> => {
 export const formatReadCount = (readCount: number) =>
   `${numberFormatter.format(readCount)} reads`;
 
+export const popularityNamespace = config.popularity.namespace;
+
 export const isKnownPostUrl = hasPublishedPostUrl;
 
 export const ensurePostReadTracking = async (postUrl: string) => {
@@ -292,7 +295,7 @@ export const trackPostRead = async (
   try {
     const resolvedTrackedPosts = trackedPosts ?? (await getPostPopularityCatalog());
 
-    if (getBooleanEnv(process.env.LOCAL_DEV)) {
+    if (config.localDev) {
       return await resolvePopularitySnapshot(postUrl, resolvedTrackedPosts);
     }
 

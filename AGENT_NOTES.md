@@ -667,6 +667,25 @@
 - `npx tsc --noEmit`
 - `npm run lint`
 
+## 2026-03-15 (Popularity PRD export)
+
+### What worked
+- The Redis popularity feature had enough concrete implementation detail to extract into a reusable spec without inventing behavior.
+
+### Fix
+- Added `docs/popular-posts-prd.md` as a product and engineering spec for replicating the current popular-posts system on another site.
+- The document captures the implemented behavior, not the original draft: URL-based Redis keys, top-3 shelf, `Popular #n` on post pages, local-dev write skipping, request hardening, and permalink migration.
+
+## 2026-03-15 (Popularity namespace for shared Redis)
+
+### Issue found
+- The popularity system could share a Redis database with another site only if the keys were namespaced. Even if post URLs never collide, the ranking sorted set would.
+
+### Fix
+- Added `POPULARITY_NAMESPACE` support, defaulting to `berme.io`, and changed all popularity keys to the shape `site:<namespace>:post:reads:*`.
+- Updated the CSV import script to write into the namespaced keyspace.
+- Added `scripts/migrate-post-popularity-namespace.mjs` plus `npm run migrate:popularity-namespace` to migrate existing legacy keys into the namespaced layout.
+
 ## 2026-03-15 (Redis popularity hardening)
 
 ### Issues found
