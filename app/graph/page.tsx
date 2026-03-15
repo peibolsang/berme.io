@@ -31,7 +31,7 @@ export default async function GraphPage({ searchParams }: GraphPageProps) {
           <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
             The graph turns content labels into a navigable map of the whole site.
             Pick any post or conference as the center and inspect how labels connect it
-            to the rest of the network without sending you to markdown export routes.
+            to the rest of the network.
           </p>
         </div>
 

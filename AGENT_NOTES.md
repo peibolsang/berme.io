@@ -12,6 +12,36 @@
 - `lib/now.ts` still duplicates GitHub REST fetch setup that also exists in `lib/github.ts`.
 - `AGENT_NOTES.md` now contains repeated sections for some 2026-03-15 popularity work; avoid appending duplicate RCA entries without new information.
 
+## 2026-03-15 (Homepage highlights and reading-path UI cleanup)
+
+### What went right
+- Shrinking the featured/popular card typography was the right lever for making the cards feel lighter because the shared measured min-height automatically followed the smaller text.
+- Replacing the `Explore reading paths` label accordion in `components/PostsIndex.tsx` with a direct `/graph` link materially simplified both the UI and the component logic.
+- Removing transition effects from the highlight card swap reduced perceptual motion and made the section behave more predictably.
+
+### What went wrong
+- Several attempts to stabilize featured/popular card height flicker only treated symptoms; the bug persisted because multiple layers of measurement and visibility changes were still interacting.
+- A probe-based card height measurement briefly became self-referential and later remained partially coupled to the live layout, which made debugging noisier than necessary.
+
+### Corrections received
+- The user explicitly rejected decorative additions such as `Open article` footers and `Featured`/`Popular` chips inside cards.
+- The user clarified that card titles must not be truncated.
+- The user asked to keep iterating until the featured/popular toggle stopped flickering, then later asked to remove all remaining transition effects.
+
+### Root cause and fix
+- The lingering highlight flicker came from height management depending on live toggle layout. Even after moving card-height measurement off the visible cards, the wrapper still had JS-managed pane height and the hidden probe layout was not fully isolated from the visible swap.
+- The durable fix was to stop JS-managing wrapper height, keep featured/popular panes in the same CSS grid cell, switch visibility without animated transitions, and derive shared card min-height from stable hidden probes only.
+
+### What changed
+- Reduced featured/popular card text sizes, date text, and excerpt sizing in `components/LandingViews.tsx`, which also reduced the measured shared card height.
+- Removed hover motion/visual effects and all transition effects from the highlight cards and pane swap in `components/LandingViews.tsx`.
+- Replaced the graph-page sentence fragment about markdown export routes in `app/graph/page.tsx`.
+- Replaced the reading-path accordion/filter UI with a direct `/graph` link plus right arrow in `components/PostsIndex.tsx`, and removed the unused label-filter state/helpers there.
+
+### What to watch next
+- If highlight sizing is touched again, keep the measurement source completely outside the visible toggle layout; avoid reintroducing wrapper-height effects.
+- `components/LandingViews.tsx` now contains non-trivial card sizing logic; if the design changes substantially, reassess whether the measurement approach is still worth the complexity versus a fixed card height.
+
 ## 2026-03-15 (Redis popularity hardening)
 
 ### What went right
