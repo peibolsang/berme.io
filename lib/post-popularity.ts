@@ -1,4 +1,10 @@
 import type { Post } from "../types";
+import { getBooleanEnv } from "./config";
+import {
+  getPostPopularityCatalog,
+  hasPublishedPostUrl,
+  type PostPopularityCatalogEntry,
+} from "./posts";
 import { getRedisClient } from "./redis";
 
 const POPULAR_POST_LIMIT = 3;
@@ -7,18 +13,68 @@ const POST_READS_KEY_PREFIX = "post:reads:";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
+type PopularityCatalog = {
+  posts: PostPopularityCatalogEntry[];
+  byUrl: Record<string, PostPopularityCatalogEntry>;
+};
+
+type RankedTrackedPost = PostPopularityCatalogEntry & {
+  readCount: number;
+};
+
+type PostPopularity = {
+  readCount: number;
+  popularRank: number | null;
+  isPopular: boolean;
+};
+
 const reportPopularityError = (message: string, error: unknown) => {
   if (process.env.NODE_ENV !== "production") {
     console.error(message, error);
   }
 };
 
-const isLocalDevReadTrackingDisabled = () =>
-  typeof process.env.LOCAL_DEV !== "undefined";
-
 const getPostReadsKey = (postUrl: string) => `${POST_READS_KEY_PREFIX}${postUrl}`;
 
-const toPostPopularity = (readCount: number, zeroBasedRank: number | null) => {
+const isValidPostUrl = (postUrl: string) =>
+  postUrl.startsWith("/") &&
+  !postUrl.includes("..") &&
+  !postUrl.includes("?") &&
+  !postUrl.includes("#");
+
+const normalizeReadCount = (value: number | string | null | undefined) => {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : Number.parseInt(String(value ?? "0"), 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : 0;
+};
+
+const compareRankedPosts = (left: RankedTrackedPost, right: RankedTrackedPost) => {
+  const readDifference = right.readCount - left.readCount;
+  if (readDifference !== 0) {
+    return readDifference;
+  }
+
+  const leftPublished = new Date(left.publishedAt).getTime();
+  const rightPublished = new Date(right.publishedAt).getTime();
+  if (leftPublished !== rightPublished) {
+    return rightPublished - leftPublished;
+  }
+
+  const titleComparison = left.title.localeCompare(right.title);
+  if (titleComparison !== 0) {
+    return titleComparison;
+  }
+
+  return left.url.localeCompare(right.url);
+};
+
+const toPostPopularity = (
+  readCount: number,
+  zeroBasedRank: number | null,
+): PostPopularity => {
   const popularRank =
     zeroBasedRank !== null && zeroBasedRank < POPULAR_POST_LIMIT
       ? zeroBasedRank + 1
@@ -40,11 +96,75 @@ const withPopularity = (
   ...toPostPopularity(readCount, zeroBasedRank),
 });
 
+const getEffectiveStoredCount = async (postUrl: string) => {
+  const client = await getRedisClient();
+  if (!client || !isValidPostUrl(postUrl)) {
+    return 0;
+  }
+
+  const [counterValue, rankingScore] = await Promise.all([
+    client.get(getPostReadsKey(postUrl)),
+    client.zScore(POST_READS_RANKING_KEY, postUrl),
+  ]);
+
+  return Math.max(
+    normalizeReadCount(counterValue),
+    normalizeReadCount(rankingScore),
+  );
+};
+
+const loadRankedPosts = async (
+  trackedPosts: PostPopularityCatalogEntry[],
+): Promise<RankedTrackedPost[]> => {
+  const client = await getRedisClient();
+  if (!client || trackedPosts.length === 0) {
+    return [];
+  }
+
+  const readCountValues = await client.mGet(
+    trackedPosts.map((post) => getPostReadsKey(post.url)),
+  );
+
+  return trackedPosts
+    .map((post, index) => ({
+      ...post,
+      readCount: normalizeReadCount(readCountValues[index]),
+    }))
+    .filter((post) => post.readCount > 0)
+    .sort(compareRankedPosts);
+};
+
+const resolvePopularitySnapshot = async (
+  postUrl: string,
+  trackedPosts: PostPopularityCatalogEntry[],
+  readCountOverride?: number,
+) => {
+  const rankedPosts = await loadRankedPosts(trackedPosts);
+  const zeroBasedRank = rankedPosts.findIndex((post) => post.url === postUrl);
+  const readCount =
+    typeof readCountOverride === "number"
+      ? normalizeReadCount(readCountOverride)
+      : rankedPosts.find((post) => post.url === postUrl)?.readCount ??
+        (await getEffectiveStoredCount(postUrl));
+
+  return toPostPopularity(readCount, zeroBasedRank >= 0 ? zeroBasedRank : null);
+};
+
+export const getPopularityCatalog = async (): Promise<PopularityCatalog> => {
+  const posts = await getPostPopularityCatalog();
+  return {
+    posts,
+    byUrl: Object.fromEntries(posts.map((post) => [post.url, post])),
+  };
+};
+
 export const formatReadCount = (readCount: number) =>
   `${numberFormatter.format(readCount)} reads`;
 
+export const isKnownPostUrl = hasPublishedPostUrl;
+
 export const ensurePostReadTracking = async (postUrl: string) => {
-  if (!postUrl.startsWith("/")) {
+  if (!isValidPostUrl(postUrl)) {
     return false;
   }
 
@@ -53,14 +173,13 @@ export const ensurePostReadTracking = async (postUrl: string) => {
     return false;
   }
 
-  const member = postUrl;
-
   try {
-    await client.multi()
+    await client
+      .multi()
       .setNX(getPostReadsKey(postUrl), "0")
       .zAdd(
         POST_READS_RANKING_KEY,
-        { score: 0, value: member },
+        { score: 0, value: postUrl },
         { condition: "NX" },
       )
       .exec();
@@ -72,8 +191,20 @@ export const ensurePostReadTracking = async (postUrl: string) => {
   return true;
 };
 
-export const ensurePostsReadTracking = async (posts: Post[]) => {
-  if (posts.length === 0) {
+export const syncPostReadTracking = async ({
+  currentUrl,
+  previousUrl,
+}: {
+  currentUrl?: string | null;
+  previousUrl?: string | null;
+}) => {
+  const nextUrl = currentUrl && isValidPostUrl(currentUrl) ? currentUrl : null;
+  const oldUrl =
+    previousUrl && isValidPostUrl(previousUrl) && previousUrl !== nextUrl
+      ? previousUrl
+      : null;
+
+  if (!nextUrl && !oldUrl) {
     return false;
   }
 
@@ -82,30 +213,74 @@ export const ensurePostsReadTracking = async (posts: Post[]) => {
     return false;
   }
 
-  const transaction = client.multi();
+  if (!nextUrl && oldUrl) {
+    try {
+      await client
+        .multi()
+        .del(getPostReadsKey(oldUrl))
+        .zRem(POST_READS_RANKING_KEY, oldUrl)
+        .exec();
+    } catch (error) {
+      reportPopularityError("Unable to remove stale post read tracking", error);
+      return false;
+    }
 
-  posts.forEach((post) => {
-    const member = post.url;
-    transaction.setNX(getPostReadsKey(post.url), "0");
-    transaction.zAdd(
-      POST_READS_RANKING_KEY,
-      { score: 0, value: member },
-      { condition: "NX" },
-    );
-  });
+    return true;
+  }
+
+  if (!oldUrl) {
+    return ensurePostReadTracking(nextUrl!);
+  }
+
+  const activeUrl = nextUrl!;
+  const previousTrackedUrl = oldUrl;
 
   try {
-    await transaction.exec();
+    const [currentCount, previousCount] = await Promise.all([
+      getEffectiveStoredCount(activeUrl),
+      getEffectiveStoredCount(previousTrackedUrl),
+    ]);
+    const mergedCount = currentCount + previousCount;
+
+    await client
+      .multi()
+      .set(getPostReadsKey(activeUrl), String(mergedCount))
+      .zAdd(POST_READS_RANKING_KEY, { score: mergedCount, value: activeUrl })
+      .del(getPostReadsKey(previousTrackedUrl))
+      .zRem(POST_READS_RANKING_KEY, previousTrackedUrl)
+      .exec();
   } catch (error) {
-    reportPopularityError("Unable to ensure post read tracking for all posts", error);
+    reportPopularityError("Unable to sync post read tracking", error);
     return false;
   }
 
   return true;
 };
 
-export const trackPostRead = async (postUrl: string) => {
-  if (!postUrl.startsWith("/")) {
+export const getPostPopularitySnapshot = async (
+  postUrl: string,
+  trackedPosts?: PostPopularityCatalogEntry[],
+) => {
+  if (!isValidPostUrl(postUrl)) {
+    return null;
+  }
+
+  try {
+    return await resolvePopularitySnapshot(
+      postUrl,
+      trackedPosts ?? (await getPostPopularityCatalog()),
+    );
+  } catch (error) {
+    reportPopularityError("Unable to fetch post popularity snapshot", error);
+    return null;
+  }
+};
+
+export const trackPostRead = async (
+  postUrl: string,
+  trackedPosts?: PostPopularityCatalogEntry[],
+) => {
+  if (!isValidPostUrl(postUrl)) {
     return null;
   }
 
@@ -114,27 +289,20 @@ export const trackPostRead = async (postUrl: string) => {
     return null;
   }
 
-  const member = postUrl;
-  const counterKey = getPostReadsKey(postUrl);
-
   try {
-    if (isLocalDevReadTrackingDisabled()) {
-      const [readCountValue, rank] = await Promise.all([
-        client.get(counterKey),
-        client.zRevRank(POST_READS_RANKING_KEY, member),
-      ]);
-      const readCount = Number.parseInt(readCountValue ?? "0", 10);
+    const resolvedTrackedPosts = trackedPosts ?? (await getPostPopularityCatalog());
 
-      return toPostPopularity(Number.isNaN(readCount) ? 0 : readCount, rank);
+    if (getBooleanEnv(process.env.LOCAL_DEV)) {
+      return await resolvePopularitySnapshot(postUrl, resolvedTrackedPosts);
     }
 
-    const [readCount, , rank] = await client.multi()
-      .incr(counterKey)
-      .zIncrBy(POST_READS_RANKING_KEY, 1, member)
-      .zRevRank(POST_READS_RANKING_KEY, member)
+    const [readCount] = await client
+      .multi()
+      .incr(getPostReadsKey(postUrl))
+      .zIncrBy(POST_READS_RANKING_KEY, 1, postUrl)
       .execTyped();
 
-    return toPostPopularity(readCount, rank);
+    return await resolvePopularitySnapshot(postUrl, resolvedTrackedPosts, readCount);
   } catch (error) {
     reportPopularityError("Unable to track post read", error);
     return null;
@@ -146,55 +314,28 @@ export const getPopularPosts = async (posts: Post[], limit = POPULAR_POST_LIMIT)
     return [];
   }
 
-  const client = await getRedisClient();
-  if (!client) {
-    return [];
-  }
-
   try {
-    await ensurePostsReadTracking(posts);
-
-    const rankings = await client.zRangeWithScores(POST_READS_RANKING_KEY, 0, -1, {
-      REV: true,
-    });
-
+    const rankedPosts = await loadRankedPosts(
+      posts.map(({ number, title, publishedAt, url }) => ({
+        number,
+        title,
+        publishedAt,
+        url,
+      })),
+    );
     const postsByUrl = new Map<string, Post>(posts.map((post) => [post.url, post]));
 
-    return rankings
-      .map((entry, index) => {
-        const postUrl = String(entry.value);
-        if (!postUrl.startsWith("/") || entry.score <= 0) {
-          return null;
-        }
-
-        const post = postsByUrl.get(postUrl);
+    return rankedPosts
+      .slice(0, limit)
+      .map((rankedPost, index) => {
+        const post = postsByUrl.get(rankedPost.url);
         if (!post) {
           return null;
         }
 
-        return withPopularity(post, entry.score, index);
+        return withPopularity(post, rankedPost.readCount, index);
       })
-      .filter((post): post is Post => post !== null)
-      .sort((left, right) => {
-        const readDifference = (right.readCount ?? 0) - (left.readCount ?? 0);
-        if (readDifference !== 0) {
-          return readDifference;
-        }
-
-        const leftPublished = new Date(left.publishedAt).getTime();
-        const rightPublished = new Date(right.publishedAt).getTime();
-        if (leftPublished !== rightPublished) {
-          return rightPublished - leftPublished;
-        }
-
-        return left.title.localeCompare(right.title);
-      })
-      .slice(0, limit)
-      .map((post, index) => ({
-        ...post,
-        popularRank: index + 1,
-        isPopular: true,
-      }));
+      .filter((post): post is Post => post !== null);
   } catch (error) {
     reportPopularityError("Unable to fetch popular posts", error);
     return [];

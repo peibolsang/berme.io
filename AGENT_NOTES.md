@@ -1,5 +1,24 @@
 # Agent Notes
 
+## 2026-03-15 (Redis popularity hardening)
+
+### What went right
+- The Redis popularity feature became much safer once the ranking logic stopped relying on raw sorted-set order and instead used one canonical post ranking pass.
+- Moving the hot read endpoint from `getAllPosts()` to a cached post popularity catalog kept the validation path much lighter.
+- Webhook-driven `syncPostReadTracking` gave permalink changes a concrete migration path instead of letting stale Redis ranking members accumulate forever.
+
+### What went wrong
+- The popularity work touched the same files from multiple directions (`lib/post-popularity.ts`, `app/api/post-reads/route.ts`, `lib/redis.ts`), which made merge drift easy.
+- A transient worker merge briefly left `post-popularity` and the read endpoint out of sync on the catalog shape, so typecheck had to be used as the merge referee.
+
+### Corrections received
+- The user explicitly clarified that homepage traffic must not participate in post popularity tracking.
+- The user also asked for a deeper bug/vulnerability pass on the new Redis feature rather than stopping at the initial implementation.
+
+### What to watch next
+- The current abuse protection is pragmatic rather than bulletproof: same-origin checks, bot filtering, and in-process cooldowns reduce gaming, but they do not provide strong cross-region uniqueness.
+- If popularity becomes business-critical, move the cooldown/rate-limit layer into Redis or another shared store so it survives process churn.
+
 ## 2026-03-15 (Full graph layout redesign)
 
 ### What went right
@@ -648,6 +667,25 @@
 - `npx tsc --noEmit`
 - `npm run lint`
 
+## 2026-03-15 (Redis popularity hardening)
+
+### Issues found
+- The post-read endpoint was writable by any caller with a valid URL and performed full post-catalog validation on the hot path.
+- The homepage popularity read path was still writing bootstrap data into Redis.
+- Rank ordering differed between the homepage and per-post popularity metadata on ties.
+- `LOCAL_DEV` disabled tracking by mere presence instead of truthy intent.
+- A transient Redis connection failure could disable Redis for the rest of the process lifetime.
+
+### Fix
+- Added a lightweight post popularity catalog/index in `lib/posts.ts` so post-read validation no longer depends on the full post objects.
+- Hardened `app/api/post-reads/route.ts` with JSON/content validation, same-origin checks, bot filtering, and an in-memory per-IP/per-post cooldown.
+- Reworked `lib/post-popularity.ts` so homepage popularity reads are read-only, detail-page snapshots and homepage lists share one canonical ranking algorithm, and `LOCAL_DEV` uses truthy parsing.
+- Updated `lib/redis.ts` so failed connections reset cleanly and can be retried on later requests instead of caching `null` forever.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
 ### What to watch next
 - The new reading shell and graph route were validated statically here; a manual browser pass would still be useful to confirm mobile behavior, sticky positioning, and graph legibility with real content.
 
@@ -662,6 +700,20 @@
 ### Validation
 - `npx tsc --noEmit`
 - `npm run lint`
+
+## 2026-03-15 (Popularity hardening pass)
+
+### What changed
+- Hardened `app/api/post-reads/route.ts` with same-origin checks, bot filtering, and an in-memory per-IP/per-post cooldown so the endpoint is less trivially gameable.
+- Reworked popularity ranking to use one canonical tie-break path for both the homepage and per-post `Popular #n` metadata.
+- Added cached popularity catalog helpers in `lib/posts.ts` so the hot read-tracking route no longer needs the full post objects.
+- Updated `lib/redis.ts` so transient connection failures do not permanently disable Redis for the life of the process.
+- Added URL-sync handling in `lib/post-popularity.ts` and `app/api/revalidate/route.ts` so permalink changes merge counts into the new URL and clean up stale ranking members.
+- Tightened `LOCAL_DEV` handling so only truthy values like `1` or `true` disable read increments.
+
+### What to watch next
+- The request cooldown is process-local memory, so it mitigates abuse but does not behave like a distributed rate limiter across multiple server instances.
+- Popularity still reflects raw visits rather than unique readers; this pass hardens the endpoint, but it does not turn the metric into analytics-grade traffic data.
 
 ## 2026-03-14 (Post metadata popularity simplification)
 
@@ -821,6 +873,76 @@
 ### Fix
 - Removed `view` nodes and post-to-view membership edges from `lib/content-graph.ts`.
 - Updated graph copy and UI in `components/ContentRelationshipGraph.tsx` and `app/graph/page.tsx` so the feature is explicitly framed as a label-based relationship map across posts and conferences.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-15 (Redis popularity hardening)
+
+### What went right
+- Splitting the review findings into issue-specific workers surfaced useful partial fixes quickly: the popularity code moved to a reduced post catalog, `LOCAL_DEV` switched to truthy boolean parsing, and the webhook flow picked up a dedicated popularity sync step.
+- The final merge kept the homepage popularity read path read-only while preserving the existing Redis-backed ranking model.
+
+### What went wrong
+- Several worker branches touched the same popularity files (`lib/post-popularity.ts`, `app/api/post-reads/route.ts`, `app/api/revalidate/route.ts`), so the first merge pass left overlapping implementations and a few type errors around nullable URL migration state.
+- The webhook popularity sync initially handled URL changes but did not consistently clean up stale ranking members when a post URL disappeared entirely.
+
+### Fix
+- Hardened `app/api/post-reads/route.ts` with:
+  - explicit `application/json` enforcement
+  - same-origin gating in production
+  - bot/user-agent filtering
+  - in-memory per-IP+post cooldowns
+  - reduced-catalog validation instead of the full posts collection
+- Updated `lib/post-popularity.ts` so:
+  - homepage popularity reads no longer write bootstrap keys
+  - ranking/order is computed canonically from the same reduced catalog for homepage and detail badges
+  - permalink sync merges counts on URL changes and removes stale keys when a post URL disappears
+  - `LOCAL_DEV` uses truthy parsing rather than mere env-var presence
+- Updated `lib/redis.ts` so a transient connect failure does not permanently cache `null`; later calls recreate the client and retry.
+- Updated `app/api/revalidate/route.ts` so aggregate revalidation bookkeeping includes `/sitemap.json` in the pinned-content path too.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-15 (Popularity permalink migration)
+
+### Issue found
+- Popularity tracking used canonical post URLs as Redis members, but the webhook flow only ensured both the old and new URLs existed. When a permalink changed, the old ranking member stayed behind and polluted Redis rankings while the new URL started from a separate entry.
+
+### Fix
+- Added `syncPostReadTracking()` in `lib/post-popularity.ts` to reconcile old and new post URLs by:
+  - reading the effective stored count from both the counter key and ranking score,
+  - consolidating counts onto the current canonical URL,
+  - deleting the stale counter key and ranking member for the previous URL.
+- Updated `app/api/revalidate/route.ts` to call that sync helper during issue-content revalidation, which is the one place that already has both the cached pre-revalidation URL and the payload-derived current URL.
+
+### Validation
+- `npx tsc --noEmit`
+- `npm run lint`
+
+## 2026-03-15 (Popularity hardening pass)
+
+### Issue found
+- The first Redis popularity implementation had seven weaknesses:
+  - the post-read endpoint was trivially gameable,
+  - homepage popularity reads were still writing bootstrap data,
+  - permalink changes left stale Redis ranking members behind,
+  - homepage and detail popularity ranks could diverge on ties,
+  - a single Redis connect failure could disable Redis for the process lifetime,
+  - `LOCAL_DEV` disabled tracking by mere presence instead of truthiness,
+  - and the hot read path validated URLs by loading/scanning the full post catalog.
+
+### Fix
+- Hardened `app/api/post-reads/route.ts` with stricter request validation, same-origin checks, bot filtering, and an in-memory per-IP/per-post cooldown.
+- Switched the hot path to a lightweight cached popularity catalog instead of full post objects.
+- Kept homepage popularity loading read-only by removing bootstrap writes from `getPopularPosts()`.
+- Unified homepage ordering and detail-page `Popular #n` ranking under the same canonical tie-breaker.
+- Added `syncPostReadTracking()` to reconcile old/new canonical URLs during webhook revalidation.
+- Fixed local-dev tracking toggles so only truthy `LOCAL_DEV` values disable increments.
+- Reworked `lib/redis.ts` so later requests can reconnect after a transient failure instead of getting stuck in a permanent `null` state.
 
 ### Validation
 - `npx tsc --noEmit`

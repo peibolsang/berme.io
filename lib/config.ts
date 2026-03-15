@@ -5,12 +5,18 @@ const requireInProduction = (value: string, name: string) => {
   return value;
 };
 
+const truthyEnvValues = new Set(["1", "true", "yes", "on"]);
+
+export const getBooleanEnv = (value: string | undefined) =>
+  truthyEnvValues.has(String(value ?? "").trim().toLowerCase());
+
 export const config = {
   github: {
     token: process.env.GITHUB_TOKEN ?? "",
     owner: process.env.GITHUB_OWNER ?? "peibolsang",
     repo: process.env.GITHUB_REPO ?? "peibolsang",
   },
+  localDev: getBooleanEnv(process.env.LOCAL_DEV),
   redis: {
     url: process.env.REDIS_URL ?? "",
   },
