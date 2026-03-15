@@ -1,5 +1,17 @@
 # Agent Notes
 
+## 2026-03-15 (Codebase re-familiarization)
+
+### What went right
+- Re-reading `AGENTS.md`, `AGENT_NOTES.md`, and the core `app/` + `lib/` entry points quickly rebuilt an accurate mental model of the site.
+- The content architecture remains coherent: GitHub issues power posts, views, conferences, and the `/now` page through cached data-access helpers.
+- Existing notes are detailed enough to expose recurring failure modes before touching code.
+
+### What to watch next
+- `app/feed.xml/route.ts` and `app/sitemap.md/route.ts` still hardcode `revalidate = 3600` instead of reading `config.revalidateSeconds`.
+- `lib/now.ts` still duplicates GitHub REST fetch setup that also exists in `lib/github.ts`.
+- `AGENT_NOTES.md` now contains repeated sections for some 2026-03-15 popularity work; avoid appending duplicate RCA entries without new information.
+
 ## 2026-03-15 (Redis popularity hardening)
 
 ### What went right

@@ -43,6 +43,13 @@ const formatConferenceDateLabels = (iso: string) => {
   };
 };
 
+const formatHighlightDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
 const groupConferencesByYear = (entries: Conference[]) => {
   const sorted = [...entries].sort(
     (left, right) =>
@@ -63,7 +70,8 @@ const groupConferencesByYear = (entries: Conference[]) => {
 };
 
 const editorialCardBaseClassName =
-  "flex h-full flex-col rounded-[1.75rem] border px-5 py-5 md:px-6 md:py-6";
+  "group flex h-full min-h-[210px] flex-col rounded-[1.5rem] border px-4 py-4 md:min-h-[220px] md:px-5 md:py-5";
+const highlightCardBottomSlack = 12;
 
 export const LandingViews = ({
   posts,
@@ -123,9 +131,17 @@ export const LandingViews = ({
   const [highlightsView, setHighlightsView] = useState<HighlightsView>(() =>
     hasFeatured ? "featured" : "popular",
   );
-  const featuredPaneRef = useRef<HTMLDivElement | null>(null);
-  const popularPaneRef = useRef<HTMLOListElement | null>(null);
-  const [highlightsPaneHeight, setHighlightsPaneHeight] = useState(0);
+  const highlightSizingGridRef = useRef<HTMLDivElement | null>(null);
+  const featuredProbeRef = useRef<HTMLElement | null>(null);
+  const popularProbeRef = useRef<HTMLElement | null>(null);
+  const [highlightCardMinHeight, setHighlightCardMinHeight] = useState<
+    number | null
+  >(null);
+  const longestHighlightTitle = [...pinned, ...popular].reduce(
+    (longest, post) =>
+      post.title.length > longest.length ? post.title : longest,
+    "",
+  );
 
   useEffect(() => {
     if (highlightsView === "featured" && !hasFeatured && hasPopular) {
@@ -138,41 +154,44 @@ export const LandingViews = ({
   }, [hasFeatured, hasPopular, highlightsView]);
 
   useEffect(() => {
-    if (!hasFeatured && !hasPopular) {
-      setHighlightsPaneHeight(0);
+    if (!longestHighlightTitle || (!hasFeatured && !hasPopular)) {
+      setHighlightCardMinHeight(null);
       return;
     }
 
     let frameId = 0;
-    const updateHeight = () => {
+    const measureProbeHeight = () => {
       frameId = window.requestAnimationFrame(() => {
-        const featuredHeight = featuredPaneRef.current?.offsetHeight ?? 0;
-        const popularHeight = popularPaneRef.current?.offsetHeight ?? 0;
-        setHighlightsPaneHeight(Math.max(featuredHeight, popularHeight));
+        const featuredHeight = featuredProbeRef.current?.offsetHeight ?? 0;
+        const popularHeight = popularProbeRef.current?.offsetHeight ?? 0;
+        const tallestProbeHeight = Math.max(featuredHeight, popularHeight);
+        const nextMinHeight = Math.ceil(
+          Math.max(0, tallestProbeHeight - highlightCardBottomSlack),
+        );
+
+        setHighlightCardMinHeight((current) =>
+          current === nextMinHeight || nextMinHeight === 0
+            ? current
+            : nextMinHeight,
+        );
       });
     };
 
-    updateHeight();
+    measureProbeHeight();
 
     const observer = new ResizeObserver(() => {
-      updateHeight();
+      measureProbeHeight();
     });
 
-    if (featuredPaneRef.current) {
-      observer.observe(featuredPaneRef.current);
+    if (highlightSizingGridRef.current) {
+      observer.observe(highlightSizingGridRef.current);
     }
-    if (popularPaneRef.current) {
-      observer.observe(popularPaneRef.current);
-    }
-
-    window.addEventListener("resize", updateHeight);
 
     return () => {
       window.cancelAnimationFrame(frameId);
       observer.disconnect();
-      window.removeEventListener("resize", updateHeight);
     };
-  }, [hasFeatured, hasPopular, pinned, popular]);
+  }, [hasFeatured, hasPopular, longestHighlightTitle]);
 
   return (
     <Tabs
@@ -233,46 +252,86 @@ export const LandingViews = ({
                 )}
               </div>
 
-              <div
-                className="relative"
-                style={
-                  highlightsPaneHeight > 0
-                    ? { minHeight: `${highlightsPaneHeight}px` }
-                    : undefined
-                }
-              >
+              <div className="relative grid">
+                <div
+                  ref={highlightSizingGridRef}
+                  className="pointer-events-none absolute left-0 top-0 -z-10 grid w-full items-start gap-3 opacity-0 md:grid-cols-3"
+                  aria-hidden="true"
+                >
+                  <article
+                    ref={featuredProbeRef}
+                    className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb]`}
+                    style={{ minHeight: 0, height: "auto" }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600">
+                        1
+                      </div>
+                      <span className="text-[10px] font-medium text-zinc-400">
+                        {formatHighlightDate(new Date().toISOString())}
+                      </span>
+                    </div>
+                    <h3 className="mt-3.5 max-w-[22ch] text-[0.95rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 md:text-[1rem]">
+                      {longestHighlightTitle}
+                    </h3>
+                  </article>
+                  <article
+                    ref={popularProbeRef}
+                    className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb]`}
+                    style={{ minHeight: 0, height: "auto" }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600">
+                        1
+                      </div>
+                      <span className="text-[10px] font-medium text-zinc-400">
+                        {formatHighlightDate(new Date().toISOString())}
+                      </span>
+                    </div>
+                    <h3 className="mt-3.5 max-w-[22ch] text-[0.93rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 md:text-[0.98rem]">
+                      {longestHighlightTitle}
+                    </h3>
+                    <p className="mt-1.5 line-clamp-2 max-w-[34ch] text-[10px] leading-relaxed text-zinc-600">
+                      Reference excerpt height.
+                    </p>
+                  </article>
+                  <div />
+                </div>
                 {hasFeatured ? (
                   <div
-                    ref={featuredPaneRef}
                     aria-hidden={highlightsView !== "featured"}
-                    className={`grid gap-3 transition-opacity duration-200 md:grid-cols-3 ${
+                    className={`col-start-1 row-start-1 grid gap-3 md:grid-cols-3 ${
                       highlightsView === "featured"
-                        ? "relative opacity-100"
-                        : "pointer-events-none absolute inset-0 opacity-0"
+                        ? "visible opacity-100"
+                        : "pointer-events-none invisible opacity-0"
                     }`}
                   >
                     {pinned.map((post, index) => (
                       <article
                         key={`${post.url}-featured`}
-                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] dark:border-slate-700 dark:bg-slate-950/60`}
+                        data-highlight-card="featured"
+                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] hover:border-zinc-300 hover:bg-[#fbf7ef] dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-slate-500 dark:hover:bg-slate-950/80`}
+                        style={
+                          highlightCardMinHeight
+                            ? { minHeight: `${highlightCardMinHeight}px` }
+                            : undefined
+                        }
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 bg-white/70 text-sm font-semibold text-zinc-700 dark:border-slate-600 dark:bg-slate-900/60 dark:text-zinc-200">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600 dark:border-slate-600 dark:bg-slate-900/70 dark:text-zinc-200">
                             {index + 1}
                           </div>
-                          <span className="text-[11px] uppercase tracking-[0.14em] text-zinc-400 dark:text-zinc-500">
-                            {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                              timeZone: "UTC",
-                            })}
+                          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                            {formatHighlightDate(post.publishedAt)}
                           </span>
                         </div>
-                        <h3 className="mt-5 text-lg font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+                        <h3
+                          data-highlight-title="featured"
+                          className="mt-3.5 max-w-[22ch] text-[0.95rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 dark:text-zinc-100 md:text-[1rem]"
+                        >
                           <Link
                             href={post.url}
-                            className="hover:text-black dark:hover:text-white"
+                            className="text-zinc-900 dark:text-zinc-100"
                           >
                             {post.title}
                           </Link>
@@ -284,42 +343,45 @@ export const LandingViews = ({
 
                 {hasPopular ? (
                   <ol
-                    ref={popularPaneRef}
                     aria-hidden={highlightsView !== "popular"}
-                    className={`grid gap-3 transition-opacity duration-200 md:grid-cols-3 ${
+                    className={`col-start-1 row-start-1 grid gap-3 md:grid-cols-3 ${
                       highlightsView === "popular"
-                        ? "relative opacity-100"
-                        : "pointer-events-none absolute inset-0 opacity-0"
+                        ? "visible opacity-100"
+                        : "pointer-events-none invisible opacity-0"
                     }`}
                   >
                     {popular.map((post, index) => (
                       <li
                         key={`${post.url}-popular`}
-                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] dark:border-slate-700 dark:bg-slate-950/60`}
+                        data-highlight-card="popular"
+                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] hover:border-zinc-300 hover:bg-[#fbf7ef] dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-slate-500 dark:hover:bg-slate-950/80`}
+                        style={
+                          highlightCardMinHeight
+                            ? { minHeight: `${highlightCardMinHeight}px` }
+                            : undefined
+                        }
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 bg-white/70 text-sm font-semibold text-zinc-700 dark:border-slate-600 dark:bg-slate-900/60 dark:text-zinc-200">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600 dark:border-slate-600 dark:bg-slate-900/70 dark:text-zinc-200">
                             {index + 1}
                           </div>
-                          <span className="text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
-                            {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                              timeZone: "UTC",
-                            })}
+                          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+                            {formatHighlightDate(post.publishedAt)}
                           </span>
                         </div>
-                        <h3 className="mt-5 text-lg font-semibold leading-snug text-white">
+                        <h3
+                          data-highlight-title="popular"
+                          className="mt-3.5 max-w-[22ch] text-[0.93rem] font-semibold leading-[1.2] tracking-[-0.015em] text-white md:text-[0.98rem]"
+                        >
                           <Link
                             href={post.url}
-                            className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                            className="text-zinc-900 dark:text-zinc-100"
                           >
                             {post.title}
                           </Link>
                         </h3>
                         {post.excerpt ? (
-                          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                          <p className="mt-1.5 line-clamp-2 max-w-[34ch] text-[10px] leading-relaxed text-zinc-600 dark:text-zinc-400">
                             {post.excerpt}
                           </p>
                         ) : null}
