@@ -257,21 +257,6 @@ export default async function PostPage({ params }: PageProps) {
             title={post.title}
             totalMinutes={outline.totalMinutes}
           >
-            {post.viewTitle ? (
-              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
-                View:{" "}
-                {post.viewSlug ? (
-                  <Link
-                    href={`/views/${post.viewSlug}?view=views`}
-                    className="hover:text-zinc-600 dark:hover:text-zinc-300"
-                  >
-                    {post.viewTitle}
-                  </Link>
-                ) : (
-                  post.viewTitle
-                )}
-              </p>
-            ) : null}
             <article className="markdown-body mt-0">
               <Markdown content={post.body} />
             </article>

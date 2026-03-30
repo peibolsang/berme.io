@@ -1,5 +1,25 @@
 # Agent Notes
 
+## 2026-03-30 (Post view-banner removal)
+
+### Correction received
+- On post detail pages, do not show the top-of-content `View:` link when a post belongs to a parent view.
+
+### Fix
+- Removed the conditional `View:` banner block from `app/[year]/[month]/[day]/[slug]/page.tsx` while keeping the underlying post-to-view relationship data unchanged for other features.
+
+### Validation
+- `npm run lint`
+
+## 2026-03-15 (Site summary request)
+
+### What went right
+- Using the live homepage plus local route/data files gave a fast, current summary of what `berme.io` presents publicly and how it is implemented.
+- The live site confirmed current public-facing copy such as the `Now` entry and homepage bio before answering.
+
+### What to watch next
+- The homepage bio copy on the live site differs slightly from `app/page.tsx`; when describing the site publicly, prefer the live content over local source wording.
+
 ## 2026-03-15 (Codebase re-familiarization)
 
 ### What went right
