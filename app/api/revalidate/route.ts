@@ -135,11 +135,23 @@ const hasNowLabel = (
 ) =>
   hasLabel(labels, "now");
 
+const hasReadyLabel = (
+  labels: Array<{ name?: string | null }> | null | undefined,
+) =>
+  hasLabel(labels, "ready");
+
 const revalidateNow = async () => {
   await Promise.all([
     revalidatePath("/"),
     revalidatePath("/now"),
     revalidateTag("now", "max"),
+  ]);
+};
+
+const revalidateCurrentlyWriting = async () => {
+  await Promise.all([
+    revalidatePath("/now"),
+    revalidateTag("now-writing", "max"),
   ]);
 };
 
@@ -289,6 +301,10 @@ export async function POST(request: Request) {
         await revalidateNow();
         revalidated.push("/", "/now");
       }
+      if (label === "ready") {
+        await revalidateCurrentlyWriting();
+        revalidated.push("/now");
+      }
     }
 
     if (action === "pinned" || action === "unpinned") {
@@ -303,6 +319,10 @@ export async function POST(request: Request) {
         await revalidateIssueContent(issueNumber, payload.issue);
         if (hasNowLabel(payload.issue?.labels)) {
           await revalidateNow();
+          revalidated.push("/now");
+        }
+        if (hasReadyLabel(payload.issue?.labels)) {
+          await revalidateCurrentlyWriting();
           revalidated.push("/now");
         }
       }

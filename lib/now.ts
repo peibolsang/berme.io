@@ -7,6 +7,12 @@ import type { Post } from "../types";
 import type { GitHubIssue } from "./github";
 
 const NOW_LABEL = "now";
+const READY_LABEL = "ready";
+
+export type CurrentlyWritingIssue = {
+  number: number;
+  title: string;
+};
 
 const githubFetch = async (url: string) => {
   const token = getGithubToken();
@@ -33,6 +39,11 @@ const asDate = (value: string | null | undefined) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 };
+
+const hasLabel = (issue: GitHubIssue, name: string) =>
+  issue.labels.some(
+    (label) => String(label.name ?? "").trim().toLowerCase() === name.toLowerCase(),
+  );
 
 const resolveAuthor = async (
   issue: GitHubIssue,
@@ -107,7 +118,55 @@ const fetchNowPost = async (): Promise<Post | null> => {
   };
 };
 
+const fetchCurrentlyWritingIssues = async (): Promise<CurrentlyWritingIssue[]> => {
+  const { owner, repo } = config.github;
+  if (!owner || !repo) {
+    return [];
+  }
+
+  const issues: CurrentlyWritingIssue[] = [];
+  let page = 1;
+
+  while (true) {
+    const url =
+      `https://api.github.com/repos/${owner}/${repo}/issues` +
+      `?state=open&labels=${encodeURIComponent(READY_LABEL)}` +
+      `&per_page=100&page=${page}&sort=updated&direction=desc`;
+
+    const batch = (await githubFetch(url)) as GitHubIssue[];
+    const filtered = batch.filter(
+      (issue) =>
+        !issue.pull_request &&
+        issue.state === "open" &&
+        !hasLabel(issue, "conference"),
+    );
+
+    issues.push(
+      ...filtered.map((issue) => ({
+        number: issue.number,
+        title: issue.title,
+      })),
+    );
+
+    if (batch.length < 100) {
+      break;
+    }
+    page += 1;
+  }
+
+  return issues;
+};
+
 export const getNowPost = unstable_cache(fetchNowPost, ["now"], {
   revalidate: config.revalidateSeconds,
   tags: ["now"],
 });
+
+export const getCurrentlyWritingIssues = unstable_cache(
+  fetchCurrentlyWritingIssues,
+  ["now-writing"],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["now-writing"],
+  },
+);

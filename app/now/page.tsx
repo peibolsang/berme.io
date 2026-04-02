@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
-import { getNowPost } from "../../lib/now";
+import { getCurrentlyWritingIssues, getNowPost } from "../../lib/now";
 import { getIssueComments } from "../../lib/comments";
 import type { GitHubComment } from "../../lib/github";
 import { Markdown } from "../../components/Markdown";
@@ -87,7 +87,10 @@ export const dynamic = "force-static";
 
 export default async function NowPage() {
   try {
-    const post = await getNowPost();
+    const [post, currentlyWriting] = await Promise.all([
+      getNowPost(),
+      getCurrentlyWritingIssues(),
+    ]);
 
     if (!post) {
       notFound();
@@ -183,6 +186,18 @@ export default async function NowPage() {
             <article className="markdown-body mt-0">
               <Markdown content={post.body} />
             </article>
+            {currentlyWriting.length > 0 ? (
+              <section className="mt-10">
+                <h2 className="scroll-mt-28 mt-10 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  Currently writing
+                </h2>
+                <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-zinc-700 dark:text-zinc-200">
+                  {currentlyWriting.map((issue) => (
+                    <li key={issue.number}>{issue.title}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
             <section className="mt-10 border-t border-zinc-200 pt-8 dark:border-slate-700">
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
                 Comments ({comments.length})

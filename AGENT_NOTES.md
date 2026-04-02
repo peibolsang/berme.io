@@ -1,5 +1,33 @@
 # Agent Notes
 
+## 2026-03-31 (Telegram bot concept shaping)
+
+### What went right
+- The strongest concepts used Telegram as a private command surface for capture, triage, and editorial decisions rather than as a broadcast channel.
+- The site's differentiators matter most when the bot can write into the existing GitHub-native model: issues, labels, parent-child relationships, `/now`, and popularity signals.
+
+### What to watch next
+- The most defensible MVPs are the ones that reduce friction at the exact moment of thought capture or publishing, not the ones that add another dashboard.
+
+## 2026-03-31 (Telegram bot brainstorming)
+
+### What went right
+- Reading the current notes first quickly reaffirmed the site's real leverage: GitHub-native publishing, topic collections, `/now`, conferences, graph navigation, popularity tracking, and webhook-based freshness.
+- That framing makes it possible to evaluate Telegram bot ideas by asymmetry rather than by generic notification value.
+
+### What to watch next
+- Avoid settling on "new post alert" as the default bot pattern; the more defensible ideas will likely use Telegram as an editor's control surface, a personal inbox, or a live ops layer for the site.
+
+## 2026-03-31 (Repo catch-up via AGENTS and notes)
+
+### What went right
+- Reading `AGENTS.md` plus the newest `AGENT_NOTES.md` entries was enough to recover the current product model without re-scanning the whole codebase.
+- The notes make the main differentiators clear: GitHub-native publishing, rich revalidation/caching, an opinionated long-form reading UX, a label-driven relationship graph, and Redis-backed popularity.
+
+### What to watch next
+- `AGENT_NOTES.md` contains repeated sections around the 2026-03-14 to 2026-03-15 popularity work; avoid treating every repeated heading as a separate current issue unless it adds new information.
+- Several older notes mention `revalidate = 3600` literals as a Next.js constraint/workaround, so treat any `config.revalidateSeconds` drift as a deliberate build-compatibility tradeoff until re-verified in code.
+
 ## 2026-03-30 (Post view-banner removal)
 
 ### Correction received
@@ -729,6 +757,23 @@
 - `npx tsc --noEmit`
 - `npm run lint`
 
+## 2026-04-02 (Now page "Currently writing" section)
+
+### What went right
+- Extending `lib/now.ts` was the cleanest implementation path because the route already treats `/now` as its own data boundary separate from the broader posts catalog.
+- Using a dedicated `now-writing` cache tag kept `ready`-issue invalidation narrowly scoped to `/now` instead of unnecessarily revalidating the homepage.
+- The webhook handler already had the right event structure for label-driven invalidation, so supporting `ready` only required a focused additive branch.
+
+### Correction received
+- The `Currently writing` heading should visually match a markdown level-2 heading rather than the smaller uppercase meta-section style.
+
+### What to watch next
+- The `Currently writing` list currently shows issue titles only; if the UX later needs links or ordering other than GitHub `updated` descending, that should be an explicit product change rather than inferred.
+- `lib/now.ts` now owns two GitHub issue fetchers with shared request/filter patterns; if another `/now`-adjacent issue category is added, it may be time to factor small shared helpers there.
+
+### Validation
+- `npm run lint`
+
 ## 2026-03-15 (Popularity PRD export)
 
 ### What worked
@@ -869,6 +914,17 @@
 ### Validation
 - `npx tsc --noEmit`
 - `npm run lint`
+
+## 2026-04-02 (Repo catch-up via AGENTS and notes)
+
+### What went right
+- Re-reading `AGENTS.md` and `AGENT_NOTES.md` was enough to recover the current working model quickly without a broader code scan.
+- The repository conventions are clear: GitHub Issues drive content, Next.js App Router serves the site, cached data helpers sit in `lib/`, and `npm run lint` remains the default validation command.
+- The notes make recent product emphasis obvious: graph exploration, conferences, `/now`, homepage highlight UX, and Redis-backed popularity tracking.
+
+### What to watch next
+- Some notes describe older implementation drift around route `revalidate` values; treat those entries as historical context until re-verified in code.
+- `AGENT_NOTES.md` contains repeated or overlapping entries around March 2026 work, so prefer extracting durable lessons over counting each section as a distinct current issue.
 
 ## 2026-03-14 (Reading map redundancy cleanup)
 
