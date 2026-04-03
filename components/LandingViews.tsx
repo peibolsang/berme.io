@@ -213,7 +213,7 @@ export const LandingViews = ({
             <section className="space-y-5">
               <div className="flex items-center justify-start">
                 {hasFeatured && hasPopular ? (
-                  <div className="inline-flex w-full max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-slate-700 dark:bg-slate-950/70 sm:w-auto">
+                  <div className="inline-flex w-full max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 p-0.5 dark:border-slate-700 dark:bg-slate-950/70 sm:w-auto">
                     {(
                       [
                         { key: "featured", label: "Featured", count: pinned.length },
@@ -227,7 +227,7 @@ export const LandingViews = ({
                             key={option.key}
                             type="button"
                             onClick={() => setHighlightsView(option.key)}
-                            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition md:flex-none ${
+                            className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold md:flex-none ${
                               selected
                                 ? "bg-zinc-900 text-white dark:bg-amber-300 dark:text-zinc-950"
                                 : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -235,7 +235,7 @@ export const LandingViews = ({
                           aria-pressed={selected}
                         >
                           {option.label}
-                          <span className="ml-2 text-[11px] opacity-70">
+                          <span className="ml-1.5 text-[10px] opacity-70">
                             {option.count}
                           </span>
                         </button>
@@ -243,9 +243,9 @@ export const LandingViews = ({
                     })}
                   </div>
                 ) : (
-                  <div className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-900 dark:border-slate-700 dark:bg-slate-950/70 dark:text-zinc-100">
+                  <div className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-900 dark:border-slate-700 dark:bg-slate-950/70 dark:text-zinc-100">
                     {hasFeatured ? "Featured" : "Popular"}
-                    <span className="ml-2 text-[11px] opacity-70">
+                    <span className="ml-1.5 text-[10px] opacity-70">
                       {hasFeatured ? pinned.length : popular.length}
                     </span>
                   </div>
