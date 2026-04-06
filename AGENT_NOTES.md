@@ -162,3 +162,29 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Treating Telegram as a generic alert channel or another dashboard surface.
 - Letting the notes file grow as a raw session transcript instead of a maintained working memory.
 - Assuming historical note repetition implied multiple distinct current problems.
+
+## 2026 Week 15 (2026-04-06 to 2026-04-12)
+
+### What went right
+- Re-reading `AGENTS.md` plus the compacted weekly notes was enough to recover the current product and architectural model quickly.
+- The notes compression strategy is now doing its job: recent changes are legible without rereading every intermediate implementation detail.
+- The Telegram-to-Notion feature fit the repo cleanly as a plain App Router API route plus small server-side `lib/` clients, without introducing extra dependencies.
+- Using Notion MCP to inspect the real database schema removed guesswork around the target database, property names, and tag configuration.
+
+### What went wrong
+- A catch-up pass based only on instructions and notes can still leave implementation details stale if I do not reopen the relevant route or `lib/` entry points before editing.
+- The target Notion database uses a title property named `﻿Name` with a leading BOM character, which is easy to miss and would have caused silent schema mismatches if guessed manually.
+
+### What I corrected
+- Refreshed the working memory for the repository from the maintained guidance files before making any new assumptions about current behavior.
+- Implemented a Telegram webhook route backed by Notion page creation, with layered protection via Telegram webhook secret validation, private-chat-only enforcement, and an allowed Telegram user ID list.
+- Made short notes atomic in Notion by creating the page with the first block batch up front, then appending only overflow blocks.
+
+### What worked
+- Treating `AGENTS.md` as the canonical operating contract and `AGENT_NOTES.md` as the durable change log.
+- Verifying external integration assumptions with official docs and workspace inspection before writing code.
+- Running both `npm run lint` and `npx tsc --noEmit` after adding new server integrations.
+
+### What didn't
+- Assuming historical concerns in the notes are still live without checking whether they were already resolved.
+- Assuming human-readable Notion property names can be safely inferred without inspecting the actual connected database.
