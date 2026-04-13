@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Book, Conference, Post, View } from "../types";
@@ -43,12 +43,15 @@ const formatConferenceDateLabels = (iso: string) => {
   };
 };
 
-const formatHighlightDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+const formatPostDateLabels = (iso: string) => {
+  const date = new Date(iso);
+  const year = String(date.getUTCFullYear());
+
+  return {
+    full: year,
+    compact: year,
+  };
+};
 
 const groupConferencesByYear = (entries: Conference[]) => {
   const sorted = [...entries].sort(
@@ -68,10 +71,6 @@ const groupConferencesByYear = (entries: Conference[]) => {
     .sort((left, right) => right[0].localeCompare(left[0]))
     .map(([year, items]) => ({ year, items }));
 };
-
-const editorialCardBaseClassName =
-  "group flex h-full min-h-[210px] flex-col rounded-[1.5rem] border px-4 py-4 md:min-h-[220px] md:px-5 md:py-5";
-const highlightCardBottomSlack = 12;
 
 export const LandingViews = ({
   posts,
@@ -131,17 +130,6 @@ export const LandingViews = ({
   const [highlightsView, setHighlightsView] = useState<HighlightsView>(() =>
     hasFeatured ? "featured" : "popular",
   );
-  const highlightSizingGridRef = useRef<HTMLDivElement | null>(null);
-  const featuredProbeRef = useRef<HTMLElement | null>(null);
-  const popularProbeRef = useRef<HTMLElement | null>(null);
-  const [highlightCardMinHeight, setHighlightCardMinHeight] = useState<
-    number | null
-  >(null);
-  const longestHighlightTitle = [...pinned, ...popular].reduce(
-    (longest, post) =>
-      post.title.length > longest.length ? post.title : longest,
-    "",
-  );
 
   useEffect(() => {
     if (highlightsView === "featured" && !hasFeatured && hasPopular) {
@@ -153,45 +141,7 @@ export const LandingViews = ({
     }
   }, [hasFeatured, hasPopular, highlightsView]);
 
-  useEffect(() => {
-    if (!longestHighlightTitle || (!hasFeatured && !hasPopular)) {
-      setHighlightCardMinHeight(null);
-      return;
-    }
-
-    let frameId = 0;
-    const measureProbeHeight = () => {
-      frameId = window.requestAnimationFrame(() => {
-        const featuredHeight = featuredProbeRef.current?.offsetHeight ?? 0;
-        const popularHeight = popularProbeRef.current?.offsetHeight ?? 0;
-        const tallestProbeHeight = Math.max(featuredHeight, popularHeight);
-        const nextMinHeight = Math.ceil(
-          Math.max(0, tallestProbeHeight - highlightCardBottomSlack),
-        );
-
-        setHighlightCardMinHeight((current) =>
-          current === nextMinHeight || nextMinHeight === 0
-            ? current
-            : nextMinHeight,
-        );
-      });
-    };
-
-    measureProbeHeight();
-
-    const observer = new ResizeObserver(() => {
-      measureProbeHeight();
-    });
-
-    if (highlightSizingGridRef.current) {
-      observer.observe(highlightSizingGridRef.current);
-    }
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      observer.disconnect();
-    };
-  }, [hasFeatured, hasPopular, longestHighlightTitle]);
+  const activeHighlights = highlightsView === "featured" ? pinned : popular;
 
   return (
     <Tabs
@@ -251,145 +201,31 @@ export const LandingViews = ({
                   </div>
                 )}
               </div>
+              <section className="rounded-[1.5rem] border border-zinc-200/80 bg-[#f7f3eb] py-5 pl-3 pr-5 dark:border-slate-700 dark:bg-slate-950/60">
+                <ul className="space-y-2 text-sm">
+                  {activeHighlights.map((post) => {
+                    const labels = formatPostDateLabels(post.publishedAt);
 
-              <div className="relative grid">
-                <div
-                  ref={highlightSizingGridRef}
-                  className="pointer-events-none absolute left-0 top-0 -z-10 grid w-full items-start gap-3 opacity-0 md:grid-cols-3"
-                  aria-hidden="true"
-                >
-                  <article
-                    ref={featuredProbeRef}
-                    className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb]`}
-                    style={{ minHeight: 0, height: "auto" }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600">
-                        1
-                      </div>
-                      <span className="text-[10px] font-medium text-zinc-400">
-                        {formatHighlightDate(new Date().toISOString())}
-                      </span>
-                    </div>
-                    <h3 className="mt-3.5 max-w-[22ch] text-[0.95rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 md:text-[1rem]">
-                      {longestHighlightTitle}
-                    </h3>
-                  </article>
-                  <article
-                    ref={popularProbeRef}
-                    className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb]`}
-                    style={{ minHeight: 0, height: "auto" }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600">
-                        1
-                      </div>
-                      <span className="text-[10px] font-medium text-zinc-400">
-                        {formatHighlightDate(new Date().toISOString())}
-                      </span>
-                    </div>
-                    <h3 className="mt-3.5 max-w-[22ch] text-[0.93rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 md:text-[0.98rem]">
-                      {longestHighlightTitle}
-                    </h3>
-                    <p className="mt-1.5 line-clamp-2 max-w-[34ch] text-[10px] leading-relaxed text-zinc-600">
-                      Reference excerpt height.
-                    </p>
-                  </article>
-                  <div />
-                </div>
-                {hasFeatured ? (
-                  <div
-                    aria-hidden={highlightsView !== "featured"}
-                    className={`col-start-1 row-start-1 grid gap-3 md:grid-cols-3 ${
-                      highlightsView === "featured"
-                        ? "visible opacity-100"
-                        : "pointer-events-none invisible opacity-0"
-                    }`}
-                  >
-                    {pinned.map((post, index) => (
-                      <article
-                        key={`${post.url}-featured`}
-                        data-highlight-card="featured"
-                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] hover:border-zinc-300 hover:bg-[#fbf7ef] dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-slate-500 dark:hover:bg-slate-950/80`}
-                        style={
-                          highlightCardMinHeight
-                            ? { minHeight: `${highlightCardMinHeight}px` }
-                            : undefined
-                        }
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600 dark:border-slate-600 dark:bg-slate-900/70 dark:text-zinc-200">
-                            {index + 1}
-                          </div>
-                          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                            {formatHighlightDate(post.publishedAt)}
-                          </span>
-                        </div>
-                        <h3
-                          data-highlight-title="featured"
-                          className="mt-3.5 max-w-[22ch] text-[0.95rem] font-semibold leading-[1.2] tracking-[-0.015em] text-zinc-900 dark:text-zinc-100 md:text-[1rem]"
-                        >
-                          <Link
-                            href={post.url}
-                            className="text-zinc-900 dark:text-zinc-100"
-                          >
-                            {post.title}
-                          </Link>
-                        </h3>
-                      </article>
-                    ))}
-                  </div>
-                ) : null}
-
-                {hasPopular ? (
-                  <ol
-                    aria-hidden={highlightsView !== "popular"}
-                    className={`col-start-1 row-start-1 grid gap-3 md:grid-cols-3 ${
-                      highlightsView === "popular"
-                        ? "visible opacity-100"
-                        : "pointer-events-none invisible opacity-0"
-                    }`}
-                  >
-                    {popular.map((post, index) => (
+                    return (
                       <li
-                        key={`${post.url}-popular`}
-                        data-highlight-card="popular"
-                        className={`${editorialCardBaseClassName} border-zinc-200/80 bg-[#f7f3eb] hover:border-zinc-300 hover:bg-[#fbf7ef] dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-slate-500 dark:hover:bg-slate-950/80`}
-                        style={
-                          highlightCardMinHeight
-                            ? { minHeight: `${highlightCardMinHeight}px` }
-                            : undefined
-                        }
+                        key={`${post.url}-${highlightsView}`}
+                        className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex h-7 min-w-7 items-center justify-center rounded-full border border-zinc-300/80 bg-white/75 px-2 text-[11px] font-semibold text-zinc-600 dark:border-slate-600 dark:bg-slate-900/70 dark:text-zinc-200">
-                            {index + 1}
-                          </div>
-                          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                            {formatHighlightDate(post.publishedAt)}
-                          </span>
-                        </div>
-                        <h3
-                          data-highlight-title="popular"
-                          className="mt-3.5 max-w-[22ch] text-[0.93rem] font-semibold leading-[1.2] tracking-[-0.015em] text-white md:text-[0.98rem]"
+                        <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
+                          <span className="sm:hidden">{labels.compact}</span>
+                          <span className="hidden sm:inline">{labels.full}</span>
+                        </span>
+                        <Link
+                          href={post.url}
+                          className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                         >
-                          <Link
-                            href={post.url}
-                            className="text-zinc-900 dark:text-zinc-100"
-                          >
-                            {post.title}
-                          </Link>
-                        </h3>
-                        {post.excerpt ? (
-                          <p className="mt-1.5 line-clamp-2 max-w-[34ch] text-[10px] leading-relaxed text-zinc-600 dark:text-zinc-400">
-                            {post.excerpt}
-                          </p>
-                        ) : null}
+                          {post.title}
+                        </Link>
                       </li>
-                    ))}
-                  </ol>
-                ) : null}
-              </div>
+                    );
+                  })}
+                </ul>
+              </section>
             </section>
           ) : null}
           <div className="mt-10">

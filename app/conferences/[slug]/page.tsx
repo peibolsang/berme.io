@@ -170,7 +170,7 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
       />
 
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
           <BackLink fallbackView="conferences" />
           <h1
             className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
@@ -232,8 +232,8 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
       </section>
 
       <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
-        <div className="mx-auto w-full max-w-2xl">
-          <article className="markdown-body mt-0">
+        <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
+          <article className="detail-markdown markdown-body mt-0">
             <p>{conference.summary}</p>
           </article>
           <section className="mt-8">

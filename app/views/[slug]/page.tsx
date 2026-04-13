@@ -103,7 +103,7 @@ export default async function ViewPage({ params }: PageProps) {
         ]}
       />
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
           <BackLink />
           <h1
             className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
@@ -138,12 +138,6 @@ export default async function ViewPage({ params }: PageProps) {
               ) : null}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                 <span>Updated {formatDate(view.updatedAt)}</span>
-                {readingTimeLabel ? (
-                  <>
-                    <span aria-hidden="true">•</span>
-                    <span>{readingTimeLabel}</span>
-                  </>
-                ) : null}
                 <span aria-hidden="true">•</span>
                 <a
                   className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -167,7 +161,7 @@ export default async function ViewPage({ params }: PageProps) {
           totalMinutes={outline?.totalMinutes ?? 0}
         >
           {view.body ? (
-            <article className="markdown-body mt-0">
+            <article className="detail-markdown markdown-body mt-0">
               <Markdown content={view.body} />
             </article>
           ) : null}

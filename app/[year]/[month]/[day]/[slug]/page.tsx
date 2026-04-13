@@ -9,7 +9,6 @@ import { Markdown } from "../../../../../components/Markdown";
 import { config } from "../../../../../lib/config";
 import { BackLink } from "../../../../../components/BackLink";
 import { CommandActionsPalette } from "../../../../../components/CommandActionsPalette";
-import { PostPopularity } from "../../../../../components/PostPopularity";
 import {
   extractMarkdownOutline,
   formatReadingTime,
@@ -185,7 +184,7 @@ export default async function PostPage({ params }: PageProps) {
               />
             </div>
           )}
-          <div className="mx-auto w-full max-w-2xl">
+          <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
             <BackLink />
             <h1
               className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
@@ -221,9 +220,6 @@ export default async function PostPage({ params }: PageProps) {
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                   <span>Posted on {formatDate(post.publishedAt)}</span>
                   <span aria-hidden="true">•</span>
-                  <span>{readingTimeLabel}</span>
-                  <PostPopularity postUrl={post.url} />
-                  <span aria-hidden="true">•</span>
                   <a
                     className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                     href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
@@ -257,7 +253,7 @@ export default async function PostPage({ params }: PageProps) {
             title={post.title}
             totalMinutes={outline.totalMinutes}
           >
-            <article className="markdown-body mt-0">
+            <article className="detail-markdown markdown-body mt-0">
               <Markdown content={post.body} />
             </article>
             <section className="mt-10 border-t border-zinc-200 pt-8 dark:border-slate-700">

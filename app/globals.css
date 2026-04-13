@@ -48,6 +48,24 @@ main :is(p, li) {
   margin: 1rem 0;
 }
 
+.detail-markdown {
+  font-size: 1.03rem;
+}
+
+.detail-markdown :is(p, li, blockquote) {
+  line-height: 1.9;
+}
+
+@media (min-width: 1024px) {
+  .detail-markdown {
+    font-size: 1.06rem;
+  }
+
+  .detail-markdown :is(p, li, blockquote) {
+    line-height: 1.95;
+  }
+}
+
 .markdown-body ul {
   list-style: disc;
   padding-left: 1.25rem;

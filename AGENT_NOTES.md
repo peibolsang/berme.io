@@ -170,21 +170,72 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - The notes compression strategy is now doing its job: recent changes are legible without rereading every intermediate implementation detail.
 - The Telegram-to-Notion feature fit the repo cleanly as a plain App Router API route plus small server-side `lib/` clients, without introducing extra dependencies.
 - Using Notion MCP to inspect the real database schema removed guesswork around the target database, property names, and tag configuration.
+- The production rollout path was straightforward once the env contract was explicit: local `.env.local`, Vercel env vars, redeploy, then Telegram `setWebhook`.
+- A local `curl` against the webhook route was a fast way to verify the full server-side flow before switching Telegram traffic to production.
 
 ### What went wrong
 - A catch-up pass based only on instructions and notes can still leave implementation details stale if I do not reopen the relevant route or `lib/` entry points before editing.
 - The target Notion database uses a title property named `﻿Name` with a leading BOM character, which is easy to miss and would have caused silent schema mismatches if guessed manually.
+- The existing local env used `NOTION_API_KEY`, while the new implementation needed `NOTION_API_TOKEN`, so deployment would have failed if that naming mismatch had not been surfaced explicitly.
 
 ### What I corrected
 - Refreshed the working memory for the repository from the maintained guidance files before making any new assumptions about current behavior.
 - Implemented a Telegram webhook route backed by Notion page creation, with layered protection via Telegram webhook secret validation, private-chat-only enforcement, and an allowed Telegram user ID list.
 - Made short notes atomic in Notion by creating the page with the first block batch up front, then appending only overflow blocks.
+- Wrote an operational handoff in `temp/todo.md` covering Telegram setup, secret generation, Vercel env configuration, webhook registration, and validation steps.
 
 ### What worked
 - Treating `AGENTS.md` as the canonical operating contract and `AGENT_NOTES.md` as the durable change log.
 - Verifying external integration assumptions with official docs and workspace inspection before writing code.
 - Running both `npm run lint` and `npx tsc --noEmit` after adding new server integrations.
+- Testing webhook handlers locally with crafted Telegram-style payloads before relying on the real external webhook source.
+- Using `getWebhookInfo`, `getMe`, and `getUpdates` in the right order to separate Telegram configuration problems from backend implementation problems.
 
 ### What didn't
 - Assuming historical concerns in the notes are still live without checking whether they were already resolved.
 - Assuming human-readable Notion property names can be safely inferred without inspecting the actual connected database.
+- Treating Telegram onboarding steps as obvious; the rollout needed a concrete checklist to avoid confusion around user ID discovery, webhook state, and secret setup.
+
+## 2026 Week 16 (2026-04-13 to 2026-04-19)
+
+### What went right
+- A small UI preference change was cheapest to implement at the render site: the post header already owned the metadata row, so removing the popularity badge there avoided touching the tracking backend.
+
+### What went wrong
+- The popularity component still exists even though the post header no longer uses it, so it is now a likely cleanup candidate if the feature is not coming back in another surface.
+- A pure line-height bump from `1.65` to `1.75` was too subtle to register visually on the widened detail pages.
+- The featured/popular shelf had drifted away from the rest of the homepage: per-post highlight cards pulled too much attention and interrupted the calmer post-index rhythm.
+
+### What I corrected
+- Removed the `Popular #N` post-header badge so published post metadata now shows date, reading time, and GitHub link without the popularity label.
+- Removed the post-header reading-time label because reading time already lives in the side reading panel.
+- Removed the visible read-time label from individual view page headers while keeping reading metadata available to the command palette and reading shell.
+- Widened individual post, view, and conference detail pages on desktop by relaxing the centered content measure while leaving mobile width unchanged.
+- Increased that desktop detail-page measure again after review because the first width adjustment was still too subtle.
+- Switched the reading-shell accent lines to black in light mode while preserving the existing amber accents in dark mode.
+- Added a detail-page-only markdown spacing class so post, view, and conference content has slightly looser line spacing without changing homepage or comment markdown.
+- Replaced that weak spacing tweak with a stronger reading treatment: a slightly larger detail-page text size plus a clearly looser line-height.
+- Rebuilt the featured/popular homepage module as one large framed container with normal dated post rows, removing the separate per-post highlight cards.
+- Removed the internal heading, divider, and count from that framed featured/popular container so the post rows carry the module instead of extra chrome.
+- Matched the spacing inside the featured/popular container to the main post timeline by removing leftover per-row padding and relying on the same list gap rhythm.
+- Switched the featured/popular row date labels to `MMM YY` to distinguish that module from the main publication timeline without changing the timeline itself.
+- Simplified the featured/popular row dates again to plain `YYYY`, which better fits the reduced visual weight of that framed module.
+- Tightened the gap between the year label and title inside the featured/popular module so those rows read more like a single line item.
+- The visible distance was mostly column width, not just gap spacing, so the featured/popular date column was narrowed further to bring the year closer to the title.
+- Reduced the left inset of the featured/popular framed container so the list starts closer to the card edge and aligns better with the tighter row spacing.
+- After tightening both the container inset and the date column, the `YYYY` label sat too close to the title, so the inter-column gap was nudged back up slightly.
+- The first gap correction was still too tight, so the featured/popular row spacing between year and title was increased again.
+- The year/title separation in the featured/popular rows needed one more increase; small spacing tweaks here are highly perception-sensitive.
+- The featured/popular year/title gap needed another bump; this spacing sits in a narrow perceptual band where tiny class changes matter.
+- The featured/popular year/title separation needed yet another increase; the module benefits from a clearer break between metadata and title than the earlier tighter settings provided.
+
+### What worked
+- Using `rg` first to confirm the badge had a single live usage before editing.
+- Matching page-level header widths with the reading-shell content width kept the wider desktop measure feeling intentional instead of making headers and bodies drift apart.
+- Introducing a page-specific content class was safer than changing the shared markdown styles globally.
+- When a visual tweak is user-judged, treating "I don't see it" as an RCA prompt is better than defending a technically-correct but imperceptible change.
+- Reusing the normal post-entry row pattern inside a single editorial container preserved emphasis without inventing a second visual language for the same content type.
+
+### What didn't
+- Assuming a dedicated component necessarily meant the badge was reused in multiple places.
+- Keeping a custom card-per-post treatment for homepage highlights after the rest of the page had already settled into a cleaner editorial listing style.

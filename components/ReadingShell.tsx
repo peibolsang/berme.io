@@ -158,7 +158,7 @@ export const ReadingShell = ({
       </div>
       <div className="mt-4 h-px overflow-hidden bg-zinc-200/90 dark:bg-slate-700/90">
         <div
-          className="h-full bg-amber-400/80 transition-[width] duration-150 dark:bg-amber-300/80"
+          className="h-full bg-zinc-950/90 transition-[width] duration-150 dark:bg-amber-300/80"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -180,7 +180,7 @@ export const ReadingShell = ({
                   }}
                   className={`block border-l-2 px-3 py-2 no-underline transition ${
                     selected
-                      ? "border-amber-400 text-zinc-900 dark:border-amber-300 dark:text-zinc-100"
+                      ? "border-zinc-950 text-zinc-900 dark:border-amber-300 dark:text-zinc-100"
                       : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800 dark:text-zinc-400 dark:hover:border-slate-600 dark:hover:text-zinc-100"
                   }`}
                 >
@@ -203,7 +203,7 @@ export const ReadingShell = ({
     <div className="relative">
       <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-px bg-transparent xl:hidden">
         <div
-          className="h-full bg-amber-400/85 transition-[width] duration-150 dark:bg-amber-300/85"
+          className="h-full bg-zinc-950 transition-[width] duration-150 dark:bg-amber-300/85"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -211,8 +211,8 @@ export const ReadingShell = ({
       <div
         className={
           isLongform
-            ? "mx-auto w-full xl:grid xl:max-w-none xl:grid-cols-[minmax(0,1fr)_20rem_3rem_minmax(0,42rem)_7rem_16rem_minmax(0,1fr)]"
-            : "mx-auto w-full max-w-2xl"
+            ? "mx-auto w-full xl:grid xl:max-w-none xl:grid-cols-[minmax(0,1fr)_20rem_3rem_minmax(0,50rem)_7rem_16rem_minmax(0,1fr)]"
+            : "mx-auto w-full max-w-2xl lg:max-w-[50rem]"
         }
       >
         <div
