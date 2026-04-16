@@ -2,6 +2,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Schema } from "hast-util-sanitize";
@@ -10,8 +11,17 @@ import { remarkHeadingAnchors } from "./markdown-headings";
 
 const sanitizeSchema: Schema = {
   ...defaultSchema,
+  tagNames: Array.from(new Set([...(defaultSchema.tagNames ?? []), "img"])),
   attributes: {
     ...defaultSchema.attributes,
+    img: [
+      ...(defaultSchema.attributes?.img ?? []),
+      "src",
+      "alt",
+      "title",
+      "width",
+      "height",
+    ],
     code: [
       ...(defaultSchema.attributes?.code ?? []),
       ["className", /^language-/],
@@ -32,7 +42,8 @@ export const renderMarkdownToHtml = async (content: string) => {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkHeadingAnchors)
-    .use(remarkRehype)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
     .use(rehypeHighlight)
     .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeStringify)

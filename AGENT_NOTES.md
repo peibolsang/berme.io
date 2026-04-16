@@ -200,6 +200,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 
 ### What went right
 - A small UI preference change was cheapest to implement at the render site: the post header already owned the metadata row, so removing the popularity badge there avoided touching the tracking backend.
+- A fresh catch-up pass confirmed the current architecture is still coherent after the recent feature growth: GitHub-backed posts, parent-derived views, `/now`, conferences, markdown mirrors, machine-readable sitemaps, popularity tracking, and Telegram-to-Notion ingestion all fit the same content model.
 
 ### What went wrong
 - The popularity component still exists even though the post header no longer uses it, so it is now a likely cleanup candidate if the feature is not coming back in another surface.
@@ -228,6 +229,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - The year/title separation in the featured/popular rows needed one more increase; small spacing tweaks here are highly perception-sensitive.
 - The featured/popular year/title gap needed another bump; this spacing sits in a narrow perceptual band where tiny class changes matter.
 - The featured/popular year/title separation needed yet another increase; the module benefits from a clearer break between metadata and title than the earlier tighter settings provided.
+- Fixed the markdown pipeline so raw HTML embedded in GitHub issue bodies, such as literal `<img ... />` tags from pasted GitHub attachments, is parsed and then sanitized instead of disappearing.
 
 ### What worked
 - Using `rg` first to confirm the badge had a single live usage before editing.
@@ -235,7 +237,12 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Introducing a page-specific content class was safer than changing the shared markdown styles globally.
 - When a visual tweak is user-judged, treating "I don't see it" as an RCA prompt is better than defending a technically-correct but imperceptible change.
 - Reusing the normal post-entry row pattern inside a single editorial container preserved emphasis without inventing a second visual language for the same content type.
+- Re-reading `AGENTS.md`, then `AGENT_NOTES.md`, then the actual route and `lib/` entry points was enough to rebuild a reliable mental model quickly.
+- Running `npm run lint` during catch-up remains a good health check; the repo is clean apart from the already-known `@next/next/no-img-element` warnings.
+- In this repo, raw HTML support for markdown needs to be implemented in both paths: the React renderer in `components/Markdown.tsx` and the unified string-render path in `lib/markdown-render.ts`.
 
 ### What didn't
 - Assuming a dedicated component necessarily meant the badge was reused in multiple places.
 - Keeping a custom card-per-post treatment for homepage highlights after the rest of the page had already settled into a cleaner editorial listing style.
+- Relying only on the repository guide would now understate the product surface; newer graph, conference, markdown-export, popularity, and Telegram/Notion features live outside that older summary.
+- An ad hoc `tsx` runtime check can fail in this sandbox because it wants to create an IPC pipe; for this kind of change, `npx tsc --noEmit` plus lint is the reliable verification floor.

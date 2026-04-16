@@ -48,6 +48,14 @@ main :is(p, li) {
   margin: 1rem 0;
 }
 
+.markdown-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+}
+
 .detail-markdown {
   font-size: 1.03rem;
 }

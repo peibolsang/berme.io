@@ -1,14 +1,24 @@
 import type { ComponentPropsWithoutRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { remarkHeadingAnchors } from "../lib/markdown-headings";
 
 const sanitizeSchema = {
   ...defaultSchema,
+  tagNames: Array.from(new Set([...(defaultSchema.tagNames ?? []), "img"])),
   attributes: {
     ...defaultSchema.attributes,
+    img: [
+      ...(defaultSchema.attributes?.img ?? []),
+      "src",
+      "alt",
+      "title",
+      "width",
+      "height",
+    ],
     code: [
       ...(defaultSchema.attributes?.code ?? []),
       ["className", /^language-/],
@@ -32,7 +42,11 @@ export const Markdown = ({ content }: MarkdownProps) => {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkHeadingAnchors]}
-      rehypePlugins={[rehypeHighlight, [rehypeSanitize, sanitizeSchema]]}
+      rehypePlugins={[
+        rehypeRaw,
+        rehypeHighlight,
+        [rehypeSanitize, sanitizeSchema],
+      ]}
       components={{
         ul: (props: ComponentPropsWithoutRef<"ul">) => (
           <ul {...props} className="my-4 list-disc pl-5" />
