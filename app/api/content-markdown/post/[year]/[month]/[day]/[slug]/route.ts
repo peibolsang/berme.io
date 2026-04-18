@@ -1,6 +1,6 @@
 import {
   buildPostMarkdownDocument,
-  MARKDOWN_CONTENT_TYPE,
+  createMarkdownResponse,
 } from "../../../../../../../../lib/markdown-exports";
 import { getPostByPermalink } from "../../../../../../../../lib/posts";
 
@@ -31,9 +31,5 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return notFoundResponse();
   }
 
-  return new Response(buildPostMarkdownDocument(post), {
-    headers: {
-      "Content-Type": MARKDOWN_CONTENT_TYPE,
-    },
-  });
+  return createMarkdownResponse(buildPostMarkdownDocument(post));
 }

@@ -1,6 +1,6 @@
 import {
   buildViewMarkdownDocument,
-  MARKDOWN_CONTENT_TYPE,
+  createMarkdownResponse,
 } from "../../../../../lib/markdown-exports";
 import { getViewBySlug } from "../../../../../lib/views";
 
@@ -28,9 +28,5 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return notFoundResponse();
   }
 
-  return new Response(buildViewMarkdownDocument(view), {
-    headers: {
-      "Content-Type": MARKDOWN_CONTENT_TYPE,
-    },
-  });
+  return createMarkdownResponse(buildViewMarkdownDocument(view));
 }

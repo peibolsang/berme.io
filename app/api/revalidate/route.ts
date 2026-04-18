@@ -125,6 +125,7 @@ const revalidateAggregates = async () => {
   await Promise.all([
     revalidatePath("/"),
     revalidatePath("/feed.xml"),
+    revalidatePath("/sitemap.xml"),
     revalidatePath("/sitemap.md"),
     revalidatePath("/sitemap.json"),
   ]);
@@ -280,7 +281,7 @@ export async function POST(request: Request) {
       revalidated.push(conferenceUrl);
     }
     await revalidateAggregates();
-    revalidated.push("/", "/feed.xml", "/sitemap.md", "/sitemap.json");
+    revalidated.push("/", "/feed.xml", "/sitemap.xml", "/sitemap.md", "/sitemap.json");
   };
 
   if (event === "issues") {
@@ -310,7 +311,7 @@ export async function POST(request: Request) {
     if (action === "pinned" || action === "unpinned") {
       await ensureContentTagsRevalidated();
       await revalidateAggregates();
-      revalidated.push("/", "/feed.xml", "/sitemap.md", "/sitemap.json");
+      revalidated.push("/", "/feed.xml", "/sitemap.xml", "/sitemap.md", "/sitemap.json");
     }
 
     if (action === "edited" || action === "closed" || action === "reopened") {

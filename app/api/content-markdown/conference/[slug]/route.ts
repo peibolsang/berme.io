@@ -1,6 +1,6 @@
 import {
   buildConferenceMarkdownDocument,
-  MARKDOWN_CONTENT_TYPE,
+  createMarkdownResponse,
 } from "../../../../../lib/markdown-exports";
 import { getConferenceBySlug } from "../../../../../lib/conferences";
 
@@ -28,9 +28,5 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return notFoundResponse();
   }
 
-  return new Response(buildConferenceMarkdownDocument(conference), {
-    headers: {
-      "Content-Type": MARKDOWN_CONTENT_TYPE,
-    },
-  });
+  return createMarkdownResponse(buildConferenceMarkdownDocument(conference));
 }

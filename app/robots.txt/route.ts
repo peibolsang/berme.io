@@ -4,7 +4,8 @@ export async function GET() {
   const baseUrl = await getBaseUrl();
   const body = `User-agent: *
 Allow: /
-Sitemap: ${baseUrl}/sitemap.md
+Content-Signal: ai-train=no, search=yes, ai-input=no
+Sitemap: ${baseUrl}/sitemap.xml
 `;
 
   return new Response(body, {

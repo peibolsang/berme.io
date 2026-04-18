@@ -230,6 +230,15 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - The featured/popular year/title gap needed another bump; this spacing sits in a narrow perceptual band where tiny class changes matter.
 - The featured/popular year/title separation needed yet another increase; the module benefits from a clearer break between metadata and title than the earlier tighter settings provided.
 - Fixed the markdown pipeline so raw HTML embedded in GitHub issue bodies, such as literal `<img ... />` tags from pasted GitHub attachments, is parsed and then sanitized instead of disappearing.
+- Added a protocol-compliant `/sitemap.xml` route that lists canonical HTML URLs instead of the markdown mirror URLs used by `/sitemap.md`.
+- Updated webhook aggregate revalidation and `robots.txt` so newly published or edited content refreshes `/sitemap.xml` and search crawlers can discover it directly.
+- Added a homepage `Link` header pointing to `/sitemap.xml` via Next.js response headers, using RFC 8288 header syntax and an extension relation URI because `sitemap` is not an IANA-registered link relation token.
+- Added Markdown content negotiation for `/`, `/now`, posts, views, and conferences by rewriting `Accept: text/markdown` requests to the existing Markdown route layer instead of trying to emit Markdown from page components.
+- Added `Vary: Accept` on the negotiated canonical routes and standardized Markdown responses to include `Content-Type: text/markdown; charset=utf-8` plus `x-markdown-tokens`.
+- Added a `Content-Signal` declaration to `robots.txt` so the site now explicitly allows search while declining AI training and AI input usage.
+- Added an MCP Server Card at `/.well-known/mcp/server-card.json` following the current SEP-1649 draft shape, with CORS headers and a reserved `/mcp` streamable-HTTP endpoint.
+- Added an explicit `/mcp` placeholder route returning `501 Not Implemented` so discovery does not point at a missing path while making it clear the actual MCP transport is not enabled yet.
+- Added a client-side WebMCP provider that registers browser-native tools on page load for content search and navigation, using the verified `registerTool()` API and a compatibility fallback for experimental `provideContext()` implementations.
 
 ### What worked
 - Using `rg` first to confirm the badge had a single live usage before editing.
@@ -240,6 +249,12 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Re-reading `AGENTS.md`, then `AGENT_NOTES.md`, then the actual route and `lib/` entry points was enough to rebuild a reliable mental model quickly.
 - Running `npm run lint` during catch-up remains a good health check; the repo is clean apart from the already-known `@next/next/no-img-element` warnings.
 - In this repo, raw HTML support for markdown needs to be implemented in both paths: the React renderer in `components/Markdown.tsx` and the unified string-render path in `lib/markdown-render.ts`.
+- Reusing the existing `posts`, `views`, `conferences`, and `/now` loaders was the safest way to build the XML sitemap without duplicating permalink logic or drifting from canonical URLs.
+- For homepage-only HTTP metadata in this App Router setup, `next.config.ts` response headers are a cleaner fit than trying to emit headers from `app/page.tsx`.
+- In this repo, the clean way to implement Markdown-for-Agents is request-header rewrites plus dedicated Markdown route handlers; trying to negotiate directly inside `page.tsx` would not give the correct response content type.
+- For Content Signals, a plain `robots.txt` declaration is the lowest-friction implementation path and keeps the site’s AI-usage preference visible alongside crawl and sitemap directives.
+- For MCP discovery in a non-MCP app, it is safer to publish a truthful server card plus a reserved endpoint than to imply a working transport that does not exist.
+- For WebMCP in this codebase, a single global client provider mounted from `app/layout.tsx` is the right integration point because tool registration must happen in the browser and should not depend on which route rendered first.
 
 ### What didn't
 - Assuming a dedicated component necessarily meant the badge was reused in multiple places.

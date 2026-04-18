@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { WebMcpProvider } from "../components/WebMcpProvider";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -87,6 +88,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <WebMcpProvider />
         <ThemeToggle />
         {children}
         <Analytics />
