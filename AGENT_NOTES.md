@@ -239,6 +239,8 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Added an MCP Server Card at `/.well-known/mcp/server-card.json` following the current SEP-1649 draft shape, with CORS headers and a reserved `/mcp` streamable-HTTP endpoint.
 - Added an explicit `/mcp` placeholder route returning `501 Not Implemented` so discovery does not point at a missing path while making it clear the actual MCP transport is not enabled yet.
 - Added a client-side WebMCP provider that registers browser-native tools on page load for content search and navigation, using the verified `registerTool()` API and a compatibility fallback for experimental `provideContext()` implementations.
+- Added an Agent Skills discovery index at `/.well-known/agent-skills/index.json` plus a published `berme-content-discovery` skill with a SHA-256 digest computed from the same source string served at the skill URL.
+- Expanded the published Agent Skills set with `berme-writing-style` and `berme-post-research`, keeping all discovery metadata and digests centralized in one shared module.
 
 ### What worked
 - Using `rg` first to confirm the badge had a single live usage before editing.
@@ -255,6 +257,8 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - For Content Signals, a plain `robots.txt` declaration is the lowest-friction implementation path and keeps the site’s AI-usage preference visible alongside crawl and sitemap directives.
 - For MCP discovery in a non-MCP app, it is safer to publish a truthful server card plus a reserved endpoint than to imply a working transport that does not exist.
 - For WebMCP in this codebase, a single global client provider mounted from `app/layout.tsx` is the right integration point because tool registration must happen in the browser and should not depend on which route rendered first.
+- For Agent Skills discovery, the index should only advertise skills that are actually fetchable from the domain; computing the digest from the same shared content source avoids drift between `index.json` and the published `SKILL.md`.
+- When publishing multiple skills from a site, centralizing the source strings, route paths, and digest generation in one module is cheaper and safer than hand-maintaining each index entry.
 
 ### What didn't
 - Assuming a dedicated component necessarily meant the badge was reused in multiple places.
