@@ -241,6 +241,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Added a client-side WebMCP provider that registers browser-native tools on page load for content search and navigation, using the verified `registerTool()` API and a compatibility fallback for experimental `provideContext()` implementations.
 - Added an Agent Skills discovery index at `/.well-known/agent-skills/index.json` plus a published `berme-content-discovery` skill with a SHA-256 digest computed from the same source string served at the skill URL.
 - Expanded the published Agent Skills set with `berme-writing-style` and `berme-post-research`, keeping all discovery metadata and digests centralized in one shared module.
+- A live validation pass against the public site showed that agent-facing discoverability features can be in place while external search/browser snapshots still miss dynamic homepage shelves or unindexed posts, so public summaries need to clearly separate verified page evidence from inference.
 
 ### What worked
 - Using `rg` first to confirm the badge had a single live usage before editing.
@@ -259,9 +260,37 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - For WebMCP in this codebase, a single global client provider mounted from `app/layout.tsx` is the right integration point because tool registration must happen in the browser and should not depend on which route rendered first.
 - For Agent Skills discovery, the index should only advertise skills that are actually fetchable from the domain; computing the digest from the same shared content source avoids drift between `index.json` and the published `SKILL.md`.
 - When publishing multiple skills from a site, centralizing the source strings, route paths, and digest generation in one module is cheaper and safer than hand-maintaining each index entry.
+- When validating agent-readiness from outside the repo, do not overclaim from search snippets alone; if a “popular” post or specific article cannot be directly verified live, say so explicitly instead of implying the site proved it.
 
 ### What didn't
 - Assuming a dedicated component necessarily meant the badge was reused in multiple places.
 - Keeping a custom card-per-post treatment for homepage highlights after the rest of the page had already settled into a cleaner editorial listing style.
 - Relying only on the repository guide would now understate the product surface; newer graph, conference, markdown-export, popularity, and Telegram/Notion features live outside that older summary.
 - An ad hoc `tsx` runtime check can fail in this sandbox because it wants to create an IPC pipe; for this kind of change, `npx tsc --noEmit` plus lint is the reliable verification floor.
+
+## 2026 Week 17 (2026-04-20 to 2026-04-26)
+
+### What went right
+- Re-reading `AGENTS.md` and the compacted notes was still enough to rebuild the current repository model quickly.
+- The maintained notes now clearly show the product has expanded beyond the older repository guide: conferences, markdown negotiation, popularity, MCP/agent discovery, and Telegram-to-Notion are all active parts of the system.
+
+### What went wrong
+- `AGENTS.md` is still accurate as an operating contract, but its feature summary lags the newer surface area captured in `AGENT_NOTES.md`.
+- A single long read of `AGENT_NOTES.md` can still hit output truncation, so recent sections need targeted reads instead of assuming one pass is enough.
+
+### What I corrected
+- Refreshed working memory from both instruction files before doing any implementation work.
+- Added this week's catch-up note so the scratchpad reflects the session instead of skipping a required update.
+- Fixed the permalink-migration bug in post popularity tracking by reconstructing the pre-edit URL from GitHub webhook `changes` instead of depending on cached post state.
+- Added a one-off repair script at `scripts/repair-post-popularity.ts` and used it to merge stale Redis popularity entries into their canonical post URLs.
+
+### What worked
+- Reading the durable repo contract first, then reading the compacted weekly notes, then using targeted follow-up reads for the latest sections.
+- Treating `AGENT_NOTES.md` as the higher-fidelity source for recent product evolution and operational caveats.
+- For webhook-driven permalink migrations, the old URL must come from GitHub's `issues.edited` payload, not from `getAllPosts()` cache reads that may already reflect the new permalink.
+- A slug-based Redis repair pass is a practical way to clean up stale popularity members when the title slug stayed constant and only the date portion of the permalink drifted.
+
+### What didn't
+- Assuming the repository guide alone is enough to understand the current product surface.
+- Depending on a single truncated file read when the latest weeks are what matter most for safe follow-up work.
+- Assuming cached content state could reliably stand in for the pre-edit permalink during webhook handling.

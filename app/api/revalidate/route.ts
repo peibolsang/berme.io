@@ -51,12 +51,34 @@ const hasConferenceLabel = (
   labels: Array<{ name?: string | null }> | null | undefined,
 ) => hasLabel(labels, "conference");
 
-const getPostUrlFromIssue = (issue: {
+type WebhookIssuePayload = {
   title?: string | null;
   body?: string | null;
   created_at?: string | null;
   labels?: Array<{ name?: string | null }> | null;
-}) => {
+};
+
+type IssueEditedChangesPayload = {
+  title?: { from?: string | null } | null;
+  body?: { from?: string | null } | null;
+};
+
+const getIssuePayloadAtPreviousRevision = (
+  issue: WebhookIssuePayload,
+  changes?: IssueEditedChangesPayload | null,
+): WebhookIssuePayload | null => {
+  if (!changes?.title && !changes?.body) {
+    return null;
+  }
+
+  return {
+    ...issue,
+    title: changes.title ? changes.title.from ?? null : issue.title,
+    body: changes.body ? changes.body.from ?? null : issue.body,
+  };
+};
+
+const getPostUrlFromIssue = (issue: WebhookIssuePayload) => {
   if (!issue?.title) {
     return null;
   }
@@ -76,11 +98,7 @@ const getPostUrlFromIssue = (issue: {
   return buildUrl(publishedAt, slug);
 };
 
-const getConferenceUrlFromIssue = (issue: {
-  title?: string | null;
-  body?: string | null;
-  labels?: Array<{ name?: string | null }> | null;
-}) => {
+const getConferenceUrlFromIssue = (issue: WebhookIssuePayload) => {
   if (!issue?.title) {
     return null;
   }
@@ -252,24 +270,33 @@ export async function POST(request: Request) {
   };
   const revalidateIssueContent = async (
     issueNumber: number,
-    issue: {
-      title?: string | null;
-      body?: string | null;
-      created_at?: string | null;
-      labels?: Array<{ name?: string | null }> | null;
-    },
+    issue: WebhookIssuePayload,
+    previousIssue?: WebhookIssuePayload | null,
   ) => {
     const urlFromPayload = getPostUrlFromIssue(issue);
+    const previousUrlFromPayload = previousIssue
+      ? getPostUrlFromIssue(previousIssue)
+      : null;
     const conferenceUrlFromPayload = getConferenceUrlFromIssue(issue);
+    const previousConferenceUrlFromPayload = previousIssue
+      ? getConferenceUrlFromIssue(previousIssue)
+      : null;
     const cached = await getCachedPosts();
     const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
     await syncPostReadTracking({
       currentUrl: urlFromPayload ?? cachedUrl,
-      previousUrl: cachedUrl,
+      previousUrl: previousUrlFromPayload ?? cachedUrl,
     });
-    const urls = await revalidatePostUrls([urlFromPayload, cachedUrl]);
+    const urls = await revalidatePostUrls([
+      urlFromPayload,
+      previousUrlFromPayload,
+      cachedUrl,
+    ]);
     revalidated.push(...urls);
-    const conferenceUrls = await revalidatePostUrls([conferenceUrlFromPayload]);
+    const conferenceUrls = await revalidatePostUrls([
+      conferenceUrlFromPayload,
+      previousConferenceUrlFromPayload,
+    ]);
     revalidated.push(...conferenceUrls);
     await ensureContentTagsRevalidated();
     const viewUrl = await revalidateViewUrlByIssueNumber(issueNumber);
@@ -317,7 +344,11 @@ export async function POST(request: Request) {
     if (action === "edited" || action === "closed" || action === "reopened") {
       const issueNumber = Number(payload.issue?.number);
       if (Number.isFinite(issueNumber)) {
-        await revalidateIssueContent(issueNumber, payload.issue);
+        const previousIssue = getIssuePayloadAtPreviousRevision(
+          payload.issue,
+          action === "edited" ? payload.changes : null,
+        );
+        await revalidateIssueContent(issueNumber, payload.issue, previousIssue);
         if (hasNowLabel(payload.issue?.labels)) {
           await revalidateNow();
           revalidated.push("/now");
