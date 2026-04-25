@@ -273,24 +273,37 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 ### What went right
 - Re-reading `AGENTS.md` and the compacted notes was still enough to rebuild the current repository model quickly.
 - The maintained notes now clearly show the product has expanded beyond the older repository guide: conferences, markdown negotiation, popularity, MCP/agent discovery, and Telegram-to-Notion are all active parts of the system.
+- A fresh codebase catch-up confirmed the current shape: Next 16/React 19 App Router, GitHub Issues CMS, static detail pages, cached server homepage, markdown mirrors, graph exploration, Redis popularity, PDF-backed conferences, and Telegram-to-Notion ingestion.
+- `npm run lint` is currently green with the known 8 `@next/next/no-img-element` warnings and no errors.
+- Another catch-up pass on 2026-04-25 confirmed the same health baseline and refreshed the concrete file map across routes, loaders, agent-facing endpoints, and client components.
 
 ### What went wrong
 - `AGENTS.md` is still accurate as an operating contract, but its feature summary lags the newer surface area captured in `AGENT_NOTES.md`.
 - A single long read of `AGENT_NOTES.md` can still hit output truncation, so recent sections need targeted reads instead of assuming one pass is enough.
+- `docs/TODO.md` has stale unchecked Redis popularity items even though the feature is implemented and wired through `lib/post-popularity.ts`, `app/api/post-reads/route.ts`, and homepage popular posts.
+- zsh still expands unquoted App Router bracket paths, so `app/[year]/...` and `app/views/[slug]/...` need quoting during shell inspection.
+- Removing the visible post popularity badge also removed the only mounted client component that POSTed to `/api/post-reads`, so Redis counters could exist at zero without new page views incrementing them.
 
 ### What I corrected
 - Refreshed working memory from both instruction files before doing any implementation work.
 - Added this week's catch-up note so the scratchpad reflects the session instead of skipping a required update.
 - Fixed the permalink-migration bug in post popularity tracking by reconstructing the pre-edit URL from GitHub webhook `changes` instead of depending on cached post state.
 - Added a one-off repair script at `scripts/repair-post-popularity.ts` and used it to merge stale Redis popularity entries into their canonical post URLs.
+- Refreshed repository working memory from actual routes, `lib/` loaders, config, cache invalidation, machine-readable endpoints, and high-traffic client components.
+- Restored post read registration by decoupling the tracking side effect into an invisible `PostReadTracker` mounted from canonical post pages, and removed the stale visible popularity component.
 
 ### What worked
 - Reading the durable repo contract first, then reading the compacted weekly notes, then using targeted follow-up reads for the latest sections.
 - Treating `AGENT_NOTES.md` as the higher-fidelity source for recent product evolution and operational caveats.
 - For webhook-driven permalink migrations, the old URL must come from GitHub's `issues.edited` payload, not from `getAllPosts()` cache reads that may already reflect the new permalink.
 - A slug-based Redis repair pass is a practical way to clean up stale popularity members when the title slug stayed constant and only the date portion of the permalink drifted.
+- Parallel reads over route modules and `lib/` boundaries rebuilt context quickly without touching user work.
+- Running lint after a catch-up pass gives a reliable current-health baseline before future edits.
+- The practical orientation path is now: `app/page.tsx`, content loaders in `lib/posts.ts`/`lib/views.ts`/`lib/conferences.ts`/`lib/now.ts`, invalidation in `app/api/revalidate/route.ts`, and then the newer machine-readable and agent surfaces.
+- Direct Redis inspection is the fastest way to separate "missing tracking key" from "tracking key exists but never increments"; the affected article had both counter and ranking entries stuck at zero.
 
 ### What didn't
 - Assuming the repository guide alone is enough to understand the current product surface.
 - Depending on a single truncated file read when the latest weeks are what matter most for safe follow-up work.
 - Assuming cached content state could reliably stand in for the pre-edit permalink during webhook handling.
+- Treating `docs/TODO.md` as fully authoritative would now be misleading; it needs reconciliation with implemented popularity behavior.
