@@ -83,14 +83,14 @@ export default async function Home() {
               Bio
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              I am a technologist who thinks in systems, builds to learn, and communicates to
-              make sense of technological change. I&apos;ve been
-              building enterprise software platforms and applications for the last 20 years.
-              I know what to build, how and why, and I love sharing what I learn.
+              I am a hands-on technologist, systems thinker, and communicator. I explore
+              technological change from first principles, connect ideas, and test them by
+              building.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              I create a lasting difference in the teams I work with as we build technology
-              together.
+              Drawing on 20 years in enterprise software, I turn what I learn into clear
+              perspectives to create a lasting difference in the teams I work with as we build
+              technology together.
             </p>
             <div className="mt-6">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
