@@ -229,7 +229,7 @@ export const buildHomeMarkdownDocument = ({
       ["Now", nowPost?.title ? `[${nowPost.title}](/now)` : null],
     ]),
     "---",
-    "I am a product-minded engineer, technologist, and writer. I build enterprise software platforms and applications and write about product leadership, enterprise software, and software engineering.",
+    "I am a technologist who thinks in systems, builds to learn, and communicates to make sense of technological change. I build enterprise software platforms and applications and write about product leadership, enterprise software, and software engineering.",
     "## Available Views",
     "- [Posts](/?view=posts)",
     "- [Views](/?view=views)",

@@ -283,6 +283,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - `docs/TODO.md` has stale unchecked Redis popularity items even though the feature is implemented and wired through `lib/post-popularity.ts`, `app/api/post-reads/route.ts`, and homepage popular posts.
 - zsh still expands unquoted App Router bracket paths, so `app/[year]/...` and `app/views/[slug]/...` need quoting during shell inspection.
 - Removing the visible post popularity badge also removed the only mounted client component that POSTed to `/api/post-reads`, so Redis counters could exist at zero without new page views incrementing them.
+- Rotating the Telegram bot token left the new bot token with no webhook URL configured, so Telegram stopped delivering `/new` messages to the production route.
 
 ### What I corrected
 - Refreshed working memory from both instruction files before doing any implementation work.
@@ -291,6 +292,8 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Added a one-off repair script at `scripts/repair-post-popularity.ts` and used it to merge stale Redis popularity entries into their canonical post URLs.
 - Refreshed repository working memory from actual routes, `lib/` loaders, config, cache invalidation, machine-readable endpoints, and high-traffic client components.
 - Restored post read registration by decoupling the tracking side effect into an invisible `PostReadTracker` mounted from canonical post pages, and removed the stale visible popularity component.
+- Backfilled the two known missed Redis popularity counts from Vercel Analytics by setting both their per-post counters and sorted-set scores.
+- Re-registered the Telegram webhook for the rotated bot token after verifying production accepts the current webhook secret.
 
 ### What worked
 - Reading the durable repo contract first, then reading the compacted weekly notes, then using targeted follow-up reads for the latest sections.
@@ -307,3 +310,33 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Depending on a single truncated file read when the latest weeks are what matter most for safe follow-up work.
 - Assuming cached content state could reliably stand in for the pre-edit permalink during webhook handling.
 - Treating `docs/TODO.md` as fully authoritative would now be misleading; it needs reconciliation with implemented popularity behavior.
+
+## 2026 Week 21 (2026-05-18 to 2026-05-24)
+
+### What went right
+- For the `peibolsang/peibolsang` scheduled publishing RCA, checking workflow runs and job logs separated scheduling/permissions from content parsing quickly.
+- The May 10 run proved the workflow executed successfully with `issues: write`, inspected one `ready` issue, and skipped it, narrowing the problem to the script's skip branches.
+
+### What went wrong
+- The workflow hand-parses issue frontmatter with regexes while the site uses `gray-matter`; this creates a format mismatch for valid YAML such as quoted dates.
+
+### What I corrected
+- Captured the likely root cause: issue #71 used quoted date-style frontmatter (`publishedAt: '2026-05-10'` after manual publish, likely `scheduled: '2026-05-10'` before), while the workflow only matched unquoted `scheduled: YYYY-MM-DD`.
+- Pushed `peibolsang/peibolsang` commit `8ed542e` so the workflow now accepts optional quotes around `scheduled` and `publishedAt` dates and logs per-issue skip reasons.
+
+### What worked
+- Reading GitHub Actions job logs directly was more useful than inferring from labels alone.
+
+### What didn't
+- The workflow logs do not print per-issue skip reasons, so RCA required correlating run counters, issue label events, and current frontmatter format.
+
+## 2026 Week 29 (2026-07-13 to 2026-07-19)
+
+### What went right
+- Searching for the exact bio sentence found all three public representations: the homepage, the shared bio panel, and the homepage Markdown export.
+
+### What I corrected
+- Replaced the opening bio sentence consistently across the HTML and machine-readable homepage surfaces.
+
+### What worked
+- Treating copy shared across rendered and exported formats as one synchronized content change.

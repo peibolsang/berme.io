@@ -69,7 +69,8 @@ export const KnowPablo = () => {
               Bio
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              I am a product-minded engineer, technologist, and writer. I&apos;ve been
+              I am a technologist who thinks in systems, builds to learn, and communicates to
+              make sense of technological change. I&apos;ve been
               building enterprise software platforms and applications for the last 20 years.
               I know what to build, how and why, and I love sharing what I learn.
             </p>
