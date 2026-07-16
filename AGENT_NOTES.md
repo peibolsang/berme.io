@@ -338,6 +338,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 ### What I corrected
 - Replaced the opening bio sentence consistently across the HTML and machine-readable homepage surfaces.
 - Reworked the complete bio into two synchronized paragraphs across the homepage, shared bio panel, and Markdown export.
+- Refined the second bio paragraph to emphasize clear strategic perspectives across all three surfaces.
 
 ### What worked
 - Treating copy shared across rendered and exported formats as one synchronized content change.
