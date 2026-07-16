@@ -89,8 +89,7 @@ export default async function Home() {
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
               Drawing on 20 years in enterprise software, I turn what I learn into clear
-              strategic perspectives that create a lasting difference in the teams I work with
-              as we build technology together.
+              strategic perspectives that create a lasting difference in the teams I work with.
             </p>
             <div className="mt-6">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">

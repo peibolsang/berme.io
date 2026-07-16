@@ -230,7 +230,7 @@ export const buildHomeMarkdownDocument = ({
     ]),
     "---",
     "I am a hands-on technologist, systems thinker, and communicator. I explore technological change from first principles, connect ideas, and test them by building.",
-    "Drawing on 20 years in enterprise software, I turn what I learn into clear strategic perspectives that create a lasting difference in the teams I work with as we build technology together.",
+    "Drawing on 20 years in enterprise software, I turn what I learn into clear strategic perspectives that create a lasting difference in the teams I work with.",
     "## Available Views",
     "- [Posts](/?view=posts)",
     "- [Views](/?view=views)",
