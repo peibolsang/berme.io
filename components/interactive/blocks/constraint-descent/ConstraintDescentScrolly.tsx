@@ -29,15 +29,15 @@ type StoryBeatProps = DiagramLabelProps & {
 };
 
 const VIEWBOX_WIDTH = 720;
-const VIEWBOX_HEIGHT = 680;
+const VIEWBOX_HEIGHT = 820;
 const LAYER_CENTER_X = 360;
-const LAYER_WIDTH = 360;
-const LAYER_RISE = 31;
-const FIRST_LAYER_Y = 54;
-const LAYER_GAP = 101;
+const LAYER_WIDTH = 390;
+const LAYER_RISE = 34;
+const FIRST_LAYER_Y = 62;
+const LAYER_GAP = 121;
 
 const getLayerY = (index: number) => FIRST_LAYER_Y + index * LAYER_GAP;
-const getLayerThickness = (index: number) => 8 + index * 4;
+const getLayerThickness = (index: number) => 9 + index * 4.5;
 const getSignalY = (index: number) => getLayerY(index) + LAYER_RISE;
 
 const getDiamondPoints = (
@@ -60,7 +60,7 @@ const IsometricLayer = ({ index, status }: IsometricLayerProps) => {
   const rightX = LAYER_CENTER_X + LAYER_WIDTH / 2;
   const centerY = y + LAYER_RISE;
   const labelOnLeft = index % 2 === 0;
-  const leaderEndX = labelOnLeft ? 140 : VIEWBOX_WIDTH - 140;
+  const leaderEndX = labelOnLeft ? 130 : VIEWBOX_WIDTH - 130;
   const insetWidth = LAYER_WIDTH - 84;
   const insetRise = LAYER_RISE - 8;
   const insetY = centerY - insetRise;
@@ -106,15 +106,15 @@ const IsometricLayer = ({ index, status }: IsometricLayerProps) => {
           points={getDiamondPoints(
             LAYER_CENTER_X,
             centerY - 10,
-            116,
-            10,
+            126,
+            11,
           )}
         />
       ) : null}
 
       <polygon
         className="constraint-story__aperture"
-        points={getDiamondPoints(LAYER_CENTER_X, centerY - 7, 28, 7)}
+        points={getDiamondPoints(LAYER_CENTER_X, centerY - 8, 30, 8)}
       />
 
       <g className="constraint-story__layer-leader">
@@ -160,11 +160,11 @@ const IntentSignal = ({ activeIndex }: { activeIndex: number }) => (
       className="constraint-story__signal-orbit"
       cx={LAYER_CENTER_X}
       cy="0"
-      r="18"
+      r="20"
     />
     <polygon
       className="constraint-story__signal-core"
-      points={getDiamondPoints(LAYER_CENTER_X, -9, 32, 9)}
+      points={getDiamondPoints(LAYER_CENTER_X, -10, 36, 10)}
     />
     <circle
       className="constraint-story__signal-point"

@@ -2,6 +2,8 @@
 
 Compacted into ISO-week summaries so the notes stay useful as a working memory instead of a session log.
 
+- Temporary preview routes and local article copies should be removed once GitHub Issue-backed rendering is verified; keep reusable interactive-content infrastructure independent from test content.
+
 ## 2026 Week 07 (2026-02-09 to 2026-02-15)
 
 ### What went right
@@ -369,6 +371,7 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Extended interactive validation with stdin support so candidate and remote GitHub Issue bodies can be checked directly against the same registered runtime schemas.
 - Consolidated the complete authoring, component, registry, validation, deployment, and GitHub Issue workflow into the self-contained `berme-scrollytelling` skill; reduced `AGENTS.md` to skill routing and removed the redundant interactive-content guide.
 - Simplified the skill input contract to a single Issue number and fixed all source-content operations to `peibolsang/peibolsang`, removing URL-to-Issue and repository-discovery work.
+- Increased the constraint-descent diagram's vertical viewBox, inter-layer spacing, and layer-face geometry so the composition fills more vertical space without changing its scroll-state model or label alignment.
 
 ### What worked
 - Treating copy shared across rendered and exported formats as one synchronized content change.
@@ -384,3 +387,4 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - A durable content-component workflow needs three layers: executable Zod/TypeScript constraints, a generated tool-readable JSON Schema, and concise repository instructions that tell future agents which checks and registries are mandatory.
 - `AGENTS.md` is the right cross-agent entry point for repository-specific generation rules; a vendor-specific `CLAUDE.md` would duplicate the same contract and create a drift risk.
 - When a repository skill is explicitly designated as the canonical workflow, keep its operational instructions self-contained and let `AGENTS.md` only route matching requests to it.
+- For a responsive SVG composition, increasing the viewBox height and geometric gaps together preserves coordinate-driven alignment while making the rendered figure taller at the same CSS width; mobile sticky height must grow with it to avoid clipping.

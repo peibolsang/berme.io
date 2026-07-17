@@ -64,18 +64,6 @@ main :is(p, li) {
   line-height: 1.9;
 }
 
-.preview-markdown > :not(.interactive-breakout) {
-  width: min(100%, 50rem);
-  margin-right: auto;
-  margin-left: auto;
-}
-
-.preview-markdown > h1 {
-  margin-top: 1.5rem;
-  font-size: clamp(2.5rem, 7vw, 4rem);
-  line-height: 1.03;
-}
-
 .interactive-breakout {
   width: 100%;
   max-width: 72rem;
@@ -140,7 +128,7 @@ main :is(p, li) {
 .constraint-story__diagram {
   position: relative;
   width: 92%;
-  aspect-ratio: 720 / 680;
+  aspect-ratio: 720 / 820;
   margin: 3rem auto 0;
   overflow: visible;
 }
@@ -453,7 +441,7 @@ main :is(p, li) {
   .constraint-story__stage {
     top: 0;
     z-index: 2;
-    min-height: clamp(27rem, 58svh, 32rem);
+    min-height: clamp(31.5rem, 68svh, 38rem);
     padding-block: 0.8rem;
     background: #ffffff;
     box-shadow: 0 1.25rem 0 #ffffff;
