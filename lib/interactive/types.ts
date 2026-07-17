@@ -3,16 +3,20 @@ import type {
   ScrollySpec,
   ScrollySpecSchema,
 } from "./contracts/scrolly";
+import type { AlignmentRelaySpec } from "./specs/alignment-relay";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
 import type { LearningPathsSpec } from "./specs/learning-paths";
 import type { PracticeSpiralSpec } from "./specs/practice-spiral";
+import type { RoadmapApertureSpec } from "./specs/roadmap-aperture";
 
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
+  "alignment-relay": AlignmentRelaySpec;
   "constraint-descent": ConstraintDescentSpec;
   "learning-paths": LearningPathsSpec;
   "practice-spiral": PracticeSpiralSpec;
+  "roadmap-aperture": RoadmapApertureSpec;
 };
 
 export type InteractiveComponentId = keyof InteractiveSpecMap;

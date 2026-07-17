@@ -1,6 +1,8 @@
+import { alignmentRelaySpecSchema } from "./specs/alignment-relay";
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
 import { learningPathsSpecSchema } from "./specs/learning-paths";
 import { practiceSpiralSpecSchema } from "./specs/practice-spiral";
+import { roadmapApertureSpecSchema } from "./specs/roadmap-aperture";
 import type {
   InteractiveComponentId,
   InteractiveDefinitionRegistry,
@@ -8,6 +10,11 @@ import type {
 } from "./types";
 
 export const interactiveDefinitionRegistry = {
+  "alignment-relay": {
+    kind: "scrolly",
+    schema: alignmentRelaySpecSchema,
+    version: 1,
+  },
   "constraint-descent": {
     kind: "scrolly",
     schema: constraintDescentSpecSchema,
@@ -21,6 +28,11 @@ export const interactiveDefinitionRegistry = {
   "practice-spiral": {
     kind: "scrolly",
     schema: practiceSpiralSpecSchema,
+    version: 1,
+  },
+  "roadmap-aperture": {
+    kind: "scrolly",
+    schema: roadmapApertureSpecSchema,
     version: 1,
   },
 } satisfies InteractiveDefinitionRegistry;
