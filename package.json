@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:interactive-schemas": "tsx scripts/generate-interactive-schemas.ts",
+    "validate:interactives": "tsx scripts/generate-interactive-schemas.ts --check && tsx scripts/validate-interactive-content.ts"
   },
   "dependencies": {
     "@radix-ui/react-icons": "^1.3.2",
@@ -36,7 +38,8 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -334,12 +334,48 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 
 ### What went right
 - Searching for the exact bio sentence found all three public representations: the homepage, the shared bio panel, and the homepage Markdown export.
+- Directly scrolling Wattenberger essays exposed the reusable editorial patterns behind the polish: sticky visual stages, scroll-paced state changes, full-bleed scene breaks, explorable concept context, and reader-controlled demos.
+- Inspecting Wattenberger's compiled pyramid component separated the visual impression from its relatively simple mechanics: SvelteKit, sticky CSS, a custom inline SVG, nearest-beat scroll state, and numeric thickness tweening.
+- A local `/preview` route made it possible to art-direct a real post without changing its GitHub-backed canonical page or CMS source.
+- The constraint-descent story remained legible without JavaScript because every beat is ordinary article content; JavaScript only synchronizes the active visual state.
+- Reframing the visual as “constraint geology” produced a more specific design language than another stack of interface cards: isometric strata become thicker and gain internal structure as intent hardens into enforcement.
+- Refactoring the SVG into `IsometricLayer`, `IntentSignal`, `ConstraintDescentDiagram`, and `StoryBeat` kept the richer composition understandable without changing the Markdown contract.
 
 ### What I corrected
 - Replaced the opening bio sentence consistently across the HTML and machine-readable homepage surfaces.
 - Reworked the complete bio into two synchronized paragraphs across the homepage, shared bio panel, and Markdown export.
 - Refined the second bio paragraph to emphasize clear strategic perspectives across all three surfaces.
 - Shortened the second bio paragraph by removing its redundant closing clause across all three surfaces.
+- Added a reserved `berme` fenced-block grammar, an allowlisted remark transformer, schema validation, and a component registry so Markdown can request known interactive components without executing arbitrary MDX or HTML.
+- Added the first registered component: a responsive, accessible scroll story that shows a recurring rule descending from human memory to an executable platform boundary.
+- Verified the preview at desktop and mobile breakpoints: all six steps advance, the SVG marker aligns with the active level, no horizontal overflow appears, and the browser reports no runtime or console errors.
+- Replaced the flat constraint ladder with a minimal isometric composition, alternating semantic labels, a moving intent signal, progressively structured layers, and an amber trail that records how far the rule has descended.
+- Reworked the mobile stage from a cramped side-by-side thumbnail into a full-width stacked composition and made mobile step activation track the readable boundary beneath the sticky visual.
+- Responded to the visual-review feedback that the isometric labels were undersized by moving them closer to the strata and promoting phase, number, and layer-name typography to a readable editorial-caption scale.
+- Corrected the label-sizing approach after a second visual review showed that larger SVG font units were still being reduced by the responsive viewBox; moved diagram labels to HTML overlays so they render at body-scale CSS sizes while the geometry remains SVG.
+- Simplified the diagram axis to “Interpreted” and “Enforced,” placing both labels at the image extremes and centering them exactly on the SVG intent thread's 50% axis.
+- Tightened the scrolly's article transition by halving its large responsive outer margins, while moving the phase labels beyond the SVG edges so “Interpreted” and “Enforced” have deliberate breathing room from the artwork.
+- Replaced the single hard-coded interactive switch with a versioned, Zod-validated definition registry and a separate lazy renderer registry keyed by specific component IDs.
+- Extracted reusable scrolly activation and container-measurement hooks, reorganized the first interactive into a component-owned block folder, and added repository-wide Markdown validation plus an authoring guide.
+- Kept the scrolly description in its validated authoring schema but removed it from the rendered composition, and normalized both root and beat titles to the article's standard `h2` size.
+- Increased the diagram's own top margin after normalizing title sizes so the “Interpreted” axis label and geometry no longer crowd the scrolly heading.
+- Moved the alternating layer labels farther beyond their leader dots with a fixed minimum buffer and matched their type scale to the “Interpreted” and “Enforced” axis labels, creating a clearer boundary between diagram geometry and annotation even in narrow article layouts.
+- Promoted the first scrolly's JSON shape into a shared, strict v1 contract, with component schemas allowed to narrow only the renderer ID.
+- Added a generated JSON Schema, branded schema factory, conventional renderer-path validation, and mandatory `AGENTS.md` workflow so future blocks and ad hoc scrolly renderers fail fast when they drift.
+- Added a repository-local `berme-scrollytelling` skill to turn a post URL into the complete design, renderer, validation, deployment gate, and canonical GitHub Issue update workflow without local article copies.
+- Extended interactive validation with stdin support so candidate and remote GitHub Issue bodies can be checked directly against the same registered runtime schemas.
 
 ### What worked
 - Treating copy shared across rendered and exported formats as one synchronized content change.
+- Translating inspiration into a small reusable interactive-block grammar fits the GitHub Issues CMS better than treating every art-directed post as a one-off page.
+- For a berme.io equivalent, the clean boundary is a server-rendered Markdown directive that mounts one isolated client component; no 3D or animation framework is necessary.
+- A reserved fenced code block is more portable than custom container syntax in the current GitHub Issues workflow: GitHub still renders it safely as code, while the site upgrades it through an allowlisted parser.
+- Keeping the scroll listener passive and limiting measurements to the section's vicinity avoids a perpetual animation loop while preserving smooth state changes.
+- Browser verification needs to wait for the intentional marker transition before comparing geometry; an immediate read can briefly observe the narrative's new state while the marker is still tweening.
+- For mobile scrollytelling, the active-step anchor should follow the bottom of the sticky visual rather than the desktop viewport midpoint; otherwise the highlighted prose can sit invisibly behind the graphic.
+- Increasing layer thickness and adding nested geometry only to the deeper strata conveyed “hardening” with less decoration than giving every step a different icon or animation.
+- Inspecting rendered SVG label bounds was more reliable than judging the declared SVG font size alone because the viewBox scale reduced 16 SVG units to roughly 12 CSS pixels at the normal desktop layout.
+- When diagram typography must remain comparable to surrounding prose, HTML overlays are a better hybrid boundary than SVG text: percentage positioning preserves geometric attachment while CSS `rem` sizes remain independent of illustration scaling.
+- A durable content-component workflow needs three layers: executable Zod/TypeScript constraints, a generated tool-readable JSON Schema, and concise repository instructions that tell future agents which checks and registries are mandatory.
+- `AGENTS.md` is the right cross-agent entry point for repository-specific generation rules; a vendor-specific `CLAUDE.md` would duplicate the same contract and create a drift risk.
+- Repository-local skills should link to live contracts and guides instead of copying them; this keeps the one-line workflow discoverable without creating another schema source that can drift.

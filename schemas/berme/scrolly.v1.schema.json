@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://berme.io/schemas/berme/scrolly.v1.schema.json",
+  "title": "berme scrolly contract v1",
+  "description": "The shared authoring contract for every v1 scrolly rendered from a berme fenced block.",
+  "type": "object",
+  "properties": {
+    "component": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "The kebab-case ID of the registered scrolly renderer."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "A portable summary of the scrolly. Renderers may keep it visually hidden."
+    },
+    "eyebrow": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "A short section label displayed above the scrolly title."
+    },
+    "steps": {
+      "minItems": 3,
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 360,
+            "description": "The prose that explains this narrative step."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 48,
+            "description": "A short label used in the visual and step navigation."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "The heading for this narrative step."
+          }
+        },
+        "required": [
+          "body",
+          "label",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The ordered narrative states represented by the scrolly."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 140,
+      "description": "The main title of the scrolly section."
+    },
+    "version": {
+      "type": "number",
+      "const": 1,
+      "description": "The shared scrolly contract version."
+    }
+  },
+  "required": [
+    "component",
+    "description",
+    "eyebrow",
+    "steps",
+    "title",
+    "version"
+  ],
+  "additionalProperties": false
+}

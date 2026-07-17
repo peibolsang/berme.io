@@ -4,6 +4,8 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import { InteractiveBlock } from "./interactive/InteractiveBlock";
+import { remarkInteractiveBlocks } from "../lib/remark-interactive-blocks";
 import { remarkHeadingAnchors } from "../lib/markdown-headings";
 
 const sanitizeSchema = {
@@ -31,6 +33,11 @@ const sanitizeSchema = {
       ...(defaultSchema.attributes?.span ?? []),
       ["className", /^hljs/],
     ],
+    div: [
+      ...(defaultSchema.attributes?.div ?? []),
+      "dataBermeInteractive",
+      "dataBermeSpec",
+    ],
   },
 };
 
@@ -38,16 +45,48 @@ type MarkdownProps = {
   content: string;
 };
 
+type MarkdownDivProps = ComponentPropsWithoutRef<"div"> & {
+  dataBermeInteractive?: string;
+  dataBermeSpec?: string;
+  node?: unknown;
+  "data-berme-interactive"?: string;
+  "data-berme-spec"?: string;
+};
+
 export const Markdown = ({ content }: MarkdownProps) => {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkHeadingAnchors]}
+      remarkPlugins={[
+        remarkGfm,
+        remarkInteractiveBlocks,
+        remarkHeadingAnchors,
+      ]}
       rehypePlugins={[
         rehypeRaw,
         rehypeHighlight,
         [rehypeSanitize, sanitizeSchema],
       ]}
       components={{
+        div: ({
+          children,
+          dataBermeInteractive,
+          dataBermeSpec,
+          node: _node,
+          "data-berme-interactive": interactiveAttribute,
+          "data-berme-spec": dashedSpec,
+          ...props
+        }: MarkdownDivProps) => {
+          void _node;
+          const source = dataBermeSpec ?? dashedSpec;
+          const isInteractive =
+            dataBermeInteractive === "true" || interactiveAttribute === "true";
+
+          if (isInteractive && source) {
+            return <InteractiveBlock source={source} />;
+          }
+
+          return <div {...props}>{children}</div>;
+        },
         ul: (props: ComponentPropsWithoutRef<"ul">) => (
           <ul {...props} className="my-4 list-disc pl-5" />
         ),

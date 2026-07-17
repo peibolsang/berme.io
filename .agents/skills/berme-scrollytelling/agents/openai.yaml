@@ -1,0 +1,4 @@
+interface:
+  display_name: "Berme Scrollytelling"
+  short_description: "Add custom scroll stories to berme.io posts"
+  default_prompt: "Use $berme-scrollytelling to add a custom scrollytelling section to this berme.io post: <URL>."
