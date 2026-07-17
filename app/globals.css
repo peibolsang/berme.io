@@ -791,10 +791,11 @@ main :is(p, li) {
   .practice-spiral__stage {
     top: 0;
     z-index: 2;
-    min-height: clamp(30rem, 67svh, 37rem);
+    min-height: auto;
+    align-items: flex-start;
     padding-block: 0.8rem;
     background: #ffffff;
-    box-shadow: 0 1.25rem 0 #ffffff;
+    box-shadow: 0 0.5rem 0 #ffffff;
   }
 
   .practice-spiral__stage h2 {
@@ -803,7 +804,7 @@ main :is(p, li) {
 
   .practice-spiral__diagram {
     width: min(92%, 29rem);
-    margin-top: 1rem;
+    margin: 1rem auto -1rem;
   }
 
   .practice-spiral__readout {
@@ -812,13 +813,13 @@ main :is(p, li) {
   }
 
   .practice-spiral__steps {
-    padding: 2svh 0 18svh;
+    padding: 0 0 18svh;
   }
 
   .practice-spiral__beat {
     min-height: 58svh;
     align-items: start;
-    padding-top: 1.75rem;
+    padding-top: 0.75rem;
     scroll-margin-top: 58svh;
   }
 }
@@ -830,7 +831,7 @@ main :is(p, li) {
 @media (max-width: 767px) {
   .dark .practice-spiral__stage {
     background: #1e293b;
-    box-shadow: 0 1.25rem 0 #1e293b;
+    box-shadow: 0 0.5rem 0 #1e293b;
   }
 }
 
@@ -1472,7 +1473,8 @@ main :is(p, li) {
   }
 
   .learning-paths__readout {
-    top: 3.5%;
+    top: 1%;
+    left: 43%;
   }
 
   .learning-paths__readout strong {
@@ -1489,8 +1491,15 @@ main :is(p, li) {
   }
 
   .learning-paths__axis-label.is-expertise {
-    transform: rotate(180deg) scale(0.82);
+    top: 12%;
+    left: 2.75%;
+    transform: scale(0.82);
     transform-origin: left top;
+  }
+
+  .learning-paths__axis-label.is-time {
+    right: 1%;
+    bottom: 2.8%;
   }
 
   .learning-paths__axis-label.is-time,
