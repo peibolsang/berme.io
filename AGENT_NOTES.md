@@ -3,6 +3,8 @@
 Compacted into ISO-week summaries so the notes stay useful as a working memory instead of a session log.
 
 - Temporary preview routes and local article copies should be removed once GitHub Issue-backed rendering is verified; keep reusable interactive-content infrastructure independent from test content.
+- New Issue-backed scrolly renderers should be implemented and validated before the Issue mutation; when the renderer is not deployed, keep the validated candidate outside the repository and leave the canonical Issue unchanged.
+- Chart scrolly layouts must account for the production reading-map grid: at medium desktop widths the article column can be much narrower than the viewport, so a full-width sticky chart is safer than forcing two columns.
 
 ## 2026 Week 07 (2026-02-09 to 2026-02-15)
 
@@ -388,3 +390,5 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - `AGENTS.md` is the right cross-agent entry point for repository-specific generation rules; a vendor-specific `CLAUDE.md` would duplicate the same contract and create a drift risk.
 - When a repository skill is explicitly designated as the canonical workflow, keep its operational instructions self-contained and let `AGENTS.md` only route matching requests to it.
 - For a responsive SVG composition, increasing the viewBox height and geometric gaps together preserves coordinate-driven alignment while making the rendered figure taller at the same CSS width; mobile sticky height must grow with it to avoid clipping.
+- For a chart-led scrolly, a full-width sticky instrument panel with a caption rail beneath it preserves the visual argument better than squeezing the chart into a conventional two-column template; the stage should keep a deliberate viewport band open below it so the active prose remains visible.
+- A renderer-owned prelude can add a meaningful “before the journey” state without widening the shared six-step content contract; offset the visual index from the registered scroll-step index and keep the authored steps untouched.

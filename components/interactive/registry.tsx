@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
+import type { LearningPathsScrollyProps } from "./blocks/learning-paths/LearningPathsScrolly";
+import type { PracticeSpiralScrollyProps } from "./blocks/practice-spiral/PracticeSpiralScrolly";
 import type {
   InteractiveComponentId,
   InteractiveSpec,
@@ -19,8 +21,22 @@ const ConstraintDescentScrolly = dynamic<ConstraintDescentScrollyProps>(() =>
   ),
 );
 
+const LearningPathsScrolly = dynamic<LearningPathsScrollyProps>(() =>
+  import("./blocks/learning-paths/LearningPathsScrolly").then(
+    (module) => module.LearningPathsScrolly,
+  ),
+);
+
+const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
+  import("./blocks/practice-spiral/PracticeSpiralScrolly").then(
+    (module) => module.PracticeSpiralScrolly,
+  ),
+);
+
 export const interactiveComponentRegistry = {
   "constraint-descent": ConstraintDescentScrolly,
+  "learning-paths": LearningPathsScrolly,
+  "practice-spiral": PracticeSpiralScrolly,
 } satisfies InteractiveRendererRegistry;
 
 type InteractiveRendererProps = {

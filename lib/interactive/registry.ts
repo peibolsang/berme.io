@@ -1,4 +1,6 @@
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
+import { learningPathsSpecSchema } from "./specs/learning-paths";
+import { practiceSpiralSpecSchema } from "./specs/practice-spiral";
 import type {
   InteractiveComponentId,
   InteractiveDefinitionRegistry,
@@ -9,6 +11,16 @@ export const interactiveDefinitionRegistry = {
   "constraint-descent": {
     kind: "scrolly",
     schema: constraintDescentSpecSchema,
+    version: 1,
+  },
+  "learning-paths": {
+    kind: "scrolly",
+    schema: learningPathsSpecSchema,
+    version: 1,
+  },
+  "practice-spiral": {
+    kind: "scrolly",
+    schema: practiceSpiralSpecSchema,
     version: 1,
   },
 } satisfies InteractiveDefinitionRegistry;

@@ -4,11 +4,15 @@ import type {
   ScrollySpecSchema,
 } from "./contracts/scrolly";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
+import type { LearningPathsSpec } from "./specs/learning-paths";
+import type { PracticeSpiralSpec } from "./specs/practice-spiral";
 
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
   "constraint-descent": ConstraintDescentSpec;
+  "learning-paths": LearningPathsSpec;
+  "practice-spiral": PracticeSpiralSpec;
 };
 
 export type InteractiveComponentId = keyof InteractiveSpecMap;
