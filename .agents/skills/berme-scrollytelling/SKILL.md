@@ -1,40 +1,144 @@
 ---
 name: berme-scrollytelling
-description: Add a purpose-built scrollytelling section to a berme.io post whose canonical Markdown lives in a GitHub Issue. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story for a berme.io article, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and source GitHub Issue update without creating a local article copy.
+description: Add a purpose-built scrollytelling section to a berme.io post identified by its GitHub Issue number in peibolsang/peibolsang. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and source Issue update without creating a local article copy.
 ---
 
 # Berme Scrollytelling
 
-Turn a berme.io post URL into one distinctive, article-specific scroll story and its production-compatible renderer. Treat the GitHub Issue as the canonical article source and the repository as the source of the rendering system.
+Turn one GitHub Issue in `peibolsang/peibolsang` into an article with a distinctive, purpose-built scroll story and its production-compatible renderer. Require only the Issue number as user input. Treat this skill as the complete workflow and contract. Do not depend on `AGENTS.md` or a separate interactive-content guide for scrollytelling instructions.
 
-## Load the contract
-
-Before taking action, read these repository files completely:
-
-1. `../../../AGENTS.md`, especially `Interactive Content Contract`
-2. `../../../docs/interactive-content.md`
-3. `../../../schemas/berme/scrolly.v1.schema.json`
+## Apply the design skill
 
 Use the `frontend-design` skill before designing the visual. Create a distinctive visual argument tailored to the post; do not reskin or mechanically reuse `constraint-descent`.
 
-## Non-negotiable rules
+## Enforce the v1 authoring contract
 
+Use a reserved `berme` fenced block containing strict JSON. GitHub must render it safely as code while berme.io validates and upgrades it into an allowlisted React component.
+
+Require exactly these root properties:
+
+| Property | Rule |
+| --- | --- |
+| `component` | Kebab-case registered renderer ID; 1–80 characters |
+| `version` | Literal `1` |
+| `eyebrow` | Non-empty string; maximum 80 characters |
+| `title` | Non-empty string; maximum 140 characters |
+| `description` | Non-empty string; maximum 280 characters; rendering it is optional |
+| `steps` | Ordered array containing 3–8 step objects |
+
+Require exactly these properties in every step:
+
+| Property | Rule |
+| --- | --- |
+| `label` | Non-empty string; maximum 48 characters |
+| `title` | Non-empty string; maximum 80 characters |
+| `body` | Non-empty string; maximum 360 characters |
+
+Reject unknown root or step properties. Keep `description` in the JSON even when the renderer keeps it visually hidden. Treat `component` as the identity of a purpose-built visual argument, not as a generic visual type with an open-ended variant property.
+
+Use this shape:
+
+````markdown
+```berme
+{
+  "component": "feedback-loop",
+  "version": 1,
+  "eyebrow": "The delegation loop",
+  "title": "A system improves as delegation becomes observable",
+  "description": "Follow the loop from intent through execution and feedback.",
+  "steps": [
+    {
+      "label": "Intent",
+      "title": "The outcome is framed",
+      "body": "The system starts with an explicit result and operating boundary."
+    },
+    {
+      "label": "Execution",
+      "title": "Work moves through the system",
+      "body": "Agents act through interfaces that make decisions and constraints visible."
+    },
+    {
+      "label": "Feedback",
+      "title": "Evidence changes the next delegation",
+      "body": "Observed results improve the instructions, tools, and boundaries used next time."
+    }
+  ]
+}
+```
+````
+
+Keep the v1 schema authoritative in `lib/interactive/contracts/scrolly.ts` and its generated artifact in `schemas/berme/scrolly.v1.schema.json`. Do not change fields, meanings, requiredness, or limits while adding a renderer. Such changes require a new contract version and an explicit migration path. Animation, geometry, typography, responsiveness, and rendering-technology changes do not require a version bump.
+
+## Follow the component architecture
+
+For a component ID such as `feedback-loop`, use:
+
+```text
+lib/interactive/
+  contracts/scrolly.ts
+  specs/feedback-loop.ts
+  registry.ts
+  types.ts
+
+components/interactive/
+  blocks/feedback-loop/FeedbackLoopScrolly.tsx
+  primitives/
+  registry.tsx
+```
+
+Create the component-specific schema only by narrowing the shared contract to its renderer ID:
+
+```ts
+import { z } from "zod";
+import {
+  createScrollySpecSchema,
+  type ScrollyStep,
+} from "../contracts/scrolly";
+
+export const feedbackLoopSpecSchema =
+  createScrollySpecSchema("feedback-loop");
+
+export type FeedbackLoopSpec = z.infer<typeof feedbackLoopSpecSchema>;
+export type FeedbackLoopStep = ScrollyStep;
+```
+
+Then complete every registration step:
+
+1. Add `"feedback-loop": FeedbackLoopSpec` to `InteractiveSpecMap` in `lib/interactive/types.ts`.
+2. Register its schema with `kind: "scrolly"` and `version: 1` in `interactiveDefinitionRegistry` in `lib/interactive/registry.ts`.
+3. Build `components/interactive/blocks/feedback-loop/FeedbackLoopScrolly.tsx`. Keep component-specific logic in its block folder.
+4. Dynamically import and register it in `interactiveComponentRegistry` in `components/interactive/registry.tsx` so unrelated posts do not load its JavaScript.
+5. Reuse `useActiveScrollyStep`, `getScrollyStepStatus`, and `useContainerSize` from `components/interactive/primitives/` when their behavior fits.
+6. Add `"use client"` only at the lowest boundary needing state, effects, observers, or browser APIs.
+
+Use SVG for coordinate-driven geometry and charts; use HTML for prose, controls, and typography that should not scale with a viewBox. Use Canvas, WebGL, or a hybrid only when the visual argument benefits. Let React own the rendered tree; use D3 selectively for calculations, scales, shapes, or interaction.
+
+The runtime pipeline is fixed:
+
+1. `lib/remark-interactive-blocks.ts` recognizes only `berme` fences and converts them into sanitized data attributes.
+2. `lib/interactive/registry.ts` rejects invalid JSON, unknown IDs, unsupported versions, extra fields, and invalid content.
+3. `components/interactive/registry.tsx` resolves the validated ID to a lazy React renderer.
+4. The renderer hydrates only when browser behavior is required.
+
+## Preserve the canonical content model
+
+- Always use GitHub owner `peibolsang` and repository `peibolsang`. Do not discover, infer, or ask for a different owner or repository.
+- Require only the Issue number from the user. Fetch the canonical article directly from that Issue; do not require a post URL.
 - Work from the canonical GitHub Issue body. Do not create a persistent local Markdown article, add anything under `content/`, or create a preview route.
 - Preserve the issue body exactly except for inserting the new `berme` fenced block at one deliberate location.
-- Use the shared v1 scrolly contract unchanged. Give each new visual concept its own kebab-case component ID and purpose-built renderer.
 - Express one strong ordered idea in 3–8 steps. Do not add a scrolly merely to decorate the article.
 - Keep the narrative understandable from its authored titles and bodies. Let browser behavior enhance and synchronize the argument rather than carry it alone.
 - Implement and validate the renderer before modifying the remote issue.
 - Never leave the production article referencing an undeployed component. Deploy first when deployment is authorized; otherwise stop before the issue update and report the exact remaining publication step.
 
-## Workflow
+## Execute the workflow
 
-### 1. Resolve the canonical issue
+### 1. Fetch the canonical issue
 
-1. Parse the supplied canonical post URL.
-2. Inspect the repository's configured GitHub owner and repository.
-3. Use the available authenticated GitHub tool or `gh` CLI to find the issue whose published date and slug resolve to that URL. Verify the match from issue content or repository data; do not guess an issue number.
-4. Fetch and retain the exact original issue body for comparison and recovery.
+1. Read the Issue number supplied by the user and verify that it is a positive integer. Ask only for the Issue number if it is missing.
+2. Use an authenticated GitHub tool or `gh issue view <number> --repo peibolsang/peibolsang` to fetch that exact Issue. Do not search by title, date, slug, or URL.
+3. Verify that the number resolves to an Issue in `peibolsang/peibolsang`, then retain its exact original body for comparison and recovery.
+4. Derive the canonical berme.io post URL from the Issue content or repository data only when needed for browser verification; never require the user to provide it.
 
 ### 2. Find the visual argument
 
@@ -42,37 +146,46 @@ Use the `frontend-design` skill before designing the visual. Create a distinctiv
 2. Identify the idea whose meaning benefits most from ordered, scroll-driven state changes.
 3. Define 3–8 steps with concise labels, explanatory titles, and self-contained bodies grounded in the article.
 4. Choose a specific component ID that names the visual concept rather than the rendering technology.
-5. Decide the insertion point by narrative function: establish the idea in prose, let the scrolly develop it, then return cleanly to the surrounding argument.
+5. Choose the insertion point by narrative function: establish the idea in prose, let the scrolly develop it, then return cleanly to the surrounding argument.
 
 ### 3. Design and implement
 
-1. Apply the `frontend-design` skill to establish a visual concept, composition, motion language, typography, responsiveness, and reduced-motion behavior specific to this article.
-2. Follow the exact paths, schema factory, type map, server registry, lazy renderer registry, client-boundary, and shared-primitive conventions in the loaded repository contract.
-3. Use SVG, HTML, Canvas, WebGL, or a hybrid according to the idea. Prefer the simplest technology that preserves the intended geometry, accessibility, and responsiveness.
-4. Keep component-specific logic within its block folder and reuse existing interactive primitives when their behavior fits.
+1. Apply `frontend-design` to establish a visual concept, composition, motion language, typography, responsiveness, reduced-motion behavior, and accessibility specific to the article.
+2. Implement the schema, type mapping, registries, renderer, and any component-specific styles using the conventions above.
+3. Prefer the simplest rendering technology that preserves the intended geometry, accessibility, and responsiveness.
+4. Keep authored prose readable without JavaScript and avoid making synchronized visual state the sole carrier of meaning.
 
 ### 4. Author and validate the block
 
-1. Produce strict JSON containing only the v1 contract properties.
-2. Include `description` even if the renderer keeps it visually hidden.
-3. Insert the fence into a candidate copy of the issue body held in memory or a temporary file outside the repository. Do not persist an article copy in the project.
-4. Pipe the complete candidate body to:
+1. Produce strict JSON containing only the v1 properties.
+2. Insert the fence into a candidate copy of the issue body held in memory or a temporary file outside the repository. Do not persist an article copy in the project.
+3. Pipe the complete candidate issue body to:
 
 ```bash
 npm run validate:interactives -- --stdin
 ```
 
-5. Run `npx tsc --noEmit`, `npm run lint`, and `git diff --check`.
-6. Visually verify the canonical article through an available development or deployed environment at desktop and mobile widths. Check every step, sticky behavior, overflow, keyboard/readability concerns, and reduced motion.
+4. Run:
+
+```bash
+npm run validate:interactives
+npx tsc --noEmit
+npm run lint
+git diff --check
+```
+
+`validate:interactives` must confirm that the generated JSON Schema matches the Zod source, local registered components use conventional schema and renderer paths, and every inspected block is valid. Run `npm run generate:interactive-schemas` only after an intentional contract-version change.
+
+5. Visually verify every step in an available development or deployed environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion.
 
 ### 5. Publish to the GitHub Issue
 
-1. Confirm the new component ID is available in the environment that will render the canonical article. If repository publication or deployment requires authority not present in the request, stop before changing the issue.
-2. Update the matched GitHub Issue body, changing only the insertion of the validated fenced block.
-3. Re-fetch the issue body and compare it with the intended body so unrelated prose or frontmatter changes cannot slip through.
+1. Confirm the component ID is deployed in the environment rendering the canonical article. If publication or deployment needs authority absent from the request, stop before changing the issue.
+2. Update the supplied Issue number in `peibolsang/peibolsang`, changing only the insertion of the validated fenced block.
+3. Re-fetch the issue body and compare it with the intended candidate so unrelated prose or frontmatter changes cannot slip through.
 4. Pipe the re-fetched body through `npm run validate:interactives -- --stdin` again.
-5. Verify the canonical post URL renders the new scrolly without an interactive-block error. If the issue mutation introduced invalid content, restore the retained original body before ending the task.
+5. Verify the canonical post URL renders without an interactive-block error. If the mutation introduced invalid content, restore the retained original body before ending the task.
 
-## Completion report
+## Report completion
 
-Report the selected idea, insertion location, component ID, repository files created or registered, GitHub issue number, validation results, deployment status, and canonical-page verification. Explicitly state that no persistent local Markdown article or preview route was created.
+Report the selected idea, insertion location, component ID, files created or registered, GitHub issue number, validation results, deployment status, and canonical-page verification. Explicitly state that no persistent local Markdown article or preview route was created.

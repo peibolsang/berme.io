@@ -21,19 +21,8 @@ Follow existing patterns in the `app/` directory:
 - Keep styling in `app/globals.css` and prefer Tailwind utility classes where appropriate.
 - Formatting is enforced by ESLint; run `npm run lint` before pushing.
 
-## Interactive Content Contract
-When generating or editing a `berme` fenced block, or adding a renderer for one, first read `docs/interactive-content.md` and `schemas/berme/scrolly.v1.schema.json`.
-
-For the complete workflow that designs a scrolly, implements its renderer, and updates the canonical GitHub Issue without creating a local article copy, use `.agents/skills/berme-scrollytelling/SKILL.md`.
-
-- Every v1 scrolly must use exactly the shared strict contract defined in `lib/interactive/contracts/scrolly.ts`: `component`, `version`, `eyebrow`, `title`, `description`, and `steps`; every step contains exactly `label`, `title`, and `body`.
-- Treat `component` as a kebab-case renderer ID, not a visual variant inside a generic renderer. A new visual concept gets a new component ID while retaining the shared scrolly fields.
-- Create each scrolly schema with `createScrollySpecSchema("<component-id>")`. Do not duplicate, extend, or loosen the v1 field schema in a component-specific file.
-- Put the schema at `lib/interactive/specs/<component-id>.ts` and the renderer at `components/interactive/blocks/<component-id>/<PascalCaseComponentId>Scrolly.tsx`.
-- Add the inferred spec to `InteractiveSpecMap`, the schema to `interactiveDefinitionRegistry`, and the lazy renderer to `interactiveComponentRegistry`.
-- Reuse primitives from `components/interactive/primitives/`, keep the client boundary as low as practical, and keep prose readable and meaningful without the synchronized visual state.
-- A renderer-only visual change does not change the contract version. Any field, meaning, requiredness, or limit change requires a new contract version and an explicit migration path; do not silently mutate v1.
-- Run `npm run generate:interactive-schemas` after changing a contract. Run `npm run validate:interactives`, `npx tsc --noEmit`, and `npm run lint` after changing a block, schema, registry, or renderer.
+## Scrollytelling Skill
+Use `.agents/skills/berme-scrollytelling/SKILL.md` whenever the user asks to add, inject, design, implement, or publish a scrolly or scroll-driven storytelling section for a berme.io post. This includes requests to create a new `berme` fenced block, build its custom React renderer, or update the canonical GitHub Issue. The skill requires only the Issue number and always uses `peibolsang/peibolsang`. Treat that skill as the complete and authoritative workflow; do not look for separate scrollytelling instructions in this file.
 
 ## Testing Guidelines
 No test framework is currently configured. If you add tests, document the runner and add a script to `package.json`. Prefer colocated tests under `app/` or a top-level `tests/` directory, with names like `*.test.tsx`.

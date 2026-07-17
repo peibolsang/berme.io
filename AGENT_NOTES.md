@@ -341,6 +341,9 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Reframing the visual as “constraint geology” produced a more specific design language than another stack of interface cards: isometric strata become thicker and gain internal structure as intent hardens into enforcement.
 - Refactoring the SVG into `IsometricLayer`, `IntentSignal`, `ConstraintDescentDiagram`, and `StoryBeat` kept the richer composition understandable without changing the Markdown contract.
 
+### What went wrong
+- The first `berme-scrollytelling` skill depended on both `AGENTS.md` and `docs/interactive-content.md`, creating a circular workflow and splitting the operational contract across three prose sources.
+
 ### What I corrected
 - Replaced the opening bio sentence consistently across the HTML and machine-readable homepage surfaces.
 - Reworked the complete bio into two synchronized paragraphs across the homepage, shared bio panel, and Markdown export.
@@ -364,6 +367,8 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - Added a generated JSON Schema, branded schema factory, conventional renderer-path validation, and mandatory `AGENTS.md` workflow so future blocks and ad hoc scrolly renderers fail fast when they drift.
 - Added a repository-local `berme-scrollytelling` skill to turn a post URL into the complete design, renderer, validation, deployment gate, and canonical GitHub Issue update workflow without local article copies.
 - Extended interactive validation with stdin support so candidate and remote GitHub Issue bodies can be checked directly against the same registered runtime schemas.
+- Consolidated the complete authoring, component, registry, validation, deployment, and GitHub Issue workflow into the self-contained `berme-scrollytelling` skill; reduced `AGENTS.md` to skill routing and removed the redundant interactive-content guide.
+- Simplified the skill input contract to a single Issue number and fixed all source-content operations to `peibolsang/peibolsang`, removing URL-to-Issue and repository-discovery work.
 
 ### What worked
 - Treating copy shared across rendered and exported formats as one synchronized content change.
@@ -378,4 +383,4 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - When diagram typography must remain comparable to surrounding prose, HTML overlays are a better hybrid boundary than SVG text: percentage positioning preserves geometric attachment while CSS `rem` sizes remain independent of illustration scaling.
 - A durable content-component workflow needs three layers: executable Zod/TypeScript constraints, a generated tool-readable JSON Schema, and concise repository instructions that tell future agents which checks and registries are mandatory.
 - `AGENTS.md` is the right cross-agent entry point for repository-specific generation rules; a vendor-specific `CLAUDE.md` would duplicate the same contract and create a drift risk.
-- Repository-local skills should link to live contracts and guides instead of copying them; this keeps the one-line workflow discoverable without creating another schema source that can drift.
+- When a repository skill is explicitly designated as the canonical workflow, keep its operational instructions self-contained and let `AGENTS.md` only route matching requests to it.
