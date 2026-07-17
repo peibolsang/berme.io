@@ -1,6 +1,9 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
+import type { DelegationLoopShiftScrollyProps } from "./blocks/delegation-loop-shift/DelegationLoopShiftScrolly";
+import type { DelegationWorkbenchScrollyProps } from "./blocks/delegation-workbench/DelegationWorkbenchScrolly";
+import type { DesignSpaceFieldScrollyProps } from "./blocks/design-space-field/DesignSpaceFieldScrolly";
 import type { LearningPathsScrollyProps } from "./blocks/learning-paths/LearningPathsScrolly";
 import type { PracticeSpiralScrollyProps } from "./blocks/practice-spiral/PracticeSpiralScrolly";
 import type {
@@ -21,6 +24,26 @@ const ConstraintDescentScrolly = dynamic<ConstraintDescentScrollyProps>(() =>
   ),
 );
 
+const DelegationLoopShiftScrolly = dynamic<DelegationLoopShiftScrollyProps>(
+  () =>
+    import("./blocks/delegation-loop-shift/DelegationLoopShiftScrolly").then(
+      (module) => module.DelegationLoopShiftScrolly,
+    ),
+);
+
+const DelegationWorkbenchScrolly = dynamic<DelegationWorkbenchScrollyProps>(
+  () =>
+    import("./blocks/delegation-workbench/DelegationWorkbenchScrolly").then(
+      (module) => module.DelegationWorkbenchScrolly,
+    ),
+);
+
+const DesignSpaceFieldScrolly = dynamic<DesignSpaceFieldScrollyProps>(() =>
+  import("./blocks/design-space-field/DesignSpaceFieldScrolly").then(
+    (module) => module.DesignSpaceFieldScrolly,
+  ),
+);
+
 const LearningPathsScrolly = dynamic<LearningPathsScrollyProps>(() =>
   import("./blocks/learning-paths/LearningPathsScrolly").then(
     (module) => module.LearningPathsScrolly,
@@ -35,6 +58,9 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
 
 export const interactiveComponentRegistry = {
   "constraint-descent": ConstraintDescentScrolly,
+  "delegation-loop-shift": DelegationLoopShiftScrolly,
+  "delegation-workbench": DelegationWorkbenchScrolly,
+  "design-space-field": DesignSpaceFieldScrolly,
   "learning-paths": LearningPathsScrolly,
   "practice-spiral": PracticeSpiralScrolly,
 } satisfies InteractiveRendererRegistry;

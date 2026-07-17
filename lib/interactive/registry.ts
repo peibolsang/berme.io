@@ -1,4 +1,7 @@
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
+import { delegationLoopShiftSpecSchema } from "./specs/delegation-loop-shift";
+import { delegationWorkbenchSpecSchema } from "./specs/delegation-workbench";
+import { designSpaceFieldSpecSchema } from "./specs/design-space-field";
 import { learningPathsSpecSchema } from "./specs/learning-paths";
 import { practiceSpiralSpecSchema } from "./specs/practice-spiral";
 import type {
@@ -11,6 +14,21 @@ export const interactiveDefinitionRegistry = {
   "constraint-descent": {
     kind: "scrolly",
     schema: constraintDescentSpecSchema,
+    version: 1,
+  },
+  "delegation-loop-shift": {
+    kind: "scrolly",
+    schema: delegationLoopShiftSpecSchema,
+    version: 1,
+  },
+  "delegation-workbench": {
+    kind: "scrolly",
+    schema: delegationWorkbenchSpecSchema,
+    version: 1,
+  },
+  "design-space-field": {
+    kind: "scrolly",
+    schema: designSpaceFieldSpecSchema,
     version: 1,
   },
   "learning-paths": {
