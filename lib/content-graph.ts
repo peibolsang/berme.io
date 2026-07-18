@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { Conference, Post } from "../types";
-import { config } from "./config";
+import { config, contentVisibilityCacheKey } from "./config";
 import { getConferences } from "./conferences";
 import { getAllPosts } from "./posts";
 
@@ -244,10 +244,14 @@ const fetchContentGraph = async (): Promise<CachedContentGraph> => {
   return buildGraphIndex(snapshots);
 };
 
-const getCachedContentGraph = unstable_cache(fetchContentGraph, ["content-graph-v2"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["posts", "conferences"],
-});
+const getCachedContentGraph = unstable_cache(
+  fetchContentGraph,
+  ["content-graph-v2", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["posts", "conferences"],
+  },
+);
 
 const buildAdjacency = (edges: ContentGraphEdge[]) => {
   const adjacency = new Map<string, Set<string>>();

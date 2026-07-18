@@ -6,6 +6,7 @@ import { CommandActionsPalette } from "../../../components/CommandActionsPalette
 import { ConferencePdfViewerClient } from "../../../components/ConferencePdfViewerClient";
 import { getConferenceBySlug, getConferences } from "../../../lib/conferences";
 import { getAllPosts } from "../../../lib/posts";
+import { DraftBadge } from "../../../components/DraftBadge";
 
 type PageProps = {
   params: Promise<{
@@ -172,8 +173,15 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
         <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
           <BackLink fallbackView="conferences" />
+          {conference.draft ? (
+            <div className="mt-6">
+              <DraftBadge prominent />
+            </div>
+          ) : null}
           <h1
-            className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
+            className={`${
+              conference.draft ? "mt-3" : "mt-6"
+            } text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
           >
             {conference.title}
           </h1>

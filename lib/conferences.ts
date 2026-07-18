@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { Conference } from "../types";
-import { config } from "./config";
+import { config, contentVisibilityCacheKey } from "./config";
+import { isDraftIssue } from "./content-status";
 import { getAllBlogIssues } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
@@ -202,6 +203,7 @@ const fetchConferences = async (): Promise<Conference[]> => {
         pdfPath,
         pageCount,
         contentDensity: density,
+        draft: isDraftIssue(issue.labels),
         labels,
         url: buildConferenceUrl(slug),
       };
@@ -219,10 +221,14 @@ const fetchConferences = async (): Promise<Conference[]> => {
     .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 };
 
-export const getConferences = unstable_cache(fetchConferences, ["conferences"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["conferences", "github-issues"],
-});
+export const getConferences = unstable_cache(
+  fetchConferences,
+  ["conferences", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["conferences", "github-issues"],
+  },
+);
 
 export const getConferenceBySlug = async (slug: string): Promise<Conference | null> => {
   const conferences = await getConferences();

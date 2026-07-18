@@ -7,6 +7,8 @@ import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 import { toMarkdownUrl } from "../../../lib/markdown-exports";
 import { syncPostReadTracking } from "../../../lib/post-popularity";
+import { config } from "../../../lib/config";
+import { shouldShowIssueAsContent } from "../../../lib/content-status";
 
 const verifySignature = (body: string, signature: string | null) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET ?? "";
@@ -317,11 +319,11 @@ export async function POST(request: Request) {
       const label = String(payload.label?.name ?? "").toLowerCase();
       const issueNumber = Number(payload.issue?.number);
       if (Number.isFinite(issueNumber)) {
-        const issueHasContentLabels =
-          hasLabel(payload.issue?.labels, "published") ||
-          hasConferenceLabel(payload.issue?.labels);
+        const issueShouldBeContent = shouldShowIssueAsContent(
+          payload.issue?.labels,
+        );
         const issueCachedAsContent = await issueExistsInContentCaches(issueNumber);
-        if (issueHasContentLabels || issueCachedAsContent) {
+        if (issueShouldBeContent || issueCachedAsContent) {
           await revalidateIssueContent(issueNumber, payload.issue);
         }
       }
@@ -332,6 +334,16 @@ export async function POST(request: Request) {
       if (label === "ready") {
         await revalidateCurrentlyWriting();
         revalidated.push("/now");
+      }
+    }
+
+    if (action === "opened" && config.showDrafts) {
+      const issueNumber = Number(payload.issue?.number);
+      if (
+        Number.isFinite(issueNumber) &&
+        shouldShowIssueAsContent(payload.issue?.labels)
+      ) {
+        await revalidateIssueContent(issueNumber, payload.issue);
       }
     }
 

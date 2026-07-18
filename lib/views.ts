@@ -2,7 +2,8 @@ import { unstable_cache } from "next/cache";
 import { getGithubUser, getIssuesWithParents } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { getAllPosts } from "./posts";
-import { config } from "./config";
+import { config, contentVisibilityCacheKey } from "./config";
+import { isDraftIssue, shouldShowIssueAsContent } from "./content-status";
 import { renderMarkdownToHtml } from "./markdown-render";
 import { buildViewSlug } from "./view-slug";
 import type { Post, View } from "../types";
@@ -74,8 +75,15 @@ const fetchViews = async (): Promise<View[]> => {
     if (hasConferenceLabel(issue.labels)) {
       continue;
     }
+    const childPost = postsByNumber.get(issue.number);
+    if (!childPost) {
+      continue;
+    }
     const parent = issue.parent;
     if (!parent) {
+      continue;
+    }
+    if (!shouldShowIssueAsContent(parent.labels?.nodes)) {
       continue;
     }
     if (!viewsByNumber.has(parent.number)) {
@@ -92,6 +100,7 @@ const fetchViews = async (): Promise<View[]> => {
         description: description ? description : undefined,
         body: trimmedBody ? body : undefined,
         bodyHtml,
+        draft: isDraftIssue(parent.labels?.nodes),
         updatedAt: parent.updatedAt,
         author,
         url: buildViewUrl(slug),
@@ -99,7 +108,6 @@ const fetchViews = async (): Promise<View[]> => {
       });
     }
     const view = viewsByNumber.get(parent.number);
-    const childPost = postsByNumber.get(issue.number);
     if (view && childPost) {
       view.posts.push(childPost);
     }
@@ -124,10 +132,14 @@ const fetchViews = async (): Promise<View[]> => {
   return views;
 };
 
-export const getAllViews = unstable_cache(fetchViews, ["views"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["views", "github-issues-with-parents", "posts"],
-});
+export const getAllViews = unstable_cache(
+  fetchViews,
+  ["views", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["views", "github-issues-with-parents", "posts"],
+  },
+);
 
 export const getViewBySlug = async (slug: string): Promise<View | null> => {
   const views = await getAllViews();

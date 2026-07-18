@@ -15,6 +15,7 @@ import {
 } from "../../../../../lib/markdown-headings";
 import { ReadingShell } from "../../../../../components/ReadingShell";
 import { PostReadTracker } from "../../../../../components/PostReadTracker";
+import { DraftBadge } from "../../../../../components/DraftBadge";
 
 type PageProps = {
   params: Promise<{
@@ -188,8 +189,15 @@ export default async function PostPage({ params }: PageProps) {
           )}
           <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
             <BackLink />
+            {post.draft ? (
+              <div className="mt-6">
+                <DraftBadge prominent />
+              </div>
+            ) : null}
             <h1
-              className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
+              className={`${
+                post.draft ? "mt-3" : "mt-6"
+              } text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
             >
               {post.title}
             </h1>

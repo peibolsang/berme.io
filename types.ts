@@ -21,6 +21,7 @@ export type Post = {
   viewNumber?: number;
   viewSlug?: string;
   body: string;
+  draft?: boolean;
   labels: string[];
   url: string;
 };
@@ -32,6 +33,7 @@ export type View = {
   description?: string;
   body?: string;
   bodyHtml?: string;
+  draft?: boolean;
   updatedAt: string;
   author?: {
     name: string;
@@ -63,6 +65,7 @@ export type Conference = {
   pdfPath: string;
   pageCount: number;
   contentDensity: "light" | "medium" | "dense";
+  draft?: boolean;
   location?: string;
   labels: string[];
   url: string;

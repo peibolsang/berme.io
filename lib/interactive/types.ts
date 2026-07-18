@@ -3,21 +3,27 @@ import type {
   ScrollySpec,
   ScrollySpecSchema,
 } from "./contracts/scrolly";
+import type { AssumptionAvalancheSpec } from "./specs/assumption-avalanche";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
+import type { ConstraintMigrationSpec } from "./specs/constraint-migration";
 import type { DelegationLoopShiftSpec } from "./specs/delegation-loop-shift";
 import type { DelegationWorkbenchSpec } from "./specs/delegation-workbench";
 import type { DesignSpaceFieldSpec } from "./specs/design-space-field";
 import type { LearningPathsSpec } from "./specs/learning-paths";
+import type { InnerLoopControlSpec } from "./specs/inner-loop-control";
 import type { PracticeSpiralSpec } from "./specs/practice-spiral";
 
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
+  "assumption-avalanche": AssumptionAvalancheSpec;
   "constraint-descent": ConstraintDescentSpec;
+  "constraint-migration": ConstraintMigrationSpec;
   "delegation-loop-shift": DelegationLoopShiftSpec;
   "delegation-workbench": DelegationWorkbenchSpec;
   "design-space-field": DesignSpaceFieldSpec;
   "learning-paths": LearningPathsSpec;
+  "inner-loop-control": InnerLoopControlSpec;
   "practice-spiral": PracticeSpiralSpec;
 };
 

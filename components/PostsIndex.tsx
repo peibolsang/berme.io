@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import type { Post } from "../types";
+import { DraftBadge } from "./DraftBadge";
 
 type YearGroup = {
   year: string;
@@ -11,6 +12,7 @@ type YearGroup = {
     date: string;
     dateCompact: string;
     url: string;
+    draft?: boolean;
     pinned?: boolean;
   }[];
 };
@@ -59,6 +61,7 @@ const groupByYear = (posts: Post[]) => {
       date: dateLabel,
       dateCompact,
       url: post.url,
+      draft: post.draft,
       pinned: post.pinned,
     });
 
@@ -111,12 +114,15 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
                     <span className="sm:hidden">{post.dateCompact}</span>
                     <span className="hidden sm:inline">{post.date}</span>
                   </span>
-                  <Link
-                    href={post.url}
-                    className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                  >
-                    {post.title}
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <Link
+                      href={post.url}
+                      className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                    >
+                      {post.title}
+                    </Link>
+                    {post.draft ? <DraftBadge /> : null}
+                  </div>
                 </li>
               ))}
             </ul>

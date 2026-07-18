@@ -1,10 +1,13 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
+import type { AssumptionAvalancheScrollyProps } from "./blocks/assumption-avalanche/AssumptionAvalancheScrolly";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
+import type { ConstraintMigrationScrollyProps } from "./blocks/constraint-migration/ConstraintMigrationScrolly";
 import type { DelegationLoopShiftScrollyProps } from "./blocks/delegation-loop-shift/DelegationLoopShiftScrolly";
 import type { DelegationWorkbenchScrollyProps } from "./blocks/delegation-workbench/DelegationWorkbenchScrolly";
 import type { DesignSpaceFieldScrollyProps } from "./blocks/design-space-field/DesignSpaceFieldScrolly";
 import type { LearningPathsScrollyProps } from "./blocks/learning-paths/LearningPathsScrolly";
+import type { InnerLoopControlScrollyProps } from "./blocks/inner-loop-control/InnerLoopControlScrolly";
 import type { PracticeSpiralScrollyProps } from "./blocks/practice-spiral/PracticeSpiralScrolly";
 import type {
   InteractiveComponentId,
@@ -18,11 +21,25 @@ type InteractiveRendererRegistry = {
   }>;
 };
 
+const AssumptionAvalancheScrolly =
+  dynamic<AssumptionAvalancheScrollyProps>(() =>
+    import(
+      "./blocks/assumption-avalanche/AssumptionAvalancheScrolly"
+    ).then((module) => module.AssumptionAvalancheScrolly),
+  );
+
 const ConstraintDescentScrolly = dynamic<ConstraintDescentScrollyProps>(() =>
   import("./blocks/constraint-descent/ConstraintDescentScrolly").then(
     (module) => module.ConstraintDescentScrolly,
   ),
 );
+
+const ConstraintMigrationScrolly =
+  dynamic<ConstraintMigrationScrollyProps>(() =>
+    import(
+      "./blocks/constraint-migration/ConstraintMigrationScrolly"
+    ).then((module) => module.ConstraintMigrationScrolly),
+  );
 
 const DelegationLoopShiftScrolly = dynamic<DelegationLoopShiftScrollyProps>(
   () =>
@@ -50,6 +67,12 @@ const LearningPathsScrolly = dynamic<LearningPathsScrollyProps>(() =>
   ),
 );
 
+const InnerLoopControlScrolly = dynamic<InnerLoopControlScrollyProps>(() =>
+  import("./blocks/inner-loop-control/InnerLoopControlScrolly").then(
+    (module) => module.InnerLoopControlScrolly,
+  ),
+);
+
 const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
   import("./blocks/practice-spiral/PracticeSpiralScrolly").then(
     (module) => module.PracticeSpiralScrolly,
@@ -57,11 +80,14 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
 );
 
 export const interactiveComponentRegistry = {
+  "assumption-avalanche": AssumptionAvalancheScrolly,
   "constraint-descent": ConstraintDescentScrolly,
+  "constraint-migration": ConstraintMigrationScrolly,
   "delegation-loop-shift": DelegationLoopShiftScrolly,
   "delegation-workbench": DelegationWorkbenchScrolly,
   "design-space-field": DesignSpaceFieldScrolly,
   "learning-paths": LearningPathsScrolly,
+  "inner-loop-control": InnerLoopControlScrolly,
   "practice-spiral": PracticeSpiralScrolly,
 } satisfies InteractiveRendererRegistry;
 

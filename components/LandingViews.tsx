@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { Book, Conference, Post, View } from "../types";
+import { DraftBadge } from "./DraftBadge";
 import { PostsIndex } from "./PostsIndex";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
@@ -215,12 +216,15 @@ export const LandingViews = ({
                           <span className="sm:hidden">{labels.compact}</span>
                           <span className="hidden sm:inline">{labels.full}</span>
                         </span>
-                        <Link
-                          href={post.url}
-                          className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                        >
-                          {post.title}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <Link
+                            href={post.url}
+                            className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                          >
+                            {post.title}
+                          </Link>
+                          {post.draft ? <DraftBadge /> : null}
+                        </div>
                       </li>
                     );
                   })}
@@ -247,13 +251,14 @@ export const LandingViews = ({
             <div className="space-y-10">
               {views.map((entry) => (
                 <section key={entry.number}>
-                  <h2 className="mb-4 text-base font-semibold text-zinc-600 dark:text-zinc-300">
+                  <h2 className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-zinc-600 dark:text-zinc-300">
                     <Link
                       href={`${entry.url}?view=views`}
                       className="hover:text-zinc-900 dark:hover:text-white"
                     >
                       {entry.title}
                     </Link>
+                    {entry.draft ? <DraftBadge /> : null}
                   </h2>
                   {entry.bodyHtml ? (
                     <div
@@ -283,12 +288,15 @@ export const LandingViews = ({
                             className="relative pl-4 after:absolute after:left-0 after:top-0 after:h-[calc(100%+0.5rem)] after:w-px after:bg-zinc-200 last:after:h-3 dark:after:bg-slate-700"
                           >
                             <span className="absolute left-0 top-3 h-px w-3 bg-zinc-200 dark:bg-slate-700" />
-                            <Link
-                              href={`${post.url}?view=views`}
-                              className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                            >
-                              {post.title}
-                            </Link>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <Link
+                                href={`${post.url}?view=views`}
+                                className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                              >
+                                {post.title}
+                              </Link>
+                              {post.draft ? <DraftBadge /> : null}
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -381,13 +389,14 @@ export const LandingViews = ({
                             <span className="hidden sm:inline">{labels.full}</span>
                           </span>
                           <div>
-                            <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+                            <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
                               <Link
                                 href={`/conferences/${conference.slug}`}
                                 className="hover:text-black dark:hover:text-white"
                               >
                                 {conference.title}
                               </Link>
+                              {conference.draft ? <DraftBadge /> : null}
                             </h3>
                             <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">
                               <span>{conference.event}</span>

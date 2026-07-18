@@ -39,6 +39,7 @@ const WorkbenchDiagram = ({
   steps: DelegationWorkbenchStep[];
 }) => {
   const activeStep = steps[activeIndex];
+  const isTaskMode = activeIndex > 0;
 
   return (
     <div
@@ -50,23 +51,30 @@ const WorkbenchDiagram = ({
         <span />
         <span />
         <span />
-        <strong>Delegation surface</strong>
-        <em>{String(activeIndex + 1).padStart(2, "0")}</em>
+        <strong>{isTaskMode ? "Task workspace" : "File editor"}</strong>
+        <em>{isTaskMode ? "Unit · task" : "Unit · file"}</em>
       </div>
 
       <div
         aria-hidden="true"
-        className={`delegation-workbench__surface ${activeIndex > 0 ? "is-task-centered" : ""}`}
+        className={`delegation-workbench__surface ${isTaskMode ? "is-task-mode" : "is-file-mode"}`}
       >
         <div className="delegation-workbench__file-pane">
           <div className="delegation-workbench__pane-heading">
-            <span>File</span>
+            <span>Unit of work</span>
             <strong>checkout.ts</strong>
           </div>
-          <div className="delegation-workbench__code">
-            {[72, 88, 61, 79, 46, 68, 84].map((width, index) => (
-              <i key={`${width}-${index}`} style={{ width: `${width}%` }} />
-            ))}
+          <div className="delegation-workbench__editor">
+            <div className="delegation-workbench__code">
+              {[72, 88, 61, 79, 46, 68, 84].map((width, index) => (
+                <i key={`${width}-${index}`} style={{ width: `${width}%` }} />
+              ))}
+            </div>
+            <div className="delegation-workbench__file-note">
+              <span>Visible now</span>
+              <strong>The implementation</strong>
+              <p>The goal, scope, and risk still live outside the editor.</p>
+            </div>
           </div>
           <div className="delegation-workbench__file-signals">
             <span>Code</span>
@@ -125,7 +133,7 @@ const StoryBeat = ({ index, setRef, status, step }: StoryBeatProps) => (
   >
     <div>
       <p className="delegation-workbench__beat-label">
-        Signal {String(index + 1).padStart(2, "0")} · {step.label}
+        Step {String(index + 1).padStart(2, "0")} · {step.label}
       </p>
       <h2>{step.title}</h2>
       <p>{step.body}</p>

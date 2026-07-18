@@ -12,6 +12,7 @@ import {
   formatReadingTime,
 } from "../../../lib/markdown-headings";
 import { ReadingShell } from "../../../components/ReadingShell";
+import { DraftBadge } from "../../../components/DraftBadge";
 
 type PageProps = {
   params: Promise<{
@@ -105,8 +106,15 @@ export default async function ViewPage({ params }: PageProps) {
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
         <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
           <BackLink />
+          {view.draft ? (
+            <div className="mt-6">
+              <DraftBadge prominent />
+            </div>
+          ) : null}
           <h1
-            className={`mt-6 text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
+            className={`${
+              view.draft ? "mt-3" : "mt-6"
+            } text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
           >
             {view.title}
           </h1>
@@ -181,12 +189,15 @@ export default async function ViewPage({ params }: PageProps) {
                     className="relative pl-4 after:absolute after:left-0 after:top-0 after:h-[calc(100%+0.5rem)] after:w-px after:bg-zinc-200 last:after:h-3 dark:after:bg-slate-700"
                   >
                     <span className="absolute left-0 top-3 h-px w-3 bg-zinc-200 dark:bg-slate-700" />
-                    <Link
-                      href={`${post.url}?view=views`}
-                      className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                    >
-                      {post.title}
-                    </Link>
+                    <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <Link
+                        href={`${post.url}?view=views`}
+                        className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                      >
+                        {post.title}
+                      </Link>
+                      {post.draft ? <DraftBadge /> : null}
+                    </span>
                     <span className="ml-2 text-xs text-zinc-400 dark:text-zinc-500">
                       {formatDate(post.publishedAt)}
                     </span>

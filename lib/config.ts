@@ -47,12 +47,17 @@ export const config = {
     url: process.env.REDIS_URL ?? "",
   },
   revalidateSeconds: Number(process.env.REVALIDATE_SECONDS ?? "3600"),
+  showDrafts: getBooleanEnv(process.env.SHOW_DRAFTS),
   telegram: {
     allowedUserIds: normalizeCsvEnv(process.env.TELEGRAM_ALLOWED_USER_IDS),
     botToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET ?? "",
   },
 };
+
+export const contentVisibilityCacheKey = config.showDrafts
+  ? "with-drafts"
+  : "published-only";
 
 export const getGithubToken = () =>
   requireInProduction(config.github.token, "GITHUB_TOKEN");

@@ -1,5 +1,10 @@
 import { unstable_cache } from "next/cache";
-import { config, getGithubToken } from "./config";
+import {
+  config,
+  contentVisibilityCacheKey,
+  getGithubToken,
+} from "./config";
+import { shouldShowIssueAsContent } from "./content-status";
 
 export type GitHubIssue = {
   id: number;
@@ -119,6 +124,11 @@ export type GitHubIssueParent = {
   body: string | null;
   createdAt: string;
   updatedAt: string;
+  labels?: {
+    nodes?: Array<{
+      name?: string | null;
+    } | null> | null;
+  } | null;
   author?: {
     login?: string | null;
     avatarUrl?: string | null;
@@ -165,17 +175,22 @@ type IssuesWithParentsResponse = {
 export const fetchAllBlogIssues = async (): Promise<GitHubIssue[]> => {
   const issues: GitHubIssue[] = [];
   const { owner, repo } = config.github;
-  const label = "published";
   let page = 1;
 
   while (true) {
+    const labelFilter = config.showDrafts
+      ? ""
+      : `&labels=${encodeURIComponent("published")}`;
     const url =
       `https://api.github.com/repos/${owner}/${repo}/issues` +
-      `?state=open&labels=${encodeURIComponent(label)}&per_page=100&page=${page}`;
+      `?state=open${labelFilter}&per_page=100&page=${page}`;
 
     const batch = (await githubFetch(url)) as GitHubIssue[];
     const filtered = batch.filter(
-      (issue) => !issue.pull_request && issue.state === "open",
+      (issue) =>
+        !issue.pull_request &&
+        issue.state === "open" &&
+        shouldShowIssueAsContent(issue.labels),
     );
     issues.push(...filtered);
 
@@ -227,13 +242,14 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
   const issues: GitHubIssueWithParent[] = [];
   let cursor: string | null = null;
 
+  const labelsFilter = config.showDrafts ? "" : 'labels: ["published"]';
   const query = `
     query IssuesWithParents($owner: String!, $repo: String!, $cursor: String) {
       repository(owner: $owner, name: $repo) {
         issues(
           first: 50
           after: $cursor
-          labels: ["published"]
+          ${labelsFilter}
           states: OPEN
           orderBy: { field: UPDATED_AT, direction: DESC }
         ) {
@@ -243,7 +259,7 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
             body
             createdAt
             updatedAt
-            labels(first: 20) {
+            labels(first: 100) {
               nodes {
                 name
               }
@@ -259,6 +275,11 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
               body
               createdAt
               updatedAt
+              labels(first: 100) {
+                nodes {
+                  name
+                }
+              }
               author {
                 login
                 avatarUrl
@@ -287,7 +308,7 @@ export const fetchIssuesWithParents = async (): Promise<GitHubIssueWithParent[]>
       }
       const nodes = result?.data?.repository?.issues?.nodes ?? [];
       nodes.forEach((node) => {
-        if (node) {
+        if (node && shouldShowIssueAsContent(node.labels?.nodes)) {
           issues.push(node);
         }
       });
@@ -329,10 +350,14 @@ export const fetchIssueComments = async (
   return comments;
 };
 
-export const getAllBlogIssues = unstable_cache(fetchAllBlogIssues, ["github-issues"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["github-issues"],
-});
+export const getAllBlogIssues = unstable_cache(
+  fetchAllBlogIssues,
+  ["github-issues", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["github-issues"],
+  },
+);
 
 export const getPinnedIssueNumbers = unstable_cache(
   fetchPinnedIssueNumbers,
@@ -345,7 +370,7 @@ export const getPinnedIssueNumbers = unstable_cache(
 
 export const getIssuesWithParents = unstable_cache(
   fetchIssuesWithParents,
-  ["github-issues-with-parents"],
+  ["github-issues-with-parents", contentVisibilityCacheKey],
   {
     revalidate: config.revalidateSeconds,
     tags: ["github-issues-with-parents"],

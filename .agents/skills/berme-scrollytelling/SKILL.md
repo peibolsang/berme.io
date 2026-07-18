@@ -1,6 +1,6 @@
 ---
 name: berme-scrollytelling
-description: Add a purpose-built scrollytelling section to a berme.io post identified by its GitHub Issue number in peibolsang/peibolsang. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and source Issue update without creating a local article copy.
+description: Add a purpose-built scrollytelling section with practical Pablo-style UI copy to a berme.io post identified by its GitHub Issue number in peibolsang/peibolsang. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and source Issue update without creating a local article copy.
 ---
 
 # Berme Scrollytelling
@@ -10,6 +10,22 @@ Turn one GitHub Issue in `peibolsang/peibolsang` into an article with a distinct
 ## Apply the design skill
 
 Use the `frontend-design` skill before designing the visual. Create a distinctive visual argument tailored to the post; do not reskin or mechanically reuse `constraint-descent`.
+
+## Apply Pablo's writing skill
+
+Use the `pablos-way` skill before authoring the fenced JSON. Treat it as a required dependency for every human-facing string: root `eyebrow`, `title`, and `description`, plus every step `label`, `title`, and `body`. Apply the same voice to any prose labels hard-coded in the renderer. Do not apply it to machine fields such as `component` or `version`.
+
+Compress Pablo's voice for interface copy instead of turning each step into an essay:
+
+- Use short labels built from concrete nouns or verbs.
+- Write direct, natural titles that make a claim or name an action. Avoid passive constructions and abstract transformations such as “confidence is rebuilt” or “the design space emerges.”
+- Keep each body to one or two sentences. Name who does what, what they use or check, and why it matters.
+- Prefer concrete examples from the article—files, tests, APIs, permissions, schemas, reviews—over generic systems language.
+- Explain necessary abstractions in plain language rather than stacking terms such as intent, coherence, boundaries, and leverage without showing their practical effect.
+- Preserve Pablo's contrast-driven, pragmatic point of view, but avoid rhetorical padding, generic inspiration, and polished phrases that could belong to any technology article.
+- Rewrite any title or body that still makes sense when copied into an unrelated post. The copy must be specific to the article's argument.
+
+Before accepting the copy, ask: can a reader say what happens at this step, what someone actually does, and what changes as a result? If not, rewrite it.
 
 ## Enforce the v1 authoring contract
 
@@ -44,23 +60,23 @@ Use this shape:
   "component": "feedback-loop",
   "version": 1,
   "eyebrow": "The delegation loop",
-  "title": "A system improves as delegation becomes observable",
-  "description": "Follow the loop from intent through execution and feedback.",
+  "title": "A better brief makes delegation easier to trust",
+  "description": "Follow one task from a clear brief through automated checks and human review.",
   "steps": [
     {
       "label": "Intent",
-      "title": "The outcome is framed",
-      "body": "The system starts with an explicit result and operating boundary."
+      "title": "Write down what success looks like",
+      "body": "State the outcome, scope, and constraints before the agent starts. If the brief is vague, the agent will fill in the gaps."
     },
     {
       "label": "Execution",
-      "title": "Work moves through the system",
-      "body": "Agents act through interfaces that make decisions and constraints visible."
+      "title": "Give the agent one bounded task",
+      "body": "Provide the relevant context and keep the work inside a clear area. Smaller boundaries make mistakes easier to spot and cheaper to correct."
     },
     {
       "label": "Feedback",
-      "title": "Evidence changes the next delegation",
-      "body": "Observed results improve the instructions, tools, and boundaries used next time."
+      "title": "Check the result before reading every line",
+      "body": "Run tests and policy checks first, then use human review for the decisions the system cannot verify."
     }
   ]
 }
@@ -127,7 +143,7 @@ The runtime pipeline is fixed:
 - Work from the canonical GitHub Issue body. Do not create a persistent local Markdown article, add anything under `content/`, or create a preview route.
 - Preserve the issue body exactly except for inserting the new `berme` fenced block at one deliberate location.
 - Express one strong ordered idea in 3–8 steps. Do not add a scrolly merely to decorate the article.
-- Keep the narrative understandable from its authored titles and bodies. Let browser behavior enhance and synchronize the argument rather than carry it alone.
+- Author every human-facing JSON string with `pablos-way` and the practical-copy rules above. Keep the narrative understandable from its titles and bodies; let browser behavior enhance and synchronize the argument rather than carry it alone.
 - Implement and validate the renderer before modifying the remote issue.
 - Never leave the production article referencing an undeployed component. Deploy first when deployment is authorized; otherwise stop before the issue update and report the exact remaining publication step.
 
@@ -144,7 +160,7 @@ The runtime pipeline is fixed:
 
 1. Read the complete post before choosing a concept.
 2. Identify the idea whose meaning benefits most from ordered, scroll-driven state changes.
-3. Define 3–8 steps with concise labels, explanatory titles, and self-contained bodies grounded in the article.
+3. Use `pablos-way` to define 3–8 steps with concise labels, direct titles, and self-contained bodies grounded in the article. Each step must describe a concrete action, mechanism, example, or consequence.
 4. Choose a specific component ID that names the visual concept rather than the rendering technology.
 5. Choose the insertion point by narrative function: establish the idea in prose, let the scrolly develop it, then return cleanly to the surrounding argument.
 
@@ -157,15 +173,20 @@ The runtime pipeline is fixed:
 
 ### 4. Author and validate the block
 
-1. Produce strict JSON containing only the v1 properties.
-2. Insert the fence into a candidate copy of the issue body held in memory or a temporary file outside the repository. Do not persist an article copy in the project.
-3. Pipe the complete candidate issue body to:
+1. Produce strict JSON containing only the v1 properties. Use `pablos-way` for all human-facing strings.
+2. Perform a copy audit before technical validation:
+   - Confirm every title and body is easy to read aloud and understand on the first pass.
+   - Confirm every body names a practical action, tool, check, example, or consequence.
+   - Remove vague transformation language, unnecessary nominalizations, and generic AI-sounding phrasing.
+   - Confirm the ordered titles and bodies communicate the complete argument without the animation.
+3. Insert the fence into a candidate copy of the issue body held in memory or a temporary file outside the repository. Do not persist an article copy in the project.
+4. Pipe the complete candidate issue body to:
 
 ```bash
 npm run validate:interactives -- --stdin
 ```
 
-4. Run:
+5. Run:
 
 ```bash
 npm run validate:interactives
@@ -176,7 +197,7 @@ git diff --check
 
 `validate:interactives` must confirm that the generated JSON Schema matches the Zod source, local registered components use conventional schema and renderer paths, and every inspected block is valid. Run `npm run generate:interactive-schemas` only after an intentional contract-version change.
 
-5. Visually verify every step in an available development or deployed environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion.
+6. Visually verify every step in an available development or deployed environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion.
 
 ### 5. Publish to the GitHub Issue
 
@@ -188,4 +209,4 @@ git diff --check
 
 ## Report completion
 
-Report the selected idea, insertion location, component ID, files created or registered, GitHub issue number, validation results, deployment status, and canonical-page verification. Explicitly state that no persistent local Markdown article or preview route was created.
+Report the selected idea, insertion location, component ID, files created or registered, Pablo-style copy check, GitHub issue number, validation results, deployment status, and canonical-page verification. Explicitly state that no persistent local Markdown article or preview route was created.

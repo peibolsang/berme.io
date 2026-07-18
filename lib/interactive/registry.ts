@@ -1,8 +1,11 @@
+import { assumptionAvalancheSpecSchema } from "./specs/assumption-avalanche";
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
+import { constraintMigrationSpecSchema } from "./specs/constraint-migration";
 import { delegationLoopShiftSpecSchema } from "./specs/delegation-loop-shift";
 import { delegationWorkbenchSpecSchema } from "./specs/delegation-workbench";
 import { designSpaceFieldSpecSchema } from "./specs/design-space-field";
 import { learningPathsSpecSchema } from "./specs/learning-paths";
+import { innerLoopControlSpecSchema } from "./specs/inner-loop-control";
 import { practiceSpiralSpecSchema } from "./specs/practice-spiral";
 import type {
   InteractiveComponentId,
@@ -11,9 +14,19 @@ import type {
 } from "./types";
 
 export const interactiveDefinitionRegistry = {
+  "assumption-avalanche": {
+    kind: "scrolly",
+    schema: assumptionAvalancheSpecSchema,
+    version: 1,
+  },
   "constraint-descent": {
     kind: "scrolly",
     schema: constraintDescentSpecSchema,
+    version: 1,
+  },
+  "constraint-migration": {
+    kind: "scrolly",
+    schema: constraintMigrationSpecSchema,
     version: 1,
   },
   "delegation-loop-shift": {
@@ -34,6 +47,11 @@ export const interactiveDefinitionRegistry = {
   "learning-paths": {
     kind: "scrolly",
     schema: learningPathsSpecSchema,
+    version: 1,
+  },
+  "inner-loop-control": {
+    kind: "scrolly",
+    schema: innerLoopControlSpecSchema,
     version: 1,
   },
   "practice-spiral": {

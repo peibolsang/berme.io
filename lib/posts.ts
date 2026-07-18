@@ -7,7 +7,8 @@ import {
 } from "./github";
 import { parseFrontmatter } from "./frontmatter";
 import { slugify } from "./slugify";
-import { config } from "./config";
+import { config, contentVisibilityCacheKey } from "./config";
+import { isDraftIssue } from "./content-status";
 import { buildViewSlug } from "./view-slug";
 import type { Post } from "../types";
 import type { GitHubIssue } from "./github";
@@ -27,6 +28,11 @@ const buildUrl = (date: Date, slug: string) => {
 const hasConferenceLabel = (labels: Array<{ name?: string }>) =>
   labels.some(
     (label) => String(label.name ?? "").trim().toLowerCase() === "conference",
+  );
+
+const hasNowLabel = (labels: Array<{ name?: string }>) =>
+  labels.some(
+    (label) => String(label.name ?? "").trim().toLowerCase() === "now",
   );
 
 const asDate = (value: string) => {
@@ -87,6 +93,9 @@ const fetchPosts = async (): Promise<Post[]> => {
       if (hasConferenceLabel(issue.labels)) {
         return null;
       }
+      if (hasNowLabel(issue.labels)) {
+        return null;
+      }
       if (parentNumbers.has(issue.number)) {
         return null;
       }
@@ -124,6 +133,7 @@ const fetchPosts = async (): Promise<Post[]> => {
         viewNumber: childToParent.get(issue.number)?.number,
         viewSlug: childToParent.get(issue.number)?.slug,
         body,
+        draft: isDraftIssue(issue.labels),
         labels,
         url,
       };
@@ -137,10 +147,14 @@ const fetchPosts = async (): Promise<Post[]> => {
   return posts;
 };
 
-export const getAllPosts = unstable_cache(fetchPosts, ["posts"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["posts"],
-});
+export const getAllPosts = unstable_cache(
+  fetchPosts,
+  ["posts", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["posts"],
+  },
+);
 
 const fetchPostPopularityCatalog = async (): Promise<PostPopularityCatalogEntry[]> => {
   const posts = await getAllPosts();
@@ -154,7 +168,7 @@ const fetchPostPopularityCatalog = async (): Promise<PostPopularityCatalogEntry[
 
 export const getPostPopularityCatalog = unstable_cache(
   fetchPostPopularityCatalog,
-  ["post-popularity-catalog"],
+  ["post-popularity-catalog", contentVisibilityCacheKey],
   {
     revalidate: config.revalidateSeconds,
     tags: ["posts"],
@@ -166,10 +180,14 @@ const fetchPostUrlIndex = async (): Promise<Record<string, true>> => {
   return Object.fromEntries(posts.map((post) => [post.url, true] as const));
 };
 
-const getPostUrlIndex = unstable_cache(fetchPostUrlIndex, ["post-url-index"], {
-  revalidate: config.revalidateSeconds,
-  tags: ["posts"],
-});
+const getPostUrlIndex = unstable_cache(
+  fetchPostUrlIndex,
+  ["post-url-index", contentVisibilityCacheKey],
+  {
+    revalidate: config.revalidateSeconds,
+    tags: ["posts"],
+  },
+);
 
 export const hasPublishedPostUrl = async (postUrl: string) => {
   const postUrlIndex = await getPostUrlIndex();
