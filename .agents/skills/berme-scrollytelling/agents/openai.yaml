@@ -1,4 +1,4 @@
 interface:
   display_name: "Berme Scrollytelling"
-  short_description: "Add custom scroll stories to berme.io posts"
-  default_prompt: "Use $berme-scrollytelling to add a custom scrollytelling section to GitHub Issue #<number>."
+  short_description: "Build a scroll story and update its GitHub Issue"
+  default_prompt: "Use $berme-scrollytelling to build and validate a custom scroll story for GitHub Issue #<number>, then update the Issue body."

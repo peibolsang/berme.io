@@ -1,4 +1,5 @@
 import { assumptionAvalancheSpecSchema } from "./specs/assumption-avalanche";
+import { certaintyPhaseChangeSpecSchema } from "./specs/certainty-phase-change";
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
 import { constraintMigrationSpecSchema } from "./specs/constraint-migration";
 import { delegationLoopShiftSpecSchema } from "./specs/delegation-loop-shift";
@@ -17,6 +18,11 @@ export const interactiveDefinitionRegistry = {
   "assumption-avalanche": {
     kind: "scrolly",
     schema: assumptionAvalancheSpecSchema,
+    version: 1,
+  },
+  "certainty-phase-change": {
+    kind: "scrolly",
+    schema: certaintyPhaseChangeSpecSchema,
     version: 1,
   },
   "constraint-descent": {

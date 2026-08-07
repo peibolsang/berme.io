@@ -4,6 +4,7 @@ import type {
   ScrollySpecSchema,
 } from "./contracts/scrolly";
 import type { AssumptionAvalancheSpec } from "./specs/assumption-avalanche";
+import type { CertaintyPhaseChangeSpec } from "./specs/certainty-phase-change";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
 import type { ConstraintMigrationSpec } from "./specs/constraint-migration";
 import type { DelegationLoopShiftSpec } from "./specs/delegation-loop-shift";
@@ -17,6 +18,7 @@ export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
   "assumption-avalanche": AssumptionAvalancheSpec;
+  "certainty-phase-change": CertaintyPhaseChangeSpec;
   "constraint-descent": ConstraintDescentSpec;
   "constraint-migration": ConstraintMigrationSpec;
   "delegation-loop-shift": DelegationLoopShiftSpec;

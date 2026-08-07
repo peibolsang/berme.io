@@ -1,11 +1,19 @@
 ---
 name: berme-scrollytelling
-description: Add a purpose-built scrollytelling section with practical Pablo-style UI copy to a berme.io post identified by its GitHub Issue number in peibolsang/peibolsang. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and source Issue update without creating a local article copy.
+description: Add a purpose-built scrollytelling section with practical Pablo-style UI copy to a berme.io post identified by its GitHub Issue number in peibolsang/peibolsang. Use when asked to add, inject, design, implement, or publish a scrolly or scroll story, including creating the v1 berme fenced block, React renderer, schema and registry entries, validation, and the mandatory source Issue update without creating a local article copy or checking deployment status.
 ---
 
 # Berme Scrollytelling
 
-Turn one GitHub Issue in `peibolsang/peibolsang` into an article with a distinctive, purpose-built scroll story and its production-compatible renderer. Require only the Issue number as user input. Treat this skill as the complete workflow and contract. Do not depend on `AGENTS.md` or a separate interactive-content guide for scrollytelling instructions.
+Turn one GitHub Issue in `peibolsang/peibolsang` into an article with a distinctive, purpose-built scroll story and its production-compatible renderer. Require only the Issue number as user input. Always finish by updating that Issue with the validated `berme` block. Treat this skill as the complete workflow and contract. Do not depend on `AGENTS.md` or a separate interactive-content guide for scrollytelling instructions.
+
+## Make the Issue update mandatory
+
+- Treat the supplied Issue number as authorization to update its body after the candidate passes validation. Do not ask separately for permission to perform the Issue mutation.
+- Always complete the workflow by updating the Issue, re-fetching its body, comparing it with the intended candidate, and validating it again. Local renderer changes alone are not a completed task.
+- Do not inspect GitHub branches, commits, pull requests, Vercel, other deployment systems, or the canonical berme.io page to decide whether the Issue may be updated.
+- Do not check whether the component ID has reached deployed code. The source Issue is an unpublished working draft without the `published` label, so storing the fenced block before renderer deployment is expected and safe.
+- If one GitHub write route fails, try the authenticated GitHub tool or the repository token through the REST API before reporting that the mandatory Issue update is blocked.
 
 ## Apply the design skill
 
@@ -145,7 +153,7 @@ The runtime pipeline is fixed:
 - Express one strong ordered idea in 3–8 steps. Do not add a scrolly merely to decorate the article.
 - Author every human-facing JSON string with `pablos-way` and the practical-copy rules above. Keep the narrative understandable from its titles and bodies; let browser behavior enhance and synchronize the argument rather than carry it alone.
 - Implement and validate the renderer before modifying the remote issue.
-- Never leave the production article referencing an undeployed component. Deploy first when deployment is authorized; otherwise stop before the issue update and report the exact remaining publication step.
+- Always update the remote Issue after the candidate passes validation. Do not make renderer deployment a precondition for this mutation.
 
 ## Execute the workflow
 
@@ -197,16 +205,16 @@ git diff --check
 
 `validate:interactives` must confirm that the generated JSON Schema matches the Zod source, local registered components use conventional schema and renderer paths, and every inspected block is valid. Run `npm run generate:interactive-schemas` only after an intentional contract-version change.
 
-6. Visually verify every step in an available development or deployed environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion.
+6. Visually verify every step in an available local development environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion. Do not use a deployed environment or canonical page as a publication gate, and do not withhold the Issue update solely because a local visual preview is unavailable.
 
-### 5. Publish to the GitHub Issue
+### 5. Update the GitHub Issue (mandatory)
 
-1. Confirm the component ID is deployed in the environment rendering the canonical article. If publication or deployment needs authority absent from the request, stop before changing the issue.
-2. Update the supplied Issue number in `peibolsang/peibolsang`, changing only the insertion of the validated fenced block.
-3. Re-fetch the issue body and compare it with the intended candidate so unrelated prose or frontmatter changes cannot slip through.
+1. Skip all deployment checks. Do not inspect remote source branches, deployment status, or the canonical berme.io page before updating the Issue.
+2. Always update the supplied Issue number in `peibolsang/peibolsang`, changing only the insertion of the validated fenced block.
+3. Re-fetch the Issue body and compare it with the intended candidate so unrelated prose or frontmatter changes cannot slip through.
 4. Pipe the re-fetched body through `npm run validate:interactives -- --stdin` again.
-5. Verify the canonical post URL renders without an interactive-block error. If the mutation introduced invalid content, restore the retained original body before ending the task.
+5. Confirm that the expected component ID appears exactly once. If the mutation introduced invalid or unintended content, restore the retained original body, correct the candidate, and complete the Issue update again before ending the task.
 
 ## Report completion
 
-Report the selected idea, insertion location, component ID, files created or registered, Pablo-style copy check, GitHub issue number, validation results, deployment status, and canonical-page verification. Explicitly state that no persistent local Markdown article or preview route was created.
+Report the selected idea, insertion location, component ID, files created or registered, Pablo-style copy check, GitHub Issue number, successful Issue update, exact-body comparison, and validation results. Do not report deployment status or canonical-page verification because neither is part of this workflow. Explicitly state that no persistent local Markdown article or preview route was created.

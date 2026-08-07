@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { AssumptionAvalancheScrollyProps } from "./blocks/assumption-avalanche/AssumptionAvalancheScrolly";
+import type { CertaintyPhaseChangeScrollyProps } from "./blocks/certainty-phase-change/CertaintyPhaseChangeScrolly";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
 import type { ConstraintMigrationScrollyProps } from "./blocks/constraint-migration/ConstraintMigrationScrolly";
 import type { DelegationLoopShiftScrollyProps } from "./blocks/delegation-loop-shift/DelegationLoopShiftScrolly";
@@ -26,6 +27,13 @@ const AssumptionAvalancheScrolly =
     import(
       "./blocks/assumption-avalanche/AssumptionAvalancheScrolly"
     ).then((module) => module.AssumptionAvalancheScrolly),
+  );
+
+const CertaintyPhaseChangeScrolly =
+  dynamic<CertaintyPhaseChangeScrollyProps>(() =>
+    import(
+      "./blocks/certainty-phase-change/CertaintyPhaseChangeScrolly"
+    ).then((module) => module.CertaintyPhaseChangeScrolly),
   );
 
 const ConstraintDescentScrolly = dynamic<ConstraintDescentScrollyProps>(() =>
@@ -81,6 +89,7 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
 
 export const interactiveComponentRegistry = {
   "assumption-avalanche": AssumptionAvalancheScrolly,
+  "certainty-phase-change": CertaintyPhaseChangeScrolly,
   "constraint-descent": ConstraintDescentScrolly,
   "constraint-migration": ConstraintMigrationScrolly,
   "delegation-loop-shift": DelegationLoopShiftScrolly,
