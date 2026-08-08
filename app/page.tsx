@@ -84,12 +84,12 @@ export default async function Home() {
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
               After 15 years leading product in vertical SaaS, I’ve learned that technology
-              often changes faster than we can make sense of it.
+              changes faster than we can make sense of it.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
               I try to close that gap by studying new technologies from first principles,
-              connecting ideas, and testing them in practice. This is where I put what I learn in
-              service of something greater.
+              connecting ideas, and testing them in practice. I share what I learn in service of
+              something greater.
             </p>
             <div className="mt-6">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">

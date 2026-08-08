@@ -484,7 +484,8 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 
 - What the user corrected: once the homepage bio wording is explicitly approved, use it verbatim instead of applying an authorial-voice workflow or continuing to refine it.
 - What changed: synchronized the approved three-sentence bio across the desktop homepage, mobile “Know Pablo” panel, and Markdown homepage export.
-- What changed in the final wording: replaced the learning-in-public ending with the user's approved purpose-led sentence, “This is where I put what I learn in service of something greater,” across all three surfaces.
+- What changed in the final wording: replaced the learning-in-public ending with the user's approved purpose-led sentence, “I share what I learn in service of something greater,” across all three surfaces.
+- What changed in the opening sentence: removed “often” from “technology often changes faster” and kept the approved wording synchronized across the desktop homepage, mobile panel, and Markdown export.
 
 ### Scrollytelling motion workflow (2026-08-08)
 
