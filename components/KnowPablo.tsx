@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import motionStyles from "./AppMotion.module.css";
 
 export const KnowPablo = () => {
   const mounted = useSyncExternalStore(
@@ -17,22 +18,24 @@ export const KnowPablo = () => {
 
   return createPortal(
     <div className="know-pablo-root pointer-events-none z-50 md:hidden">
-      {open && (
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={() => setOpen(false)}
-          className="pointer-events-auto z-40 bg-black/25 backdrop-blur-[2px] dark:bg-black/50"
-          style={{ position: "fixed", inset: 0 }}
-        />
-      )}
+      <button
+        type="button"
+        aria-label="Close"
+        aria-hidden={!open}
+        disabled={!open}
+        data-open={open}
+        onClick={() => setOpen(false)}
+        className={`${motionStyles.bioBackdrop} z-40 bg-black/25 backdrop-blur-[2px] dark:bg-black/50`}
+        style={{ position: "fixed", inset: 0 }}
+      />
       <div className="z-50">
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all duration-200 ease-out ${
+          data-open={open}
+          className={`${motionStyles.bioTrigger} rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-md ${
             open
-              ? "border-zinc-300 bg-[#f4f1ea] scale-[1.02] text-zinc-700"
+              ? "border-zinc-300 bg-[#f4f1ea] text-zinc-700"
               : "border-zinc-200 bg-white text-zinc-700"
           } dark:border-slate-700 dark:bg-slate-900 dark:text-zinc-200 dark:enabled:bg-slate-800`}
           style={{
@@ -45,37 +48,35 @@ export const KnowPablo = () => {
         >
           Know Pablo
           <span
-            className={`ml-2 inline-block text-[10px] transition-transform ${
-              open ? "rotate-180" : ""
-            }`}
+            data-open={open}
+            className={`${motionStyles.bioChevron} ml-2 inline-block text-[10px]`}
           >
             ▾
           </span>
         </button>
         <div
-          className={`transition-all duration-200 ease-out ${
-            open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          }`}
+          aria-hidden={!open}
+          data-open={open}
+          className={motionStyles.bioPanel}
           style={{
             position: "fixed",
             right: "1.25rem",
             bottom: "calc(1.25rem + env(safe-area-inset-bottom) + 3.25rem)",
             zIndex: 55,
-            pointerEvents: open ? "auto" : "none",
           }}
         >
-          <div className="w-[90vw] max-w-sm rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl ring-1 ring-zinc-200/70 transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 dark:ring-slate-700/60">
+          <div className="w-[90vw] max-w-sm rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl ring-1 ring-zinc-200/70 dark:border-slate-700 dark:bg-slate-900 dark:ring-slate-700/60">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
               Bio
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              I am a hands-on technologist, systems thinker, and communicator. I explore
-              technological change from first principles, connect ideas, and test them by
-              building.
+              After 15 years leading product in vertical SaaS, I’ve learned that technology
+              often changes faster than we can make sense of it.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              Drawing on 20 years in enterprise software, I turn what I learn into clear
-              strategic perspectives that create a lasting difference in the teams I work with.
+              I try to close that gap by studying new technologies from first principles,
+              connecting ideas, and testing them in practice. This is where I put what I learn in
+              service of something greater.
             </p>
             <div className="mt-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">

@@ -7,6 +7,8 @@
   --cyan: #71e2d0;
   --violet: #a293ff;
   --amber: #ffc857;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   margin-block: clamp(3rem, 7vw, 5.5rem);
   color: var(--copy);
 }
@@ -111,11 +113,25 @@
 .newEdge,
 .artifacts {
   opacity: 0;
-  transition: opacity 380ms ease;
+  transform: translateY(4px);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 240ms var(--ease-out),
+    transform 240ms var(--ease-out);
 }
 
 .visible {
   opacity: 1;
+  transform: translateY(0);
+}
+
+.artifacts.visible {
+  transition-delay: 60ms;
+}
+
+.newEdge.visible {
+  transition-delay: 120ms;
 }
 
 .repeatPaths {
@@ -165,7 +181,33 @@
 .particle {
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 720ms var(--ease-in-out);
+}
+
+.particleShape,
+.particleEmphasis {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 240ms var(--ease-out),
+    transform 720ms var(--ease-in-out);
+}
+
+.particleEmphasis {
+  opacity: 0;
+}
+
+.repeatedDecision .particleShape,
+.repeatedDecision .particleEmphasis {
+  transform: scale(1.5);
+}
+
+.encodedDecision .particleShape {
+  transform: scale(1.25);
+}
+
+.repeatedDecision .particleEmphasis {
+  opacity: 1;
 }
 
 .particleCore {
@@ -181,13 +223,13 @@
   opacity: 0.7;
 }
 
-.repeatedDecision .particleCore {
+.particleEmphasisCore {
   fill: var(--cyan);
   stroke: var(--ice);
   stroke-width: 2;
 }
 
-.repeatedDecision .particleHalo {
+.particleEmphasisHalo {
   fill: rgb(113 226 208 / 0.15);
   stroke: var(--cyan);
   stroke-width: 2;
@@ -239,7 +281,9 @@
   opacity: 0;
   transform: scaleX(0.35);
   transform-origin: left;
-  transition: opacity 320ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 220ms var(--ease-out);
 }
 
 .beat.active > div::before {
@@ -316,9 +360,28 @@
   .lattice,
   .platform,
   .newEdge,
-  .artifacts,
+  .artifacts {
+    transform: none;
+    transition: opacity 160ms var(--ease-out);
+    transition-delay: 0ms;
+  }
+
   .particle,
-  .beat > div::before {
+  .particleShape,
+  .repeatedDecision .particleShape,
+  .encodedDecision .particleShape {
+    transform: none;
     transition: none;
+  }
+
+  .particleEmphasis,
+  .repeatedDecision .particleEmphasis {
+    transform: none;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  .beat > div::before {
+    transform: scaleX(1);
+    transition: opacity 160ms var(--ease-out);
   }
 }

@@ -476,3 +476,25 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - What the user corrected in the workflow: scrollytelling source Issues are unpublished working drafts without the `published` label, so deployment checks solve a risk that does not exist at authoring time. The skill now makes the GitHub Issue update mandatory after validation and explicitly forbids branch, deployment, and canonical-page gates.
 - What the screenshot review clarified: free-floating dashed paths do not communicate repeated judgment by themselves. Treat violet paths as separate inference attempts and terminate each one at an enlarged cyan shared-decision anchor, so convergence—not mere movement—carries the meaning.
 - What worked for the final-state spacing: dividing the chamber into explicit vertical bands for the uncertain-edge label, amber alternatives, deterministic-core contents, and artifact chips produced readable separation at both 1440×900 and 390×844 without changing the sticky-stage footprint or introducing overflow.
+- What the motion review corrected: particle position and radius had different temporal behavior—the position eased over 720ms while radius, fill, and stroke snapped. Keeping constant SVG radii, scaling nested shape layers with the same strong ease-in-out curve, and crossfading a separate emphasis layer made the dots read as one continuous object.
+- What worked for narrative timing: short strong ease-out entrances plus a 60ms artifact delay and 120ms next-edge delay preserve the causal order without slowing scroll response; the prose indicator now resolves in 180–220ms instead of competing with the diagram.
+- What worked for reduced motion: remove particle and scale movement, retain 160ms opacity cues, and force the active prose rule to its full static width. A forced-media browser check exposed a specificity conflict on the emphasis layer; the final selector keeps its opacity transition while suppressing every transform transition.
+
+### Homepage bio (2026-08-08)
+
+- What the user corrected: once the homepage bio wording is explicitly approved, use it verbatim instead of applying an authorial-voice workflow or continuing to refine it.
+- What changed: synchronized the approved three-sentence bio across the desktop homepage, mobile “Know Pablo” panel, and Markdown homepage export.
+- What changed in the final wording: replaced the learning-in-public ending with the user's approved purpose-led sentence, “This is where I put what I learn in service of something greater,” across all three surfaces.
+
+### Scrollytelling motion workflow (2026-08-08)
+
+- What the workflow analysis clarified: `berme-scrollytelling` already owns the narrative, renderer architecture, validation, and mandatory Issue mutation, but previously delegated motion to a broad visual-design instruction without an exact construction sequence.
+- What changed: made `animate` a required dependency after `frontend-design` and before motion implementation, with explicit ownership of the animation gate, purpose, tool, properties, tokens, timing, interruption, and reduced-motion behavior.
+- What remains intentionally unchanged: React scroll-step state plus CSS transitions stays the default architecture; the new dependency raises motion consistency without requiring a motion library or changing the v1 content contract.
+
+### Main app motion pass (2026-08-08)
+
+- What passed the animation gate: the fullscreen PDF viewer and mobile bio are occasional spatial transitions, the theme icon is a fast state indication, and the Featured/Popular swap benefits from a restrained content-continuity crossfade.
+- What changed: added one shared strong ease-out token and CSS-only opacity/transform transitions for those four surfaces, including symmetric exits and reduced-motion variants without adding a motion dependency.
+- What worked for interruption and accessibility: the PDF overlay stays mounted until its exit transition completes, hidden bio and highlight states become non-interactive, and the highlight panes overlap only during the 160ms crossfade instead of moving individual post rows.
+- What remains to feel-check: view the PDF modal scale and Featured/Popular crossfade at slowed playback; their final perceived weight depends on the rendered PDF and the relative lengths of the two post lists.

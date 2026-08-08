@@ -198,7 +198,7 @@
 .constraintCollar {
   color: var(--constraint-hot);
   transform: translateX(var(--constraint-x)) translateY(168px);
-  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 720ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .constraintCollar path,
@@ -252,7 +252,7 @@
 .engineerMarker {
   color: var(--rail);
   transform: translateX(var(--constraint-x)) translateY(246px);
-  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 720ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .engineerMarker circle {
@@ -298,7 +298,9 @@
   opacity: 0;
   transform: scaleX(0.35);
   transform-origin: left;
-  transition: opacity 320ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .beat.past {

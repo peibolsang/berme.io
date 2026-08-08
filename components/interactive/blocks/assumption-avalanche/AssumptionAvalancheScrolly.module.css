@@ -319,7 +319,10 @@
   letter-spacing: 0.02em;
   opacity: 0.28;
   transform: translateX(0.55rem);
-  transition: opacity 360ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1), color 320ms ease;
+  transition:
+    opacity 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .ledgerRow i {
@@ -422,7 +425,9 @@
   opacity: 0;
   transform: scaleX(0.35);
   transform-origin: left;
-  transition: opacity 320ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .beat.past {

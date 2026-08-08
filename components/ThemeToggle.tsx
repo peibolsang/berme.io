@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import motionStyles from "./AppMotion.module.css";
 
 const STORAGE_KEY = "theme";
 
@@ -52,11 +53,16 @@ export const ThemeToggle = () => {
       type="button"
     >
       {mounted ? (
-        theme === "dark" ? (
-          <SunIcon className="h-4 w-4 text-amber-400" />
-        ) : (
-          <MoonIcon className="h-4 w-4" />
-        )
+        <span className="relative block h-4 w-4" aria-hidden="true">
+          <SunIcon
+            data-active={theme === "dark"}
+            className={`${motionStyles.themeIcon} h-4 w-4 text-amber-400`}
+          />
+          <MoonIcon
+            data-active={theme === "light"}
+            className={`${motionStyles.themeIcon} h-4 w-4`}
+          />
+        </span>
       ) : (
         <span className="text-xs leading-none">•</span>
       )}

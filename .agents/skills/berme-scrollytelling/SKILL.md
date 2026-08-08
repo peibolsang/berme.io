@@ -17,7 +17,22 @@ Turn one GitHub Issue in `peibolsang/peibolsang` into an article with a distinct
 
 ## Apply the design skill
 
-Use the `frontend-design` skill before designing the visual. Create a distinctive visual argument tailored to the post; do not reskin or mechanically reuse `constraint-descent`.
+Use the `frontend-design` skill before designing the visual. Establish the visual concept, composition, typography, responsive behavior, accessibility, and intended motion character. Create a distinctive visual argument tailored to the post; do not reskin or mechanically reuse `constraint-descent`.
+
+## Apply the animation skill
+
+Use the `animate` skill after `frontend-design` establishes the visual direction and before implementing motion in the renderer. Treat it as a required dependency for every proposed animated state change; a valid result may be to keep a change static.
+
+Let `animate` own the motion decisions in its prescribed order:
+
+1. Decide whether the change should animate at all.
+2. Name its purpose: explanation, state indication, spatial consistency, feedback, preventing a jarring change, or—only when justified—delight.
+3. Choose the cheapest suitable tool. Default to the existing `activeIndex` → React class/style → CSS transition architecture when it fits; do not add a motion library for ordinary step transitions.
+4. Choose properties, existing tokens, exact curves, and durations. Prefer `transform` and `opacity`; do not animate layout properties when a compositor-friendly equivalent exists.
+5. Make reversible scroll-step transitions retarget cleanly when the reader changes direction.
+6. Ship reduced-motion behavior with the implementation, retaining useful color or opacity feedback while removing positional movement.
+
+Keep the responsibility boundary explicit: `berme-scrollytelling` owns the narrative, component architecture, content validation, and mandatory Issue update; `frontend-design` owns the visual direction; `animate` turns the intended motion character into exact implementation decisions. Do not let the animation sub-workflow change the authored argument or make synchronized motion the sole carrier of meaning.
 
 ## Apply Pablo's writing skill
 
@@ -174,10 +189,11 @@ The runtime pipeline is fixed:
 
 ### 3. Design and implement
 
-1. Apply `frontend-design` to establish a visual concept, composition, motion language, typography, responsiveness, reduced-motion behavior, and accessibility specific to the article.
-2. Implement the schema, type mapping, registries, renderer, and any component-specific styles using the conventions above.
-3. Prefer the simplest rendering technology that preserves the intended geometry, accessibility, and responsiveness.
-4. Keep authored prose readable without JavaScript and avoid making synchronized visual state the sole carrier of meaning.
+1. Apply `frontend-design` to establish a visual concept, composition, typography, responsive behavior, accessibility, and intended motion character specific to the article.
+2. Apply `animate` to every proposed state change before writing its motion code. Record the animation gate result and named purpose, then follow the selected tool, properties, tokens, curves, durations, interruption behavior, and reduced-motion treatment exactly.
+3. Implement the schema, type mapping, registries, renderer, and component-specific styles using the conventions and accepted motion decisions above.
+4. Prefer the simplest rendering technology that preserves the intended geometry, accessibility, responsiveness, and motion behavior.
+5. Keep authored prose readable without JavaScript and avoid making synchronized visual state the sole carrier of meaning.
 
 ### 4. Author and validate the block
 
@@ -205,7 +221,7 @@ git diff --check
 
 `validate:interactives` must confirm that the generated JSON Schema matches the Zod source, local registered components use conventional schema and renderer paths, and every inspected block is valid. Run `npm run generate:interactive-schemas` only after an intentional contract-version change.
 
-6. Visually verify every step in an available local development environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion. Do not use a deployed environment or canonical page as a publication gate, and do not withhold the Issue update solely because a local visual preview is unavailable.
+6. Visually verify every step in an available local development environment at desktop and mobile widths. Check sticky behavior, transitions, overflow, text readability, keyboard/accessibility concerns, and reduced motion. Confirm that on-screen migrations, entrances, state feedback, and sequencing match the accepted `animate` decisions; use slow-motion or frame-by-frame inspection when timing or continuity cannot be judged at normal speed. Do not use a deployed environment or canonical page as a publication gate, and do not withhold the Issue update solely because a local visual preview is unavailable.
 
 ### 5. Update the GitHub Issue (mandatory)
 

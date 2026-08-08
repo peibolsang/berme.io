@@ -8,6 +8,7 @@ import type { Book, Conference, Post, View } from "../types";
 import { DraftBadge } from "./DraftBadge";
 import { PostsIndex } from "./PostsIndex";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import motionStyles from "./AppMotion.module.css";
 
 const viewOptions = ["posts", "views", "books", "conferences"] as const;
 type ViewOption = (typeof viewOptions)[number];
@@ -142,8 +143,6 @@ export const LandingViews = ({
     }
   }, [hasFeatured, hasPopular, highlightsView]);
 
-  const activeHighlights = highlightsView === "featured" ? pinned : popular;
-
   return (
     <Tabs
       value={activeView}
@@ -203,32 +202,46 @@ export const LandingViews = ({
                 )}
               </div>
               <section className="rounded-[1.5rem] border border-zinc-200/80 bg-[#f7f3eb] py-5 pl-3 pr-5 dark:border-slate-700 dark:bg-slate-950/60">
-                <ul className="space-y-2 text-sm">
-                  {activeHighlights.map((post) => {
-                    const labels = formatPostDateLabels(post.publishedAt);
+                <div className={motionStyles.highlightsStack}>
+                  {(
+                    [
+                      { key: "featured", posts: pinned },
+                      { key: "popular", posts: popular },
+                    ] as const
+                  ).map((pane) => (
+                    <ul
+                      key={pane.key}
+                      aria-hidden={highlightsView !== pane.key}
+                      data-active={highlightsView === pane.key}
+                      className={`${motionStyles.highlightsPane} space-y-2 text-sm`}
+                    >
+                      {pane.posts.map((post) => {
+                        const labels = formatPostDateLabels(post.publishedAt);
 
-                    return (
-                      <li
-                        key={`${post.url}-${highlightsView}`}
-                        className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3"
-                      >
-                        <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                          <span className="sm:hidden">{labels.compact}</span>
-                          <span className="hidden sm:inline">{labels.full}</span>
-                        </span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <Link
-                            href={post.url}
-                            className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                        return (
+                          <li
+                            key={post.url}
+                            className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3"
                           >
-                            {post.title}
-                          </Link>
-                          {post.draft ? <DraftBadge /> : null}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                            <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
+                              <span className="sm:hidden">{labels.compact}</span>
+                              <span className="hidden sm:inline">{labels.full}</span>
+                            </span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <Link
+                                href={post.url}
+                                className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
+                              >
+                                {post.title}
+                              </Link>
+                              {post.draft ? <DraftBadge /> : null}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ))}
+                </div>
               </section>
             </section>
           ) : null}

@@ -5,6 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
@@ -349,7 +350,7 @@ main :is(p, li) {
 
 .constraint-story__intent-signal {
   color: var(--story-accent);
-  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 480ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .constraint-story__signal-orbit {
@@ -677,8 +678,8 @@ main :is(p, li) {
   color: var(--loop-line);
   opacity: 0.4;
   transition:
-    color 340ms ease,
-    opacity 340ms ease;
+    color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .delegation-loop__gate.is-past {
@@ -715,7 +716,7 @@ main :is(p, li) {
 .delegation-loop__signal {
   color: var(--loop-amber);
   filter: drop-shadow(0 0 9px rgb(242 184 75 / 0.72));
-  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 600ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .delegation-loop__signal circle:first-child {
@@ -1249,8 +1250,8 @@ main :is(p, li) {
   transform: scaleX(0.35);
   transform-origin: left;
   transition:
-    opacity 320ms ease,
-    transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .design-space__beat.is-past,
@@ -1957,8 +1958,8 @@ main :is(p, li) {
   color: var(--spiral-line);
   opacity: 0.38;
   transition:
-    color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .practice-spiral__gate {
@@ -2413,8 +2414,8 @@ main :is(p, li) {
   color: var(--paths-panel-muted);
   opacity: 0.42;
   transition:
-    color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .learning-paths__fundamentals-band.is-active {
@@ -2690,8 +2691,8 @@ main :is(p, li) {
   transform: scaleX(0.35);
   transform-origin: left;
   transition:
-    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .learning-paths__beat--foundation {

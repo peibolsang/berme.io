@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import motionStyles from "./AppMotion.module.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -31,6 +32,7 @@ export const ConferencePdfViewer = ({
   const [hasError, setHasError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [pageAspectRatio, setPageAspectRatio] = useState(0.75);
   const [lastRenderedPageImage, setLastRenderedPageImage] = useState<string | null>(
@@ -115,7 +117,7 @@ export const ConferencePdfViewer = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setIsOverlayOpen(false);
+        setIsOverlayVisible(false);
       }
     };
 
@@ -381,11 +383,12 @@ export const ConferencePdfViewer = ({
           type="button"
           onClick={() => {
             if (isOverlayOpen) {
-              setIsOverlayOpen(false);
+              setIsOverlayVisible(false);
               return;
             }
             setOverlayZoom(inlineZoom);
             setIsOverlayOpen(true);
+            setIsOverlayVisible(true);
           }}
           className="rounded-md border border-zinc-200 px-2 py-1 dark:border-slate-700"
         >
@@ -410,16 +413,30 @@ export const ConferencePdfViewer = ({
           <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[90] flex min-h-[100dvh] w-full items-center justify-center bg-zinc-900/60 p-2 backdrop-blur-sm"
+            data-open={isOverlayVisible}
+            className={`${motionStyles.pdfOverlay} fixed inset-0 z-[90] flex min-h-[100dvh] w-full items-center justify-center p-2`}
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) {
-                setIsOverlayOpen(false);
+                setIsOverlayVisible(false);
               }
             }}
           >
             <div
-              className="flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] flex-col rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-950"
+              aria-hidden="true"
+              className={`${motionStyles.pdfOverlayBackdrop} pointer-events-none absolute inset-0 bg-zinc-900/60 backdrop-blur-sm`}
+            />
+            <div
+              className={`${motionStyles.pdfOverlayPanel} relative z-10 flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] flex-col rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-950`}
               style={{ maxWidth: overlayMaxWidth ? `${overlayMaxWidth}px` : undefined }}
+              onTransitionEnd={(event) => {
+                if (
+                  event.target === event.currentTarget &&
+                  event.propertyName === "opacity" &&
+                  !isOverlayVisible
+                ) {
+                  setIsOverlayOpen(false);
+                }
+              }}
             >
               {controls}
               <div className="mt-3 min-h-0 flex-1">

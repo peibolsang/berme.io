@@ -199,21 +199,28 @@ const PhaseDiagram = ({
           {particleState.map((point, index) => {
             const isRepeatedDecision =
               activeIndex === 1 && REPEATED_DECISION_ANCHORS.has(index);
+            const isEncodedDecision = activeIndex === 2;
 
             return (
               <g
-                className={`${styles.particle} ${isRepeatedDecision ? styles.repeatedDecision : ""}`}
+                className={`${styles.particle} ${
+                  isRepeatedDecision
+                    ? styles.repeatedDecision
+                    : isEncodedDecision
+                      ? styles.encodedDecision
+                      : ""
+                }`}
                 key={index}
                 style={{ transform: `translate(${point.x}px, ${point.y}px)` }}
               >
-                <circle
-                  className={styles.particleHalo}
-                  r={isRepeatedDecision ? 20 : activeIndex === 2 ? 16 : 13}
-                />
-                <circle
-                  className={styles.particleCore}
-                  r={isRepeatedDecision ? 6 : activeIndex === 2 ? 5 : 4}
-                />
+                <g className={styles.particleShape}>
+                  <circle className={styles.particleHalo} r="13" />
+                  <circle className={styles.particleCore} r="4" />
+                </g>
+                <g className={styles.particleEmphasis}>
+                  <circle className={styles.particleEmphasisHalo} r="13" />
+                  <circle className={styles.particleEmphasisCore} r="4" />
+                </g>
               </g>
             );
           })}
