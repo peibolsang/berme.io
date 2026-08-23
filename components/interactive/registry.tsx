@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
+import type { AdoptionAmplifierScrollyProps } from "./blocks/adoption-amplifier/AdoptionAmplifierScrolly";
 import type { AssumptionAvalancheScrollyProps } from "./blocks/assumption-avalanche/AssumptionAvalancheScrolly";
 import type { CertaintyPhaseChangeScrollyProps } from "./blocks/certainty-phase-change/CertaintyPhaseChangeScrolly";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
@@ -21,6 +22,12 @@ type InteractiveRendererRegistry = {
     spec: InteractiveSpecMap[ComponentId];
   }>;
 };
+
+const AdoptionAmplifierScrolly = dynamic<AdoptionAmplifierScrollyProps>(() =>
+  import("./blocks/adoption-amplifier/AdoptionAmplifierScrolly").then(
+    (module) => module.AdoptionAmplifierScrolly,
+  ),
+);
 
 const AssumptionAvalancheScrolly =
   dynamic<AssumptionAvalancheScrollyProps>(() =>
@@ -88,6 +95,7 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
 );
 
 export const interactiveComponentRegistry = {
+  "adoption-amplifier": AdoptionAmplifierScrolly,
   "assumption-avalanche": AssumptionAvalancheScrolly,
   "certainty-phase-change": CertaintyPhaseChangeScrolly,
   "constraint-descent": ConstraintDescentScrolly,

@@ -1,0 +1,410 @@
+.section {
+  --copy: #17242b;
+  --bench: #e7ecee;
+  --bench-raised: #f8fafb;
+  --track: #8d9ba2;
+  --cobalt: #2458d3;
+  --orange: #df5a31;
+  --green: #278b70;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  margin-block: clamp(3rem, 7vw, 5.5rem);
+  color: var(--copy);
+}
+
+.layout {
+  display: block;
+}
+
+.stage {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding-block: clamp(0.75rem, 2vh, 1.2rem);
+  background: #fff;
+  box-shadow: 0 1rem 0 #fff;
+}
+
+.stageInner {
+  width: 100%;
+}
+
+.eyebrow,
+.beatLabel,
+.benchHeader,
+.visual text {
+  font-family: var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.eyebrow,
+.beatLabel {
+  margin: 0;
+  color: var(--cobalt);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
+}
+
+.stage h2,
+.beat h2 {
+  max-width: 48rem;
+  margin: 0.75rem 0 0;
+  color: currentColor;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 2rem;
+}
+
+.bench {
+  position: relative;
+  width: 96%;
+  aspect-ratio: 900 / 555;
+  margin: 1.25rem auto 0;
+  overflow: hidden;
+  padding-top: 2.8rem;
+  border: 1px solid #a8b2b7;
+  border-radius: 0.4rem;
+  background:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.18) 0 1px, transparent 1px 4px),
+    var(--bench);
+  box-shadow:
+    inset 0 0 0 5px rgb(255 255 255 / 0.34),
+    0 1.4rem 2.8rem rgb(23 36 43 / 0.14);
+}
+
+.benchHeader {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto;
+  display: flex;
+  height: 2.8rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 1rem;
+  border-bottom: 1px solid #adb8bd;
+  color: #51636c;
+  font-size: clamp(0.6rem, 1vw, 0.7rem);
+  letter-spacing: 0.1em;
+}
+
+.benchHeader strong {
+  color: var(--cobalt);
+}
+
+.visual {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.visual text {
+  fill: #17242b;
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+}
+
+.screws circle {
+  fill: #9aa6ab;
+  stroke: #63737b;
+  stroke-width: 1;
+}
+
+.inputDial {
+  fill: #d6dde0;
+  stroke: #78888f;
+  stroke-width: 2;
+}
+
+.inputCore {
+  fill: #26373f;
+  stroke: #0e1d24;
+  stroke-width: 2;
+}
+
+.needle {
+  stroke: #f8fafb;
+  stroke-linecap: round;
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 520ms var(--ease-in-out);
+}
+
+.needleHigh {
+  transform: rotate(112deg);
+}
+
+.inputCaption {
+  fill: #5c6b72 !important;
+  font-size: 9px !important;
+}
+
+.splitWire,
+.rail {
+  fill: none;
+  stroke: var(--track);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.splitNode {
+  fill: var(--bench-raised);
+  stroke: var(--cobalt);
+  stroke-width: 3;
+}
+
+.channelTitle {
+  fill: #51636c !important;
+  text-anchor: start !important;
+}
+
+.module rect,
+.output rect {
+  fill: var(--bench-raised);
+  stroke: #91a0a7;
+  stroke-width: 1.5;
+  transition:
+    fill 220ms var(--ease-out),
+    stroke 220ms var(--ease-out);
+}
+
+.module circle {
+  fill: #9ba8ae;
+  transition: fill 220ms var(--ease-out);
+}
+
+.output {
+  opacity: 0.48;
+  transition: opacity 220ms var(--ease-out);
+}
+
+.output path {
+  fill: none;
+  stroke: var(--track);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  transition: stroke 220ms var(--ease-out);
+}
+
+.output text {
+  font-size: 9px;
+}
+
+.upperChannel.ready .rail,
+.upperChannel.ready .module rect {
+  stroke: var(--green);
+}
+
+.upperChannel.ready .module circle {
+  fill: var(--green);
+}
+
+.upperChannel.ready .output {
+  opacity: 1;
+}
+
+.upperChannel.ready .output path {
+  stroke: var(--green);
+}
+
+.lowerChannel.noisy .module rect {
+  stroke: var(--orange);
+}
+
+.lowerChannel.noisy .module circle {
+  fill: var(--orange);
+}
+
+.lowerChannel.amplifiedChannel .rail {
+  stroke: var(--orange);
+}
+
+.output.replaced,
+.upperChannel.ready .output.replaced {
+  opacity: 0;
+}
+
+.outcome {
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out);
+}
+
+.outcomeVisible {
+  opacity: 1;
+}
+
+.outcomeFrame {
+  fill: var(--bench-raised);
+  stroke-width: 2;
+}
+
+.outcome text {
+  font-size: 9px;
+}
+
+.verifiedOutcome .outcomeFrame,
+.verifiedOutcome .taskSlip {
+  stroke: var(--green);
+}
+
+.verifiedOutcome .taskSlip {
+  fill: rgb(39 139 112 / 0.08);
+  stroke-width: 1;
+}
+
+.taskCheck,
+.taskLine {
+  stroke: var(--cobalt);
+  stroke-linecap: round;
+}
+
+.taskCheck {
+  fill: none;
+  stroke: var(--green);
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.taskLine {
+  stroke: var(--green);
+  stroke-width: 1;
+  opacity: 0.65;
+}
+
+.queueOutcome .outcomeFrame,
+.queueSlip {
+  stroke: var(--orange);
+}
+
+.queueSlip {
+  fill: var(--bench-raised);
+  stroke-width: 1.25;
+}
+
+.queueLine {
+  stroke: var(--orange);
+  stroke-linecap: round;
+  stroke-width: 1.25;
+}
+
+.steps {
+  padding-bottom: 18svh;
+}
+
+.beat {
+  display: flex;
+  min-height: 46svh;
+  align-items: flex-start;
+  color: var(--copy);
+}
+
+.beat > div {
+  position: relative;
+  width: 100%;
+  max-width: 50rem;
+  padding: 1.25rem 0 2.75rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+}
+
+.beat > div::before {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 4rem;
+  height: 2px;
+  background: var(--orange);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.35);
+  transform-origin: left;
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.beat.active > div::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.beat p:last-child {
+  margin: 1rem 0 0;
+  color: currentColor;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+:global(.dark) .section {
+  --copy: #f8fafc;
+}
+
+:global(.dark) .stage {
+  background: #1e293b;
+  box-shadow: 0 1rem 0 #1e293b;
+}
+
+:global(.dark) .eyebrow,
+:global(.dark) .beatLabel {
+  color: #8fb0ff;
+}
+
+@media (max-width: 767px) {
+  .section {
+    margin-block: 3rem 4rem;
+  }
+
+  .stage {
+    padding-block: 0.75rem;
+  }
+
+  .stage h2 {
+    max-width: 22rem;
+  }
+
+  .bench {
+    width: 100%;
+    aspect-ratio: 900 / 620;
+    padding-top: 2.45rem;
+  }
+
+  .benchHeader {
+    height: 2.45rem;
+    padding-inline: 0.7rem;
+    font-size: 0.55rem;
+  }
+
+  .steps {
+    padding-bottom: 16svh;
+  }
+
+  .beat {
+    min-height: 52svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needle {
+    transform: none;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  .module rect,
+  .module circle,
+  .output,
+  .output rect,
+  .output path,
+  .outcome {
+    transition-duration: 160ms;
+  }
+
+  .beat > div::before {
+    transform: scaleX(1);
+    transition: opacity 160ms var(--ease-out);
+  }
+}

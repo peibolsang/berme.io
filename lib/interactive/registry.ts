@@ -1,3 +1,4 @@
+import { adoptionAmplifierSpecSchema } from "./specs/adoption-amplifier";
 import { assumptionAvalancheSpecSchema } from "./specs/assumption-avalanche";
 import { certaintyPhaseChangeSpecSchema } from "./specs/certainty-phase-change";
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
@@ -15,6 +16,11 @@ import type {
 } from "./types";
 
 export const interactiveDefinitionRegistry = {
+  "adoption-amplifier": {
+    kind: "scrolly",
+    schema: adoptionAmplifierSpecSchema,
+    version: 1,
+  },
   "assumption-avalanche": {
     kind: "scrolly",
     schema: assumptionAvalancheSpecSchema,

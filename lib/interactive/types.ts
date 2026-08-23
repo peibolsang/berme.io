@@ -3,6 +3,7 @@ import type {
   ScrollySpec,
   ScrollySpecSchema,
 } from "./contracts/scrolly";
+import type { AdoptionAmplifierSpec } from "./specs/adoption-amplifier";
 import type { AssumptionAvalancheSpec } from "./specs/assumption-avalanche";
 import type { CertaintyPhaseChangeSpec } from "./specs/certainty-phase-change";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
@@ -17,6 +18,7 @@ import type { PracticeSpiralSpec } from "./specs/practice-spiral";
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
+  "adoption-amplifier": AdoptionAmplifierSpec;
   "assumption-avalanche": AssumptionAvalancheSpec;
   "certainty-phase-change": CertaintyPhaseChangeSpec;
   "constraint-descent": ConstraintDescentSpec;
