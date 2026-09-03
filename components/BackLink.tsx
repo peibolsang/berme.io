@@ -6,17 +6,21 @@ import { useSearchParams } from "next/navigation";
 
 type BackLinkProps = {
   fallbackView?: "posts" | "views" | "books" | "conferences";
+  href?: string;
 };
 
-export const BackLink = ({ fallbackView }: BackLinkProps) => {
+export const BackLink = ({ fallbackView, href }: BackLinkProps) => {
   const searchParams = useSearchParams();
   const backHref = useMemo(() => {
+    if (href) {
+      return href;
+    }
     const view = searchParams.get("view") ?? fallbackView;
-    if (!view || view === "posts") {
+    if (!view) {
       return "/";
     }
     return `/?view=${view}`;
-  }, [fallbackView, searchParams]);
+  }, [fallbackView, href, searchParams]);
 
   return (
     <Link

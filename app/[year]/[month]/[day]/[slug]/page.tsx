@@ -188,7 +188,7 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           )}
           <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
-            <BackLink />
+            <BackLink href="/?view=posts" />
             {post.draft ? (
               <div className="mt-6">
                 <DraftBadge prominent />
@@ -310,7 +310,7 @@ export default async function PostPage({ params }: PageProps) {
       <div className="min-h-screen px-6 py-16">
         <main className="mx-auto w-full max-w-2xl dark:bg-slate-800">
           <Link
-            href="/"
+            href="/?view=posts"
             className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
             ← Back

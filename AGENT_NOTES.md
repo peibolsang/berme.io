@@ -522,3 +522,37 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - What the system clarified: slate supplies depth, zinc carries type hierarchy, and amber is the signature state color for selection, progress, and editorial status.
 - What changed: added `docs/brand-guidelines.md` as a dark-first visual and implementation contract for future UI agents, including tokens, typography, layout, surfaces, states, motion, accessibility, examples, and a shipping checklist.
 - What future agents should preserve: keep content dominant, restrict amber to meaning, avoid card-per-item layouts, and verify both themes at mobile and desktop widths.
+
+### Homepage prototype exploration (2026-09-03)
+
+- What worked: keeping the exploration isolated under `/prototypes/home` allowed three high-divergence landing-page directions without disturbing the production homepage.
+- What worked for identity: using the supplied PB mark as a seal, compass center, and studio stamp made it structural rather than decorative.
+- What worked for divergence: the three axes were narrative density (Manifesto), spatial navigation (Compass), and tactile workbench interaction (Studio).
+- What worked for realism: the prototype uses live GitHub-backed titles and URLs when available, with resilient local fallbacks.
+- What browser verification caught: reading `?v=` in the initial client state caused a server/client first-render mismatch, and the first compositions ran too tall at 1280×720.
+- What corrected those issues: `useSyncExternalStore` now treats the URL as the picker source of truth, and tighter viewport-relative sizing keeps all three directions usable at a short desktop height.
+- What interaction checks passed: number-key picker switching, query persistence, Compass focus-driven previews, Studio dial switching, real destination links, and both light/dark logo treatments.
+- What remains intentional: the required bottom-center prototype picker can overlap a narrow strip of bottom navigation at short heights; it is temporary harness chrome and disappears when a direction is promoted.
+- What the first user refinement established: Manifesto is the leading direction, with Compass's curiosity-led headline, Studio's stacked identity and selected-writing artifact, purpose-led bio copy, connected-path navigation language, and a larger logo/name lockup.
+- What worked for featured writing: three real featured posts now are the three tactile sheets in an accessible carousel, with direct previous/next controls, swipe recognition, a live position counter, and no autoplay.
+- What the user corrected: excerpts made the cards feel like content-repository previews, so the final paper composition keeps only the title and action; the action is counter-rotated to stay level while the paper retains its physical tilt.
+- What the user corrected about motion: horizontal sliding contradicted the paper-stack metaphor, so selection now changes only depth through vertical settling, scale, rotation, opacity, and shadow; transitions retarget cleanly when controls are pressed rapidly.
+- What browser verification caught and fixed: Embla's clipped viewport cut the rotated sheet at its corners; removing the masked track and explicitly allowing visible overflow restored the complete card silhouette used by the Studio direction.
+- What motion accessibility preserves: pointer navigation uses the 240ms bring-to-front transition, while keyboard activation jumps immediately and reduced motion keeps only a gentle opacity/shadow change.
+- What the mobile header correction established: keep the large mark and name as the primary identity row, then anchor “In the studio now” directly beneath the name; the theme control remains independently available at the top-right.
+- What the desktop header correction established: “In the studio now” belongs to the selected-writing column, not to the theme utility; reuse the hero grid and the stack's width so the link and paper share an exact left edge.
+- What the final desktop alignment established: center “In the studio now” over the paper stack rather than aligning its left edge, then move the fixed theme control onto that same horizontal centerline while keeping it at the far-right utility position.
+- What promotion preserved: `/` now renders Manifesto with the live three-piece writing stack, while explicit `?view=posts`, `views`, `books`, and `conferences` requests retain the established content browser instead of turning its navigation into dead links.
+- What improved during integration: the default landing fetches only posts, fills a short live result with resilient local fallbacks, and leaves the heavier views, conference, and popularity work to content-index requests.
+- What cleanup completed: moved the supplied logo assets to stable root-level public paths and deleted the entire `/prototypes/home` route, unused Compass/Studio directions, and picker harness after promotion.
+- What the content-index redesign established: Writing, Views, Books, and Talks are focused editorial modes with the full PB identity linking home, a single large mode title, and no duplicated Now, Bio, Links, or tab bar.
+- What the new navigation does: one fixed footer owns all four destinations and uses a masked backdrop blur plus canvas fade so scrolling content remains visible but quiet beneath it.
+- What was intentionally removed from Writing: the Featured/Popular switch and highlight card duplicated the landing page's selected-writing role, so the Writing mode now begins directly with the chronological index.
+- What browser verification confirmed: all four query routes render their correct content and active footer state, the footer remains fixed over scrolled writing with a visible blur/fade, and clicking the PB identity returns to Manifesto.
+- What the consistency pass corrected: the landing and content indexes now render one shared `ExploreNav`, so the rule, phrase, destination labels, arrows, typography, gaps, and responsive behavior cannot drift; only the content-page wrapper adds fixed positioning and blur.
+- What the user caught visually: the sticky footer used a shallower bottom inset than Manifesto, which made it appear lower. Both versions now preserve the same three-rem bottom breathing room at desktop and mobile sizes.
+- What fixed the content-page whitespace: the 50rem stacked column became the same 86rem editorial grid used by Manifesto, with the mode title in a left rail and the actual index in the right column; below 920px it collapses into a tighter single-column flow.
+- What navigation should preserve: a post's Back link always returns to `/?view=posts`, including when the post was entered directly or with another view query present.
+- What the final landing alignment established: on desktop, “In the studio now” is centered over the featured-writing stack while sharing an exact horizontal baseline with “Product leader · writer · builder”; the separate mobile placement beneath the PB name remains intact.
+- What the sticky-footer refinement established: content indexes omit the landing-only “Start anywhere” phrase while reserving its desktop rhythm, and their fade now reaches farther into the page with a stronger 22px backdrop blur.
+- What the final hero spacing established: keep the two eyebrow labels on one baseline, then give the desktop featured paper stack a separate 2.75rem drop so the artifact relates to the full left-hand text block rather than crowding its eyebrow; mobile keeps its compact spacing.

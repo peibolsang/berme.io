@@ -1,32 +1,13 @@
-"use client";
-
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
-import { usePathname, useSearchParams } from "next/navigation";
 import type { Book, Conference, Post, View } from "../types";
 import { DraftBadge } from "./DraftBadge";
+import type { ContentView } from "./ExploreNav";
 import { PostsIndex } from "./PostsIndex";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import motionStyles from "./AppMotion.module.css";
-
-const viewOptions = ["posts", "views", "books", "conferences"] as const;
-type ViewOption = (typeof viewOptions)[number];
-const viewLabels: Record<ViewOption, string> = {
-  posts: "Posts",
-  views: "Views",
-  books: "Books",
-  conferences: "Conferences",
-};
-type HighlightsView = "featured" | "popular";
-
-const normalizeView = (value: string | null) =>
-  viewOptions.includes(value as ViewOption) ? (value as ViewOption) : "posts";
 
 type LandingViewsProps = {
+  activeView: ContentView;
   posts: Post[];
-  pinned: Post[];
-  popular: Post[];
   views: View[];
   books: Book[];
   conferences: Conference[];
@@ -42,16 +23,6 @@ const formatConferenceDateLabels = (iso: string) => {
   return {
     full: `${month} ${day}`,
     compact: month,
-  };
-};
-
-const formatPostDateLabels = (iso: string) => {
-  const date = new Date(iso);
-  const year = String(date.getUTCFullYear());
-
-  return {
-    full: year,
-    compact: year,
   };
 };
 
@@ -75,183 +46,23 @@ const groupConferencesByYear = (entries: Conference[]) => {
 };
 
 export const LandingViews = ({
+  activeView,
   posts,
-  pinned,
-  popular,
   views,
   books,
   conferences,
 }: LandingViewsProps) => {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const [activeView, setActiveView] = useState<ViewOption>(() =>
-    normalizeView(searchParams.get("view")),
-  );
-
-  useEffect(() => {
-    setActiveView(normalizeView(searchParams.get("view")));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setActiveView(normalizeView(params.get("view")));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  const handleViewChange = useCallback(
-    (value: string) => {
-      const nextView = normalizeView(value);
-      if (nextView === activeView) {
-        return;
-      }
-      setActiveView(nextView);
-      const params =
-        typeof window === "undefined"
-          ? new URLSearchParams(searchParams.toString())
-          : new URLSearchParams(window.location.search);
-      if (nextView === "posts") {
-        params.delete("view");
-      } else {
-        params.set("view", nextView);
-      }
-      const query = params.toString();
-      const href = query ? `${pathname}?${query}` : pathname;
-      if (typeof window !== "undefined") {
-        window.history.pushState(null, "", href);
-      }
-    },
-    [activeView, pathname, searchParams],
-  );
   const groupedConferences = groupConferencesByYear(conferences);
-  const hasFeatured = pinned.length > 0;
-  const hasPopular = popular.length > 0;
-  const [highlightsView, setHighlightsView] = useState<HighlightsView>(() =>
-    hasFeatured ? "featured" : "popular",
-  );
-
-  useEffect(() => {
-    if (highlightsView === "featured" && !hasFeatured && hasPopular) {
-      setHighlightsView("popular");
-      return;
-    }
-    if (highlightsView === "popular" && !hasPopular && hasFeatured) {
-      setHighlightsView("featured");
-    }
-  }, [hasFeatured, hasPopular, highlightsView]);
 
   return (
-    <Tabs
-      value={activeView}
-      onValueChange={handleViewChange}
-      className="min-w-0 overflow-x-hidden space-y-10"
-    >
-      <TabsList aria-label="Content views">
-        {viewOptions.map((view) => (
-          <TabsTrigger key={view} value={view}>
-            {viewLabels[view]}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
-      <TabsContent value="posts">
+    <div className="min-w-0 overflow-x-hidden">
+      {activeView === "posts" ? (
         <div id="panel-posts">
-          {hasFeatured || hasPopular ? (
-            <section className="space-y-5">
-              <div className="flex items-center justify-start">
-                {hasFeatured && hasPopular ? (
-                  <div className="inline-flex w-full max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 p-0.5 dark:border-slate-700 dark:bg-slate-950/70 sm:w-auto">
-                    {(
-                      [
-                        { key: "featured", label: "Featured", count: pinned.length },
-                        { key: "popular", label: "Popular", count: popular.length },
-                      ] as const
-                    ).map((option) => {
-                      const selected = highlightsView === option.key;
-
-                        return (
-                          <button
-                            key={option.key}
-                            type="button"
-                            onClick={() => setHighlightsView(option.key)}
-                            className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold md:flex-none ${
-                              selected
-                                ? "bg-zinc-900 text-white dark:bg-amber-300 dark:text-zinc-950"
-                                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                            }`}
-                          aria-pressed={selected}
-                        >
-                          {option.label}
-                          <span className="ml-1.5 text-[10px] opacity-70">
-                            {option.count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-900 dark:border-slate-700 dark:bg-slate-950/70 dark:text-zinc-100">
-                    {hasFeatured ? "Featured" : "Popular"}
-                    <span className="ml-1.5 text-[10px] opacity-70">
-                      {hasFeatured ? pinned.length : popular.length}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <section className="rounded-[1.5rem] border border-zinc-200/80 bg-[#f7f3eb] py-5 pl-3 pr-5 dark:border-slate-700 dark:bg-slate-950/60">
-                <div className={motionStyles.highlightsStack}>
-                  {(
-                    [
-                      { key: "featured", posts: pinned },
-                      { key: "popular", posts: popular },
-                    ] as const
-                  ).map((pane) => (
-                    <ul
-                      key={pane.key}
-                      aria-hidden={highlightsView !== pane.key}
-                      data-active={highlightsView === pane.key}
-                      className={`${motionStyles.highlightsPane} space-y-2 text-sm`}
-                    >
-                      {pane.posts.map((post) => {
-                        const labels = formatPostDateLabels(post.publishedAt);
-
-                        return (
-                          <li
-                            key={post.url}
-                            className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3"
-                          >
-                            <span className="text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">
-                              <span className="sm:hidden">{labels.compact}</span>
-                              <span className="hidden sm:inline">{labels.full}</span>
-                            </span>
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <Link
-                                href={post.url}
-                                className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
-                              >
-                                {post.title}
-                              </Link>
-                              {post.draft ? <DraftBadge /> : null}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ))}
-                </div>
-              </section>
-            </section>
-          ) : null}
-          <div className="mt-10">
-            <PostsIndex posts={posts} />
-          </div>
+          <PostsIndex posts={posts} />
         </div>
-      </TabsContent>
+      ) : null}
 
-      <TabsContent value="views">
+      {activeView === "views" ? (
         <div id="panel-views">
           <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
             Long-lived thinking organized by concept and refined over time.
@@ -320,9 +131,9 @@ export const LandingViews = ({
             </div>
           )}
         </div>
-      </TabsContent>
+      ) : null}
 
-      <TabsContent value="books">
+      {activeView === "books" ? (
         <div id="panel-books">
           {books.length === 0 ? (
             <div className="rounded-xl border border-dashed border-zinc-200 bg-white/70 px-4 py-6 text-sm text-zinc-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-400">
@@ -369,9 +180,9 @@ export const LandingViews = ({
             </div>
           )}
         </div>
-      </TabsContent>
+      ) : null}
 
-      <TabsContent value="conferences">
+      {activeView === "conferences" ? (
         <div id="panel-conferences">
           <div className="mb-6">
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -433,7 +244,7 @@ export const LandingViews = ({
             </div>
           )}
         </div>
-      </TabsContent>
-    </Tabs>
+      ) : null}
+    </div>
   );
 };
