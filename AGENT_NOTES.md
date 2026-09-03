@@ -513,3 +513,12 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - What fixed the sequence: state 3 now marks only the three weak organizational modules in red; state 4 crossfades the ordinary meters into concrete verified-output slips and a stacked review queue while the dial turns; the story now ends there at four beats.
 - What the follow-up browser check confirmed: states 3 and 4 are distinct at 1440×900 and 390×844, the counter ends at `04 / 04`, the sticky stage and active prose remain readable, reduced motion retains the output crossfade without dial movement, and the document has no overflow or console warnings.
 - What the follow-up publication check confirmed: the authenticated replacement changed only the existing `adoption-amplifier` fence, the refetched Issue #74 body matched the four-step candidate exactly, and stdin validation passed again.
+
+## 2026 Week 36 (2026-08-31 to 2026-09-06)
+
+### Dark-theme brand system (2026-09-01)
+
+- What worked: auditing the repeated dark-mode classes across root styles, editorial pages, reading tools, tabs, overlays, and data views exposed a coherent system rather than a collection of isolated component choices.
+- What the system clarified: slate supplies depth, zinc carries type hierarchy, and amber is the signature state color for selection, progress, and editorial status.
+- What changed: added `docs/brand-guidelines.md` as a dark-first visual and implementation contract for future UI agents, including tokens, typography, layout, surfaces, states, motion, accessibility, examples, and a shipping checklist.
+- What future agents should preserve: keep content dominant, restrict amber to meaning, avoid card-per-item layouts, and verify both themes at mobile and desktop widths.

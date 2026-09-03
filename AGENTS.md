@@ -21,6 +21,9 @@ Follow existing patterns in the `app/` directory:
 - Keep styling in `app/globals.css` and prefer Tailwind utility classes where appropriate.
 - Formatting is enforced by ESLint; run `npm run lint` before pushing.
 
+## Brand Guidelines
+Read `docs/brand-guidelines.md` before creating, redesigning, or reviewing UI. Treat its dark-theme palette, typography, layout, interaction, motion, and accessibility rules as the visual contract for new surfaces. Preserve the light theme and verify both themes at mobile and desktop widths.
+
 ## Scrollytelling Skill
 Use `.agents/skills/berme-scrollytelling/SKILL.md` whenever the user asks to add, inject, design, implement, or publish a scrolly or scroll-driven storytelling section for a berme.io post. This includes requests to create a new `berme` fenced block, build its custom React renderer, or update the canonical GitHub Issue. The skill requires only the Issue number and always uses `peibolsang/peibolsang`. Treat that skill as the complete and authoritative workflow; do not look for separate scrollytelling instructions in this file.
 
