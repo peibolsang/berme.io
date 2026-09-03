@@ -67,7 +67,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
         images: [
           {
             url: resolvedImage,
-            ...(isFallbackImage ? { width: 1406, height: 1028 } : {}),
+            ...(isFallbackImage ? { width: 638, height: 304 } : {}),
           },
         ],
       },

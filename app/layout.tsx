@@ -58,8 +58,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og-image.png",
-        width: 1406,
-        height: 1028,
+        width: 638,
+        height: 304,
         alt: "Pablo Bermejo",
       },
     ],
@@ -71,9 +71,22 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    icon: [
+      {
+        url: "/favicon-light.png",
+        sizes: "64x64",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-dark.png",
+        sizes: "64x64",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
     apple: "/apple-touch-icon.svg",
-    shortcut: "/favicon.svg",
+    shortcut: "/favicon-light.png",
   },
   manifest: "/site.webmanifest",
 };

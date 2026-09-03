@@ -556,3 +556,10 @@ Compacted into ISO-week summaries so the notes stay useful as a working memory i
 - What the final landing alignment established: on desktop, “In the studio now” is centered over the featured-writing stack while sharing an exact horizontal baseline with “Product leader · writer · builder”; the separate mobile placement beneath the PB name remains intact.
 - What the sticky-footer refinement established: content indexes omit the landing-only “Start anywhere” phrase while reserving its desktop rhythm, and their fade now reaches farther into the page with a stronger 22px backdrop blur.
 - What the final hero spacing established: keep the two eyebrow labels on one baseline, then give the desktop featured paper stack a separate 2.75rem drop so the artifact relates to the full left-hand text block rather than crowding its eyebrow; mobile keeps its compact spacing.
+
+### Site favicon (2026-09-03)
+
+- What changed: replaced the old file-based PB monogram favicon with optimized 64px versions of the homepage B-mark, using black for light browser chrome and white for dark browser chrome.
+- What mattered technically: `app/favicon.ico` had to be removed because Next.js file-based metadata would otherwise take precedence over the adaptive icon declarations in `app/layout.tsx`.
+- What stayed intentionally separate: the Apple touch icon and web-app manifest icon still use their purpose-built assets; this change is scoped to the browser favicon.
+- What changed for social sharing: replaced the illustrated sunset fallback with the supplied navy PB lockup and synchronized its actual 638×304 dimensions across root, post, and `/now` Open Graph metadata.
