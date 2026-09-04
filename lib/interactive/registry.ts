@@ -1,6 +1,9 @@
 import { adoptionAmplifierSpecSchema } from "./specs/adoption-amplifier";
+import { articleEvidenceWorkbenchSpecSchema } from "./specs/article-evidence-workbench";
 import { assumptionAvalancheSpecSchema } from "./specs/assumption-avalanche";
 import { certaintyPhaseChangeSpecSchema } from "./specs/certainty-phase-change";
+import { cinematicProofRoomSpecSchema } from "./specs/cinematic-proof-room";
+import { confidenceEvidenceLoopSpecSchema } from "./specs/confidence-evidence-loop";
 import { constraintDescentSpecSchema } from "./specs/constraint-descent";
 import { constraintMigrationSpecSchema } from "./specs/constraint-migration";
 import { delegationLoopShiftSpecSchema } from "./specs/delegation-loop-shift";
@@ -21,6 +24,11 @@ export const interactiveDefinitionRegistry = {
     schema: adoptionAmplifierSpecSchema,
     version: 1,
   },
+  "article-evidence-workbench": {
+    kind: "scrolly",
+    schema: articleEvidenceWorkbenchSpecSchema,
+    version: 1,
+  },
   "assumption-avalanche": {
     kind: "scrolly",
     schema: assumptionAvalancheSpecSchema,
@@ -29,6 +37,16 @@ export const interactiveDefinitionRegistry = {
   "certainty-phase-change": {
     kind: "scrolly",
     schema: certaintyPhaseChangeSpecSchema,
+    version: 1,
+  },
+  "cinematic-proof-room": {
+    kind: "scrolly",
+    schema: cinematicProofRoomSpecSchema,
+    version: 1,
+  },
+  "confidence-evidence-loop": {
+    kind: "scrolly",
+    schema: confidenceEvidenceLoopSpecSchema,
     version: 1,
   },
   "constraint-descent": {

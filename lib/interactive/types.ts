@@ -4,8 +4,11 @@ import type {
   ScrollySpecSchema,
 } from "./contracts/scrolly";
 import type { AdoptionAmplifierSpec } from "./specs/adoption-amplifier";
+import type { ArticleEvidenceWorkbenchSpec } from "./specs/article-evidence-workbench";
 import type { AssumptionAvalancheSpec } from "./specs/assumption-avalanche";
 import type { CertaintyPhaseChangeSpec } from "./specs/certainty-phase-change";
+import type { CinematicProofRoomSpec } from "./specs/cinematic-proof-room";
+import type { ConfidenceEvidenceLoopSpec } from "./specs/confidence-evidence-loop";
 import type { ConstraintDescentSpec } from "./specs/constraint-descent";
 import type { ConstraintMigrationSpec } from "./specs/constraint-migration";
 import type { DelegationLoopShiftSpec } from "./specs/delegation-loop-shift";
@@ -19,8 +22,11 @@ export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
   "adoption-amplifier": AdoptionAmplifierSpec;
+  "article-evidence-workbench": ArticleEvidenceWorkbenchSpec;
   "assumption-avalanche": AssumptionAvalancheSpec;
   "certainty-phase-change": CertaintyPhaseChangeSpec;
+  "cinematic-proof-room": CinematicProofRoomSpec;
+  "confidence-evidence-loop": ConfidenceEvidenceLoopSpec;
   "constraint-descent": ConstraintDescentSpec;
   "constraint-migration": ConstraintMigrationSpec;
   "delegation-loop-shift": DelegationLoopShiftSpec;

@@ -1,8 +1,11 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { AdoptionAmplifierScrollyProps } from "./blocks/adoption-amplifier/AdoptionAmplifierScrolly";
+import type { ArticleEvidenceWorkbenchScrollyProps } from "./blocks/article-evidence-workbench/ArticleEvidenceWorkbenchScrolly";
 import type { AssumptionAvalancheScrollyProps } from "./blocks/assumption-avalanche/AssumptionAvalancheScrolly";
 import type { CertaintyPhaseChangeScrollyProps } from "./blocks/certainty-phase-change/CertaintyPhaseChangeScrolly";
+import type { CinematicProofRoomScrollyProps } from "./blocks/cinematic-proof-room/CinematicProofRoomScrolly";
+import type { ConfidenceEvidenceLoopScrollyProps } from "./blocks/confidence-evidence-loop/ConfidenceEvidenceLoopScrolly";
 import type { ConstraintDescentScrollyProps } from "./blocks/constraint-descent/ConstraintDescentScrolly";
 import type { ConstraintMigrationScrollyProps } from "./blocks/constraint-migration/ConstraintMigrationScrolly";
 import type { DelegationLoopShiftScrollyProps } from "./blocks/delegation-loop-shift/DelegationLoopShiftScrolly";
@@ -29,6 +32,13 @@ const AdoptionAmplifierScrolly = dynamic<AdoptionAmplifierScrollyProps>(() =>
   ),
 );
 
+const ArticleEvidenceWorkbenchScrolly =
+  dynamic<ArticleEvidenceWorkbenchScrollyProps>(() =>
+    import(
+      "./blocks/article-evidence-workbench/ArticleEvidenceWorkbenchScrolly"
+    ).then((module) => module.ArticleEvidenceWorkbenchScrolly),
+  );
+
 const AssumptionAvalancheScrolly =
   dynamic<AssumptionAvalancheScrollyProps>(() =>
     import(
@@ -41,6 +51,20 @@ const CertaintyPhaseChangeScrolly =
     import(
       "./blocks/certainty-phase-change/CertaintyPhaseChangeScrolly"
     ).then((module) => module.CertaintyPhaseChangeScrolly),
+  );
+
+const CinematicProofRoomScrolly = dynamic<CinematicProofRoomScrollyProps>(
+  () =>
+    import("./blocks/cinematic-proof-room/CinematicProofRoomScrolly").then(
+      (module) => module.CinematicProofRoomScrolly,
+    ),
+);
+
+const ConfidenceEvidenceLoopScrolly =
+  dynamic<ConfidenceEvidenceLoopScrollyProps>(() =>
+    import(
+      "./blocks/confidence-evidence-loop/ConfidenceEvidenceLoopScrolly"
+    ).then((module) => module.ConfidenceEvidenceLoopScrolly),
   );
 
 const ConstraintDescentScrolly = dynamic<ConstraintDescentScrollyProps>(() =>
@@ -96,8 +120,11 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
 
 export const interactiveComponentRegistry = {
   "adoption-amplifier": AdoptionAmplifierScrolly,
+  "article-evidence-workbench": ArticleEvidenceWorkbenchScrolly,
   "assumption-avalanche": AssumptionAvalancheScrolly,
   "certainty-phase-change": CertaintyPhaseChangeScrolly,
+  "cinematic-proof-room": CinematicProofRoomScrolly,
+  "confidence-evidence-loop": ConfidenceEvidenceLoopScrolly,
   "constraint-descent": ConstraintDescentScrolly,
   "constraint-migration": ConstraintMigrationScrolly,
   "delegation-loop-shift": DelegationLoopShiftScrolly,

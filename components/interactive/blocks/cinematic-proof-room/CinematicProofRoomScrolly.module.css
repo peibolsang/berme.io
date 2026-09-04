@@ -1,0 +1,209 @@
+.section {
+  --copy: #18212e;
+  --muted: #697586;
+  --deep: #020617;
+  --panel: #0f172a;
+  --raised: #1e293b;
+  --line: #334155;
+  --ink: #f4f4f5;
+  --quiet: #a1a1aa;
+  --amber: #fcd34d;
+  --teal: #5eead4;
+  --rose: #fb7185;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  margin-block: clamp(3rem, 7vw, 5.5rem);
+  color: var(--copy);
+}
+
+.layout { display: block; }
+.stage {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding-block: clamp(0.75rem, 2vh, 1.2rem);
+  background: #fff;
+  box-shadow: 0 1rem 0 #fff;
+}
+.stageInner { width: 100%; }
+
+.eyebrow,
+.beatLabel,
+.roomHeader,
+.visual text {
+  font-family: var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+.eyebrow,
+.beatLabel {
+  margin: 0;
+  color: #a16207;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
+}
+.stage h2,
+.beat h2 {
+  max-width: 48rem;
+  margin: 0.75rem 0 0;
+  color: currentColor;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 2rem;
+}
+
+.room {
+  position: relative;
+  width: 96%;
+  aspect-ratio: 900 / 555;
+  margin: 1.25rem auto 0;
+  overflow: hidden;
+  padding-top: 2.8rem;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: var(--deep);
+  box-shadow: 0 1.5rem 3rem rgb(2 6 23 / 0.2);
+}
+.roomHeader {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto;
+  display: flex;
+  height: 2.8rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--quiet);
+  font-size: clamp(0.78rem, 1vw, 0.9rem);
+  letter-spacing: 0.08em;
+}
+.roomHeader strong { color: var(--amber); }
+.visual { display: block; width: 100%; height: 100%; }
+
+.perforations rect { fill: #1e293b; stroke: #475569; stroke-width: 1; }
+.monitor > rect { fill: #0b1220; stroke: #475569; stroke-width: 2; }
+.cropMark { fill: none; stroke: #94a3b8; stroke-width: 1.5; }
+.worldSun { fill: var(--amber); opacity: 0.9; }
+.worldFar { fill: #164e63; }
+.worldNear { fill: #0f766e; }
+.subject rect,
+.subject circle { fill: #f4f4f5; }
+.subject { opacity: 1; transition: opacity 220ms var(--ease-out); }
+.subject.obscured { opacity: 0; }
+.monitorLabel { fill: #cbd5e1; font-size: 14px; font-weight: 750; letter-spacing: 0.075em; }
+.monitorTitle { fill: #f4f4f5; font-size: 14.5px; font-weight: 750; letter-spacing: 0.055em; text-anchor: middle; }
+
+.storyboards,
+.timeline,
+.inspectionRack,
+.repairPath,
+.repairLabel {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 260ms var(--ease-out), transform 340ms var(--ease-out);
+}
+.visible { opacity: 1; transform: translateY(0); }
+
+.storyboards > g > rect { fill: #111c2c; stroke: #64748b; stroke-width: 1.5; }
+.storyboards circle { fill: var(--amber); }
+.storyboards path { fill: #155e75; }
+.storyboards text { fill: #e2e8f0; font-size: 12.5px; font-weight: 750; letter-spacing: 0.05em; text-anchor: middle; }
+.storyGate rect { fill: #172033 !important; stroke: var(--amber) !important; }
+.storyGate text { fill: var(--amber); font-size: 12.5px; }
+
+.timeline text { fill: #cbd5e1; font-size: 13.5px; font-weight: 750; letter-spacing: 0.06em; }
+.timeline line { stroke: #475569; stroke-width: 1; }
+.timeline rect { opacity: 0.9; }
+.trackAmber { fill: #d97706; }
+.trackTeal { fill: #0f766e; }
+.trackRose { fill: #be123c; }
+.timeline .playhead { stroke: var(--amber); stroke-width: 2; }
+
+.rackTitle { fill: #cbd5e1; font-size: 13.5px; font-weight: 750; letter-spacing: 0.06em; }
+.meter rect { fill: var(--panel); stroke: #475569; stroke-width: 1.5; transition: stroke 220ms var(--ease-out); }
+.meter text { fill: #e2e8f0; font-size: 13.5px; font-weight: 750; letter-spacing: 0.02em; }
+.meter line { stroke: #475569; stroke-linecap: round; stroke-width: 4; }
+.meter circle { fill: var(--amber); transition: fill 220ms var(--ease-out); }
+.meter.failed rect { stroke: var(--rose); }
+.meter.failed circle { fill: var(--rose); }
+.meter.passed rect { stroke: var(--teal); }
+.meter.passed circle { fill: var(--teal); }
+
+.combinedGate rect { fill: #111c2c; stroke: #64748b; stroke-width: 1.5; transition: stroke 220ms var(--ease-out); }
+.combinedGate text { fill: #f4f4f5; font-size: 13.5px; font-weight: 750; letter-spacing: 0.04em; }
+.combinedGate .gateState { fill: #cbd5e1; font-size: 11.5px; }
+.combinedGate.passed rect { stroke: var(--teal); }
+.combinedGate.passed .gateState { fill: var(--teal); }
+
+.repairPath { fill: none; stroke: var(--rose); stroke-linecap: round; stroke-width: 2; }
+.repairLabel { fill: var(--rose); font-size: 11.5px; font-weight: 750; letter-spacing: 0.04em; text-anchor: middle; }
+
+.steps { padding-bottom: 18svh; }
+.beat {
+  display: flex;
+  min-height: 46svh;
+  align-items: flex-start;
+  color: var(--muted);
+  opacity: 0.46;
+  transition: color 260ms var(--ease-out), opacity 260ms var(--ease-out);
+}
+.beat > div {
+  position: relative;
+  width: 100%;
+  max-width: 50rem;
+  padding: 1.25rem 0 2.75rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+}
+.beat > div::before {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 4rem;
+  height: 2px;
+  background: var(--amber);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.35);
+  transform-origin: left;
+  transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.beat.future { color: var(--muted); opacity: 0.46; }
+.beat.past { opacity: 0.68; }
+.beat.active { color: var(--copy); opacity: 1; }
+.beat.active > div::before { opacity: 1; transform: scaleX(1); }
+.beat p:last-child { margin: 1rem 0 0; color: currentColor; font-size: 1rem; line-height: 1.65; }
+
+:global(.dark) .section { --copy: #f4f4f5; --muted: #a1a1aa; }
+:global(.dark) .stage { background: #1e293b; box-shadow: 0 1rem 0 #1e293b; }
+:global(.dark) .eyebrow,
+:global(.dark) .beatLabel { color: var(--amber); }
+
+@media (max-width: 767px) {
+  .section { margin-block: 3rem 4rem; }
+  .stage { padding-block: 0.75rem; }
+  .stage h2 { max-width: 22rem; }
+  .room { width: 100%; aspect-ratio: 900 / 635; border-radius: 1rem; }
+  .roomHeader { height: 2.55rem; padding-inline: 0.75rem; }
+  .perforations { display: none; }
+  .steps { padding-bottom: 16svh; }
+  .beat { min-height: 52svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storyboards,
+  .timeline,
+  .inspectionRack,
+  .repairPath,
+  .repairLabel,
+  .subject,
+  .meter rect,
+  .meter circle,
+  .combinedGate rect,
+  .beat,
+  .beat > div::before {
+    transform: none;
+    transition: opacity 160ms var(--ease-out), color 160ms var(--ease-out), stroke 160ms var(--ease-out), fill 160ms var(--ease-out);
+  }
+}
