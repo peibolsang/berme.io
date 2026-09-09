@@ -1,0 +1,40 @@
+.letter {
+  max-width: 40rem;
+  color: #52525b;
+  font-size: 1.03rem;
+  line-height: 1.9;
+}
+
+:global(.dark) .letter {
+  color: #e2e8f0;
+}
+
+.letter p {
+  margin: 0 0 1.4rem;
+}
+
+.letter .greeting {
+  margin-bottom: 1.75rem;
+  color: var(--index-ink);
+  font-size: 1.3rem;
+  font-weight: 550;
+}
+
+.letter a {
+  color: var(--index-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.letter a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.letter .signature {
+  margin-top: 2rem;
+  margin-bottom: 0;
+  color: var(--index-ink);
+  font-size: 1.3rem;
+  font-weight: 550;
+}

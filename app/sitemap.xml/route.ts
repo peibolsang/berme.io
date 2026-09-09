@@ -72,6 +72,7 @@ export async function GET() {
   ]);
 
   const entries: SitemapEntry[] = [
+    { loc: `${baseUrl}/about` },
     {
       loc: `${baseUrl}/`,
       lastmod: siteLastModified,

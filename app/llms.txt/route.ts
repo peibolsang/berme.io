@@ -7,6 +7,7 @@ export async function GET() {
 > A personal site and technical blog by Pablo Bermejo, a product leader and technologist writing about enterprise software, product leadership, and software engineering.
 
 ## Core Resources
+- [About me](${baseUrl}/about): Pablo’s background, interests, and an invitation to connect.
 - [Home / Posts](${baseUrl}/?view=posts): Latest articles and writing.
 - [Views](${baseUrl}/?view=views): Post view collections.
 - [Books](${baseUrl}/?view=books): Reading list and recommendations.

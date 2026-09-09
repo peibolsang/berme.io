@@ -51,7 +51,10 @@ const buildMarkdownSitemap = (baseUrl: string, entries: UrlEntry[]) => {
 
 export async function GET() {
   const { baseUrl, items } = await getContentIndex();
-  const entries: UrlEntry[] = [{ url: `${baseUrl}/`, kind: "page", title: "Home" }];
+  const entries: UrlEntry[] = [
+    { url: `${baseUrl}/`, kind: "page", title: "Home" },
+    { url: `${baseUrl}/about`, kind: "page", title: "About me" },
+  ];
 
   entries.push(
     ...items.map((item) => ({

@@ -2,9 +2,10 @@ import Link from "next/link";
 import styles from "./ExploreNav.module.css";
 
 export type ContentView = "posts" | "views" | "books" | "conferences";
+export type ExploreView = ContentView | "about";
 
 const destinations: Array<{
-  view: ContentView;
+  view: ExploreView;
   label: string;
   href: string;
 }> = [
@@ -12,13 +13,14 @@ const destinations: Array<{
   { view: "views", label: "Views", href: "/?view=views" },
   { view: "books", label: "Books", href: "/?view=books" },
   { view: "conferences", label: "Talks", href: "/?view=conferences" },
+  { view: "about", label: "About me", href: "/about" },
 ];
 
 export function ExploreNav({
   activeView,
   showPrompt = true,
 }: {
-  activeView?: ContentView;
+  activeView?: ExploreView;
   showPrompt?: boolean;
 }) {
   return (

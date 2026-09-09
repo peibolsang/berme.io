@@ -136,3 +136,18 @@
     padding: 6rem 1.25rem 3rem;
   }
 }
+
+.page[data-view="about"] {
+  padding-bottom: 3rem;
+}
+
+.page[data-view="about"] .footer {
+  position: static;
+  width: min(100%, 86rem);
+  margin: 4rem auto 0;
+  padding: 0;
+}
+
+.page[data-view="about"] .footer::before {
+  display: none;
+}
