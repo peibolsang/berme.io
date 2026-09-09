@@ -1,3 +1,5 @@
+import { evalContextFeedbackSpecSchema } from "./specs/eval-context-feedback";
+import { evalReleasePathSpecSchema } from "./specs/eval-release-path";
 import { adoptionAmplifierSpecSchema } from "./specs/adoption-amplifier";
 import { articleEvidenceWorkbenchSpecSchema } from "./specs/article-evidence-workbench";
 import { assumptionAvalancheSpecSchema } from "./specs/assumption-avalanche";
@@ -19,6 +21,8 @@ import type {
 } from "./types";
 
 export const interactiveDefinitionRegistry = {
+  "eval-context-feedback": { kind: "scrolly", schema: evalContextFeedbackSpecSchema, version: 1 },
+  "eval-release-path": { kind: "scrolly", schema: evalReleasePathSpecSchema, version: 1 },
   "adoption-amplifier": {
     kind: "scrolly",
     schema: adoptionAmplifierSpecSchema,

@@ -1,3 +1,5 @@
+import type { EvalContextFeedbackScrollyProps } from "./blocks/eval-context-feedback/EvalContextFeedbackScrolly";
+import type { EvalReleasePathScrollyProps } from "./blocks/eval-release-path/EvalReleasePathScrolly";
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { AdoptionAmplifierScrollyProps } from "./blocks/adoption-amplifier/AdoptionAmplifierScrolly";
@@ -118,7 +120,13 @@ const PracticeSpiralScrolly = dynamic<PracticeSpiralScrollyProps>(() =>
   ),
 );
 
+const EvalReleasePathScrolly = dynamic<EvalReleasePathScrollyProps>(() => import("./blocks/eval-release-path/EvalReleasePathScrolly").then((module) => module.EvalReleasePathScrolly));
+
+const EvalContextFeedbackScrolly = dynamic<EvalContextFeedbackScrollyProps>(() => import("./blocks/eval-context-feedback/EvalContextFeedbackScrolly").then((module) => module.EvalContextFeedbackScrolly));
+
 export const interactiveComponentRegistry = {
+  "eval-context-feedback": EvalContextFeedbackScrolly,
+  "eval-release-path": EvalReleasePathScrolly,
   "adoption-amplifier": AdoptionAmplifierScrolly,
   "article-evidence-workbench": ArticleEvidenceWorkbenchScrolly,
   "assumption-avalanche": AssumptionAvalancheScrolly,

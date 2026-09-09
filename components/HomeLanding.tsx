@@ -61,9 +61,9 @@ export function HomeLanding({ featuredPosts }: { featuredPosts: FeaturedWriting[
           <p className={styles.kicker}>Product leader · writer · builder</p>
           <h1>What are you curious about?</h1>
           <p className={styles.lead}>
-            After fifteen years leading platform products in vertical SaaS, I
-            study new technology from first principles, connect ideas, and test
-            them in practice. Then I share what I learn in service of something
+            Fifteen years leading platform products in vertical SaaS. I study new
+            technology from first principles, connect ideas, and test them in
+            practice. Here I share what I learn in service of something
             greater.
           </p>
         </div>

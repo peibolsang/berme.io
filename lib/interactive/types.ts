@@ -1,3 +1,5 @@
+import type { EvalContextFeedbackSpec } from "./specs/eval-context-feedback";
+import type { EvalReleasePathSpec } from "./specs/eval-release-path";
 import type { z } from "zod";
 import type {
   ScrollySpec,
@@ -21,6 +23,8 @@ import type { PracticeSpiralSpec } from "./specs/practice-spiral";
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
+  "eval-context-feedback": EvalContextFeedbackSpec;
+  "eval-release-path": EvalReleasePathSpec;
   "adoption-amplifier": AdoptionAmplifierSpec;
   "article-evidence-workbench": ArticleEvidenceWorkbenchSpec;
   "assumption-avalanche": AssumptionAvalancheSpec;

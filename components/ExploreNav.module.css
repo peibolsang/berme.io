@@ -77,10 +77,18 @@
 }
 
 @media (max-width: 640px) {
+  .bar > p {
+    text-align: center;
+  }
+
   .bar nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.9rem 1.5rem;
+  }
+
+  .bar nav a {
+    justify-content: center;
   }
 }
 
