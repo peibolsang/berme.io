@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ExploreNav, type ExploreView } from "./ExploreNav";
 import { HomeIdentity } from "./HomeLanding";
 import styles from "./ContentIndexShell.module.css";
@@ -25,6 +26,12 @@ export function ContentIndexShell({
       </header>
 
       <main className={styles.main}>
+        {activeView === "posts" ? (
+          <Link href="/graph" className={styles.readingPaths}>
+            <span>Explore reading paths</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : null}
         <h1>{titles[activeView]}</h1>
         <div className={styles.content}>{children}</div>
       </main>

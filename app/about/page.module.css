@@ -30,11 +30,3 @@
 .letter a:hover {
   text-decoration-thickness: 2px;
 }
-
-.letter .signature {
-  margin-top: 2rem;
-  margin-bottom: 0;
-  color: var(--index-ink);
-  font-size: 1.3rem;
-  font-weight: 550;
-}

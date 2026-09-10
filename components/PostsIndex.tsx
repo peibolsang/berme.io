@@ -84,16 +84,6 @@ export const PostsIndex = ({ posts }: { posts: Post[] }) => {
 
   return (
     <div className="space-y-8">
-      <section className="mb-10 md:mb-10">
-        <Link
-          href="/graph"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-        >
-          <span>Explore reading paths</span>
-          <span aria-hidden="true">→</span>
-        </Link>
-      </section>
-
       {grouped.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-200 bg-white/70 px-4 py-6 text-sm text-zinc-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-400">
           <p>No published posts yet.</p>
