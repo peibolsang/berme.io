@@ -17,11 +17,6 @@ const requireConfigured = (value: string, name: string) => {
   return value;
 };
 
-const normalizePopularityNamespace = (value: string | undefined) => {
-  const normalized = value?.trim();
-  return normalized || "berme.io";
-};
-
 const normalizeCsvEnv = (value: string | undefined) =>
   String(value ?? "")
     .split(",")
@@ -34,17 +29,10 @@ export const config = {
     owner: process.env.GITHUB_OWNER ?? "peibolsang",
     repo: process.env.GITHUB_REPO ?? "peibolsang",
   },
-  localDev: getBooleanEnv(process.env.LOCAL_DEV),
   notion: {
     token: process.env.NOTION_API_TOKEN ?? "",
     databaseId:
       process.env.NOTION_DATABASE_ID ?? "d7d86599-3901-4dbd-8997-98f4487e3182",
-  },
-  popularity: {
-    namespace: normalizePopularityNamespace(process.env.POPULARITY_NAMESPACE),
-  },
-  redis: {
-    url: process.env.REDIS_URL ?? "",
   },
   revalidateSeconds: Number(process.env.REVALIDATE_SECONDS ?? "3600"),
   showDrafts: getBooleanEnv(process.env.SHOW_DRAFTS),

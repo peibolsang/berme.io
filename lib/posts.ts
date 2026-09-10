@@ -13,11 +13,6 @@ import { buildViewSlug } from "./view-slug";
 import type { Post } from "../types";
 import type { GitHubIssue } from "./github";
 
-export type PostPopularityCatalogEntry = Pick<
-  Post,
-  "number" | "url" | "title" | "publishedAt"
->;
-
 const buildUrl = (date: Date, slug: string) => {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -155,44 +150,6 @@ export const getAllPosts = unstable_cache(
     tags: ["posts"],
   },
 );
-
-const fetchPostPopularityCatalog = async (): Promise<PostPopularityCatalogEntry[]> => {
-  const posts = await getAllPosts();
-  return posts.map(({ number, url, title, publishedAt }) => ({
-    number,
-    url,
-    title,
-    publishedAt,
-  }));
-};
-
-export const getPostPopularityCatalog = unstable_cache(
-  fetchPostPopularityCatalog,
-  ["post-popularity-catalog", contentVisibilityCacheKey],
-  {
-    revalidate: config.revalidateSeconds,
-    tags: ["posts"],
-  },
-);
-
-const fetchPostUrlIndex = async (): Promise<Record<string, true>> => {
-  const posts = await getAllPosts();
-  return Object.fromEntries(posts.map((post) => [post.url, true] as const));
-};
-
-const getPostUrlIndex = unstable_cache(
-  fetchPostUrlIndex,
-  ["post-url-index", contentVisibilityCacheKey],
-  {
-    revalidate: config.revalidateSeconds,
-    tags: ["posts"],
-  },
-);
-
-export const hasPublishedPostUrl = async (postUrl: string) => {
-  const postUrlIndex = await getPostUrlIndex();
-  return postUrlIndex[postUrl] === true;
-};
 
 export const getPostByPermalink = async (
   year: string,

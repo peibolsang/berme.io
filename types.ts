@@ -14,9 +14,6 @@ export type Post = {
   excerpt?: string;
   image?: string;
   pinned?: boolean;
-  readCount?: number;
-  popularRank?: number | null;
-  isPopular?: boolean;
   viewTitle?: string;
   viewNumber?: number;
   viewSlug?: string;

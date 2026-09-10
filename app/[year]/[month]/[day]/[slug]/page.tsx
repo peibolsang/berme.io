@@ -14,7 +14,6 @@ import {
   formatReadingTime,
 } from "../../../../../lib/markdown-headings";
 import { ReadingShell } from "../../../../../components/ReadingShell";
-import { PostReadTracker } from "../../../../../components/PostReadTracker";
 import { DraftBadge } from "../../../../../components/DraftBadge";
 
 type PageProps = {
@@ -171,7 +170,6 @@ export default async function PostPage({ params }: PageProps) {
             `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`,
           ]}
         />
-        <PostReadTracker postUrl={post.url} />
         <section
           className={`bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 ${
             post.image ? "pt-0" : "pt-12"

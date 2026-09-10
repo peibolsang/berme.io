@@ -141,7 +141,6 @@ type HomeMarkdownDocumentInput = {
   activeView: "posts" | "views" | "books" | "conferences";
   posts: Post[];
   pinned: Post[];
-  popular: Post[];
   views: View[];
   books: Book[];
   conferences: Conference[];
@@ -162,7 +161,6 @@ export const buildHomeMarkdownDocument = ({
   activeView,
   posts,
   pinned,
-  popular,
   views,
   books,
   conferences,
@@ -239,8 +237,6 @@ export const buildHomeMarkdownDocument = ({
       ? joinSections([
           pinned.length > 0 ? "## Featured Posts" : null,
           pinned.length > 0 ? buildPostList(pinned) : null,
-          popular.length > 0 ? "## Popular Posts" : null,
-          popular.length > 0 ? buildPostList(popular) : null,
           "## Recent Posts",
           buildPostList(posts),
         ])

@@ -6,7 +6,6 @@ import { getConferences } from "../../../lib/conferences";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 import { toMarkdownUrl } from "../../../lib/markdown-exports";
-import { syncPostReadTracking } from "../../../lib/post-popularity";
 import { config } from "../../../lib/config";
 import { shouldShowIssueAsContent } from "../../../lib/content-status";
 
@@ -285,10 +284,6 @@ export async function POST(request: Request) {
       : null;
     const cached = await getCachedPosts();
     const cachedUrl = cached.find((item) => item.number === issueNumber)?.url;
-    await syncPostReadTracking({
-      currentUrl: urlFromPayload ?? cachedUrl,
-      previousUrl: previousUrlFromPayload ?? cachedUrl,
-    });
     const urls = await revalidatePostUrls([
       urlFromPayload,
       previousUrlFromPayload,
