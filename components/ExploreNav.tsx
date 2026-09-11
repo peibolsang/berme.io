@@ -31,6 +31,9 @@ export function ExploreNav({
     >
       {showPrompt ? <p>Start anywhere. The paths connect.</p> : null}
       <nav>
+        <Link href="/">
+          Home <span aria-hidden="true">↗</span>
+        </Link>
         {destinations.map((destination) => (
           <Link
             key={destination.view}

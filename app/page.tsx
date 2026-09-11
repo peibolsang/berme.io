@@ -2,6 +2,9 @@ import { HomeLanding } from "../components/HomeLanding";
 import type { FeaturedWriting } from "../components/FeaturedWritingStack";
 import { getAllPosts } from "../lib/posts";
 
+// Cache the rendered page; CMS webhooks invalidate its path and data tags.
+export const dynamic = "force-static";
+
 const landingFallback: FeaturedWriting[] = [
   {
     title: "A practical theory of software platforms",

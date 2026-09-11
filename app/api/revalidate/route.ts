@@ -6,7 +6,6 @@ import { getConferences } from "../../../lib/conferences";
 import { parseFrontmatter } from "../../../lib/frontmatter";
 import { slugify } from "../../../lib/slugify";
 import { toMarkdownUrl } from "../../../lib/markdown-exports";
-import { config } from "../../../lib/config";
 import { shouldShowIssueAsContent } from "../../../lib/content-status";
 
 const verifySignature = (body: string, signature: string | null) => {
@@ -130,25 +129,31 @@ const revalidatePostUrls = async (urls: Array<string | null | undefined>) => {
 };
 
 const revalidateContentTags = async () => {
+  // Webhooks must expire data immediately so page regeneration reads fresh CMS data.
   await Promise.all([
-    revalidateTag("posts", "max"),
-    revalidateTag("views", "max"),
-    revalidateTag("conferences", "max"),
-    revalidateTag("github-issues", "max"),
-    revalidateTag("github-issues-with-parents", "max"),
-    revalidateTag("github-pinned-issues", "max"),
+    revalidateTag("posts", { expire: 0 }),
+    revalidateTag("views", { expire: 0 }),
+    revalidateTag("conferences", { expire: 0 }),
+    revalidateTag("github-issues", { expire: 0 }),
+    revalidateTag("github-issues-with-parents", { expire: 0 }),
+    revalidateTag("github-pinned-issues", { expire: 0 }),
   ]);
 };
 
+const aggregatePaths = [
+  "/",
+  "/posts",
+  "/views",
+  "/books",
+  "/talks",
+  "/feed.xml",
+  "/sitemap.xml",
+  "/sitemap.md",
+  "/sitemap.json",
+];
+
 const revalidateAggregates = async () => {
-  await Promise.all([
-    ...["/posts", "/views", "/books", "/talks"].map((path) => revalidatePath(path)),
-    revalidatePath("/"),
-    revalidatePath("/feed.xml"),
-    revalidatePath("/sitemap.xml"),
-    revalidatePath("/sitemap.md"),
-    revalidatePath("/sitemap.json"),
-  ]);
+  await Promise.all(aggregatePaths.map((path) => revalidatePath(path)));
 };
 
 const hasNowLabel = (
@@ -306,7 +311,7 @@ export async function POST(request: Request) {
       revalidated.push(conferenceUrl);
     }
     await revalidateAggregates();
-    revalidated.push("/", "/feed.xml", "/sitemap.xml", "/sitemap.md", "/sitemap.json");
+    revalidated.push(...aggregatePaths);
   };
 
   if (event === "issues") {
@@ -333,7 +338,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (action === "opened" && config.showDrafts) {
+    if (action === "opened") {
       const issueNumber = Number(payload.issue?.number);
       if (
         Number.isFinite(issueNumber) &&
@@ -346,7 +351,7 @@ export async function POST(request: Request) {
     if (action === "pinned" || action === "unpinned") {
       await ensureContentTagsRevalidated();
       await revalidateAggregates();
-      revalidated.push("/", "/feed.xml", "/sitemap.xml", "/sitemap.md", "/sitemap.json");
+      revalidated.push(...aggregatePaths);
     }
 
     if (action === "edited" || action === "closed" || action === "reopened") {
