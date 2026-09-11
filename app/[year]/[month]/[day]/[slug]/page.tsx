@@ -186,7 +186,7 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           )}
           <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
-            <BackLink href="/posts" />
+            <BackLink href="/posts" label="Back to writing" />
             {post.draft ? (
               <div className="mt-6">
                 <DraftBadge prominent />
@@ -311,7 +311,7 @@ export default async function PostPage({ params }: PageProps) {
             href="/posts"
             className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
-            ← Back
+            ← Back to writing
           </Link>
           <h1 className="mt-6 text-2xl font-semibold">Pablo</h1>
           <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
