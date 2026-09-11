@@ -14,7 +14,7 @@ const FEEDBACK = "M600 280 C810 330 810 45 600 100";
 const CAPTIONS = [
   'Where an eval runs and how it judges are separate choices.', 'Stable rules apply to test cases and real runs.',
   'Rubrics test meaning in both contexts.', 'A real run exposes a missing check.',
-  'A real failure becomes a case we can test.', 'Encode stable requirements; keep judging claim support.',
+  'A real failure becomes a case we can test.', 'Encode verifiable requirements. Keep judging where context is needed',
 ];
 
 function ContextInstrument({ beat }: { beat: number }) {
@@ -48,10 +48,10 @@ function ContextInstrument({ beat }: { beat: number }) {
       <Label x={19} y={83}>Online<small>Real runs</small></Label>
       <Label x={45} y={4} tone="amber">Deterministic<small>Stable rules · code</small></Label>
       <Label x={75} y={4} tone="blue">Non-deterministic<small>Model or human judgment</small></Label>
-      <Label x={45} y={44}>Schema regression</Label>
-      <Label x={75} y={44} tone={beat >= 4 ? 'blue' : 'ink'}>{beat >= 4 ? 'Claim-support regression' : 'Voice rubric on test drafts'}</Label>
-      <Label x={45} y={94}>Live tool restriction</Label>
-      <Label x={75} y={94} tone={beat >= 3 ? 'red' : 'ink'}>{beat >= 3 ? 'Unsupported claim' : 'Claim support in a real run'}</Label>
+      <Label x={45} y={44}>Ex: Schema regression</Label>
+      <Label x={75} y={44} tone={beat >= 4 ? 'blue' : 'ink'}>{beat >= 4 ? 'Ex: Agent tone regression' : 'Ex: Hallucination rubric'}</Label>
+      <Label x={45} y={94}>Ex: Live tool restriction</Label>
+      <Label x={75} y={94} tone={beat >= 3 ? 'red' : 'ink'}>{beat >= 3 ? 'Escaped failure' : 'Ex: Agent tone rubric'}</Label>
     </div>
     <div className={styles.evidence} aria-hidden="true">
       <span data-state={beat >= 1 ? 'passed' : 'waiting'}><i />Rules <b>{beat >= 1 ? 'Code' : 'Pending'}</b></span>

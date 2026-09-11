@@ -48,9 +48,11 @@ function ReleaseInstrument({ beat }: { beat: number }) {
       <Label x={49} y={65} tone="amber">Structure</Label>
       <Label x={60} y={76} tone={failed ? 'red' : 'blue'}>Support</Label>
       <Label x={71} y={65} tone="blue">Intent</Label>
-      <Label x={60} y={12}>Evaluate</Label>
-      <Label x={82} y={12}>Decision</Label>
-      <Label x={94} y={25}>Release</Label>
+      <div className={styles.releaseLabels}>
+        <Label x={60} y={0}>Evaluate</Label>
+        <Label x={82} y={0}>Decision</Label>
+        <Label x={94} y={0}>Release</Label>
+      </div>
       <div className={styles.loopLabel} data-visible={failed}>
         <Label x={45} y={94} tone="red">Repair, then evaluate again</Label>
       </div>

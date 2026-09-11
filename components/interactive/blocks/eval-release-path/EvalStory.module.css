@@ -62,6 +62,7 @@
 .label[data-tone="amber"] { color: var(--story-amber); }
 .label[data-tone="blue"] { color: var(--story-blue); }
 .label[data-tone="red"] { color: var(--story-red); }
+.releaseLabels { position: absolute; top: 12%; inset-inline: 0; }
 .evidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-block: 1px solid #263348; padding: .85rem 0; }
 .evidence span { position: relative; padding-left: 14px; color: #a1a1aa; font-size: 12px; line-height: 1.5; }
 .evidence b { display: block; color: #cbd5e1; font-size: 13px; font-weight: 500; }
@@ -97,6 +98,8 @@
   .instrumentBody { padding: 1.4rem .5rem .8rem; }
   .diagram { height: 215px; margin-bottom: 1rem; }
   .label { font-size: 12px; }
+  .releaseLabels { left: 35%; display: grid; grid-template-columns: repeat(3, 1fr); gap: .25rem; transform: translateY(-50%); }
+  .releaseLabels .label { position: static; width: auto; max-width: none; transform: none; }
   .taxonomy .label { max-width: 28%; font-size: 11px; }
   .label small { font-size: 9px; }
   .evidence { gap: .25rem; padding: .6rem .25rem; }
