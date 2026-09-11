@@ -9,10 +9,10 @@ const destinations: Array<{
   label: string;
   href: string;
 }> = [
-  { view: "posts", label: "Writing", href: "/?view=posts" },
-  { view: "views", label: "Views", href: "/?view=views" },
-  { view: "books", label: "Books", href: "/?view=books" },
-  { view: "conferences", label: "Talks", href: "/?view=conferences" },
+  { view: "posts", label: "Writing", href: "/posts" },
+  { view: "views", label: "Views", href: "/views" },
+  { view: "books", label: "Books", href: "/books" },
+  { view: "conferences", label: "Talks", href: "/talks" },
   { view: "about", label: "About me", href: "/about" },
 ];
 

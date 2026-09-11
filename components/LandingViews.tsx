@@ -77,7 +77,7 @@ export const LandingViews = ({
                 <section key={entry.number}>
                   <h2 className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-zinc-600 dark:text-zinc-300">
                     <Link
-                      href={`${entry.url}?view=views`}
+                      href={`${entry.url}`}
                       className="hover:text-zinc-900 dark:hover:text-white"
                     >
                       {entry.title}
@@ -114,7 +114,7 @@ export const LandingViews = ({
                             <span className="absolute left-0 top-3 h-px w-3 bg-zinc-200 dark:bg-slate-700" />
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                               <Link
-                                href={`${post.url}?view=views`}
+                                href={`${post.url}`}
                                 className="text-sm leading-snug text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                               >
                                 {post.title}

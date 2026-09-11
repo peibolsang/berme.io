@@ -376,7 +376,7 @@ export const CommandPalette = ({
           id: `view-${view.number}`,
           title: view.title,
           titleLine: stripMarkdownLine(view.title || ""),
-          url: `${view.url}?view=views`,
+          url: `${view.url}`,
           kind: "view",
           createdAt: view.updatedAt,
           searchText: buildSearchText(view.title, body),

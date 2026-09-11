@@ -8,10 +8,10 @@ export async function GET() {
 
 ## Core Resources
 - [About me](${baseUrl}/about): Pablo’s background, interests, and an invitation to connect.
-- [Home / Posts](${baseUrl}/?view=posts): Latest articles and writing.
-- [Views](${baseUrl}/?view=views): Post view collections.
-- [Books](${baseUrl}/?view=books): Reading list and recommendations.
-- [Conferences](${baseUrl}/?view=conferences): Conference talks and seminar presentations.
+- [Posts](${baseUrl}/posts): Latest articles and writing.
+- [Views](${baseUrl}/views): Post view collections.
+- [Books](${baseUrl}/books): Reading list and recommendations.
+- [Conferences](${baseUrl}/talks): Conference talks and seminar presentations.
 
 ## Documentation (if applicable)
 - Not applicable.

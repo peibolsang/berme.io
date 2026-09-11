@@ -47,7 +47,7 @@ export default function AboutPage() {
 
         <p>
           Writing helps me figure out what I think. Here, I{" "}
-          <Link href="/?view=posts">share what I’m learning</Link>, the connections
+          <Link href="/posts">share what I’m learning</Link>, the connections
           I’m making, and the questions I’m still working through. I hope you find
           something you can bring into your own work, challenge, or build on.
         </p>

@@ -1,8 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 
 type BackLinkProps = {
   fallbackView?: "posts" | "views" | "books" | "conferences";
@@ -10,17 +6,9 @@ type BackLinkProps = {
 };
 
 export const BackLink = ({ fallbackView, href }: BackLinkProps) => {
-  const searchParams = useSearchParams();
-  const backHref = useMemo(() => {
-    if (href) {
-      return href;
-    }
-    const view = searchParams.get("view") ?? fallbackView;
-    if (!view) {
-      return "/";
-    }
-    return `/?view=${view}`;
-  }, [fallbackView, href, searchParams]);
+  const backHref = href ?? (
+    fallbackView === "conferences" ? "/talks" : fallbackView ? `/${fallbackView}` : "/"
+  );
 
   return (
     <Link

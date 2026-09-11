@@ -142,6 +142,7 @@ const revalidateContentTags = async () => {
 
 const revalidateAggregates = async () => {
   await Promise.all([
+    ...["/posts", "/views", "/books", "/talks"].map((path) => revalidatePath(path)),
     revalidatePath("/"),
     revalidatePath("/feed.xml"),
     revalidatePath("/sitemap.xml"),

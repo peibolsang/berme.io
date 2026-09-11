@@ -34,10 +34,10 @@ type BrowserNavigator = Navigator & {
 };
 
 const SECTION_TO_URL = {
-  posts: "/",
-  views: "/?view=views",
-  books: "/?view=books",
-  conferences: "/?view=conferences",
+  posts: "/posts",
+  views: "/views",
+  books: "/books",
+  conferences: "/talks",
 } as const;
 
 let contentIndexPromise: Promise<ContentIndexDocument | null> | null = null;

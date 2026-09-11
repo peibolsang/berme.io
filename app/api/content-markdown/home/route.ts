@@ -20,7 +20,10 @@ const normalizeView = (value: string | null) => {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const activeView = normalizeView(url.searchParams.get("view"));
+  const section = url.pathname.slice(1);
+  const routeView = section === "talks" ? "conferences" : section;
+  const isIndexRoute = ["posts", "views", "books", "conferences"].includes(routeView);
+  const activeView = normalizeView(isIndexRoute ? routeView : url.searchParams.get("view"));
   const [baseUrl, posts, views, nowPost, conferences] = await Promise.all([
     getBaseUrl(),
     getAllPosts(),
@@ -31,6 +34,9 @@ export async function GET(request: Request) {
   const markdown = buildHomeMarkdownDocument({
     baseUrl,
     activeView,
+    canonicalUrl: isIndexRoute || url.searchParams.has("view")
+      ? (activeView === "conferences" ? "/talks" : `/${activeView}`)
+      : "/",
     posts,
     pinned: posts.filter((post) => post.pinned).slice(0, 3),
     views,

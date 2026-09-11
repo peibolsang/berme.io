@@ -138,6 +138,7 @@ export const buildConferenceMarkdownDocument = (conference: Conference) =>
 
 type HomeMarkdownDocumentInput = {
   baseUrl: string;
+  canonicalUrl?: string;
   activeView: "posts" | "views" | "books" | "conferences";
   posts: Post[];
   pinned: Post[];
@@ -151,13 +152,14 @@ const buildPostList = (posts: Post[]) =>
   buildLinkList(
     posts.map((post) => ({
       title: post.title,
-      url: `${post.url}?view=posts`,
+      url: `${post.url}`,
       detail: new Date(post.publishedAt).toISOString().slice(0, 10),
     })),
   );
 
 export const buildHomeMarkdownDocument = ({
   baseUrl,
+  canonicalUrl = "/",
   activeView,
   posts,
   pinned,
@@ -174,7 +176,7 @@ export const buildHomeMarkdownDocument = ({
             ? views
                 .map((view) =>
                   joinSections([
-                    `### [${view.title}](${view.url}?view=views)`,
+                    `### [${view.title}](${view.url})`,
                     view.description ?? undefined,
                     view.posts.length > 0
                       ? ["Posts:", ...view.posts.map((post) => `- ${post.title}`)].join("\n")
@@ -221,7 +223,7 @@ export const buildHomeMarkdownDocument = ({
     "# Pablo Bermejo",
     buildMetadataLines([
       ["Type", "Homepage"],
-      ["Canonical HTML URL", quoteValue("/")],
+      ["Canonical HTML URL", quoteValue(canonicalUrl)],
       ["Canonical Base URL", quoteValue(baseUrl)],
       ["Selected view", activeView],
       ["Now", nowPost?.title ? `[${nowPost.title}](/now)` : null],
@@ -229,10 +231,10 @@ export const buildHomeMarkdownDocument = ({
     "---",
     "Fifteen years leading platform products in vertical SaaS. I study new technology from first principles, connect ideas, and test them in practice. Here I share what I learn in service of something greater.",
     "## Available Views",
-    "- [Posts](/?view=posts)",
-    "- [Views](/?view=views)",
-    "- [Books](/?view=books)",
-    "- [Conferences](/?view=conferences)",
+    "- [Posts](/posts)",
+    "- [Views](/views)",
+    "- [Books](/books)",
+    "- [Conferences](/talks)",
     activeView === "posts"
       ? joinSections([
           pinned.length > 0 ? "## Featured Posts" : null,

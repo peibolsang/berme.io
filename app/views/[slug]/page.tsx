@@ -105,7 +105,7 @@ export default async function ViewPage({ params }: PageProps) {
       />
       <section className="bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 pt-12 dark:bg-slate-900">
         <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
-          <BackLink />
+          <BackLink fallbackView="views" />
           {view.draft ? (
             <div className="mt-6">
               <DraftBadge prominent />
@@ -191,7 +191,7 @@ export default async function ViewPage({ params }: PageProps) {
                     <span className="absolute left-0 top-3 h-px w-3 bg-zinc-200 dark:bg-slate-700" />
                     <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
                       <Link
-                        href={`${post.url}?view=views`}
+                        href={`${post.url}`}
                         className="text-zinc-900 hover:text-black dark:text-zinc-100 dark:hover:text-white"
                       >
                         {post.title}

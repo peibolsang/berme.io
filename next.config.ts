@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/conferences", destination: "/talks", permanent: true },
+    ];
+  },
   async headers() {
     return [
+      ...["/posts", "/views", "/books", "/talks"].map((source) => ({ source, headers: [{ key: "Vary", value: "Accept" }] })),
       {
         source: "/",
         headers: [
@@ -58,6 +64,11 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
+        ...["posts", "views", "books", "talks"].map((section) => ({
+          source: `/${section}`,
+          has: [{ type: "header" as const, key: "accept", value: ".*text/markdown.*" }],
+          destination: `/api/content-markdown/home?view=${section === "talks" ? "conferences" : section}`,
+        })),
         {
           source: "/",
           has: [

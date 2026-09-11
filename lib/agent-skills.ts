@@ -30,7 +30,7 @@ Use this skill to orient yourself quickly on berme.io and retrieve the best mach
 - Views at \`/views/<slug>\`
 - Conferences at \`/conferences/<slug>\`
 - A current-status page at \`/now\`
-- Homepage sections controlled by \`?view=posts|views|books|conferences\`
+- Content indexes at \`/posts\`, \`/views\`, \`/books\`, and \`/talks\`; biography at \`/about\`
 
 ## Recommended discovery order
 
@@ -38,11 +38,11 @@ Use this skill to orient yourself quickly on berme.io and retrieve the best mach
 2. Fetch \`/sitemap.json\` when you need a structured inventory of posts, views, and conferences with canonical HTML URLs.
 3. Use \`/sitemap.xml\` when you need canonical crawl-friendly URLs only.
 4. Open \`/now\` for the author's current focus.
-5. Use the homepage with a \`view\` query parameter when the request is category-oriented:
-   - \`/?view=posts\`
-   - \`/?view=views\`
-   - \`/?view=books\`
-   - \`/?view=conferences\`
+5. Use the content index routes when the request is category-oriented:
+   - \`/posts\`
+   - \`/views\`
+   - \`/books\`
+   - \`/talks\`
 
 ## Prefer markdown when reading
 
@@ -71,7 +71,7 @@ The response should use \`Content-Type: text/markdown\`.
 - To answer "what is this site about?": read \`/\` and \`/now\`.
 - To find a post on a topic: read \`/sitemap.json\`, filter by title, summary, labels, and then open the matching canonical URL.
 - To understand a long-running theme: inspect the relevant \`/views/<slug>\` page.
-- To find talks: use \`/?view=conferences\` or \`/sitemap.json\` entries of type \`conference\`.
+- To find talks: use \`/talks\` or \`/sitemap.json\` entries of type \`conference\`.
 `;
 
 const writingStyleSkillContent = `---
