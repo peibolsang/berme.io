@@ -1,0 +1,9 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=RXMHLs1idM8",
+    "title": "The discipline behind good agents",
+    "publicationDate": "2026-09-12",
+    "description": "Reliable agents require eval pipelines that combine executable checks with calibrated judgment, turn real failures into regression tests, and produce enough evidence to justify release without eliminating uncertainty.",
+    "articleUrl": "https://berme.io/2026/09/10/the-discipline-behind-good-agents"
+  }
+]

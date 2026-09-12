@@ -4,6 +4,7 @@ import type { Book, Conference, Post, View } from "../types";
 import { DraftBadge } from "./DraftBadge";
 import type { ContentView } from "./ExploreNav";
 import { PostsIndex } from "./PostsIndex";
+import { VideosIndex } from "./VideosIndex";
 
 type LandingViewsProps = {
   activeView: ContentView;
@@ -56,6 +57,7 @@ export const LandingViews = ({
 
   return (
     <div className="min-w-0 overflow-x-hidden">
+      {activeView === "videos" ? <VideosIndex /> : null}
       {activeView === "posts" ? (
         <div id="panel-posts">
           <PostsIndex posts={posts} />

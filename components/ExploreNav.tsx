@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./ExploreNav.module.css";
 
-export type ContentView = "posts" | "views" | "books" | "conferences";
+export type ContentView = "posts" | "views" | "books" | "conferences" | "videos";
 export type ExploreView = ContentView | "about";
 
 const destinations: Array<{
@@ -13,6 +13,7 @@ const destinations: Array<{
   { view: "views", label: "Views", href: "/views" },
   { view: "books", label: "Books", href: "/books" },
   { view: "conferences", label: "Talks", href: "/talks" },
+  { view: "videos", label: "Videos", href: "/videos" },
   { view: "about", label: "About me", href: "/about" },
 ];
 

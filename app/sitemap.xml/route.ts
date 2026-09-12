@@ -72,7 +72,7 @@ export async function GET() {
   ]);
 
   const entries: SitemapEntry[] = [
-    ...["posts", "views", "books", "talks"].map((section) => ({ loc: `${baseUrl}/${section}` })),
+    ...["posts", "views", "books", "talks", "videos"].map((section) => ({ loc: `${baseUrl}/${section}` })),
     { loc: `${baseUrl}/about` },
     {
       loc: `${baseUrl}/`,

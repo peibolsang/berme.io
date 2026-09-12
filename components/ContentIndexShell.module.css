@@ -157,6 +157,6 @@
   }
 
   .footer {
-    padding: 6rem 1.25rem 3rem;
+    padding: 4rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
   }
 }

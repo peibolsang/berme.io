@@ -30,7 +30,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: clamp(1.15rem, 3vw, 3rem);
+  column-gap: clamp(1rem, 2vw, 2rem);
+  row-gap: 0;
 }
 
 .bar nav a {
@@ -93,13 +94,14 @@
   }
 
   .bar nav {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 0.5rem;
   }
 
   .bar nav a {
     justify-content: center;
+    min-height: 36px;
     font-size: 0.8rem;
   }
 

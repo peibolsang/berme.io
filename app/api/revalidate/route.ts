@@ -145,6 +145,7 @@ const aggregatePaths = [
   "/posts",
   "/views",
   "/books",
+  "/videos",
   "/talks",
   "/feed.xml",
   "/sitemap.xml",

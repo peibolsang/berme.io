@@ -11,6 +11,7 @@ export async function GET() {
 - [Posts](${baseUrl}/posts): Latest articles and writing.
 - [Views](${baseUrl}/views): Post view collections.
 - [Books](${baseUrl}/books): Reading list and recommendations.
+- [Videos](${baseUrl}/videos): Videos and companion articles.
 - [Conferences](${baseUrl}/talks): Conference talks and seminar presentations.
 
 ## Documentation (if applicable)

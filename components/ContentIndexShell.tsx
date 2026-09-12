@@ -8,6 +8,7 @@ const titles: Record<ExploreView, string> = {
   posts: "Writing",
   views: "Views",
   books: "Books",
+  videos: "Videos",
   conferences: "Talks",
   about: "About me",
 };
