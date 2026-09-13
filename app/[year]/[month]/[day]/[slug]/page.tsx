@@ -121,6 +121,7 @@ export const generateStaticParams = async () => {
 
 export default async function PostPage({ params }: PageProps) {
   const { year, month, day, slug } = await params;
+  let pageData;
   try {
     const [post, allPosts] = await Promise.all([
       getPostByPermalink(year, month, day, slug),
@@ -150,156 +151,7 @@ export default async function PostPage({ params }: PageProps) {
       )
       .map((entry) => ({ title: entry.title, url: entry.url }));
 
-    return (
-      <div className="min-h-screen">
-        <CommandActionsPalette
-          title={post.title}
-          url={post.url}
-          githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
-          markdown={post.body}
-          readingTime={readingTimeLabel}
-          relatedPosts={relatedPosts}
-          geminiPrompt={`You are an expert summarizer. Provide:\n1) A 2-3 sentence TL;DR.\n2) Exactly 5 crisp takeaways as bullet points.\nBe concise and avoid fluff.\n\nPost:\n${post.body}`}
-          metadataLines={[
-            `Title: ${post.title}`,
-            `Published: ${formatDate(post.publishedAt)}`,
-            `Updated: ${formatDate(post.updatedAt)}`,
-            `Reading time: ${readingTimeLabel}`,
-            `Word count: ${outline.totalWords}`,
-            `Labels: ${formatLabels(post.labels).join(", ") || "None"}`,
-            `URL: ${post.url}`,
-            `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`,
-          ]}
-        />
-        <section
-          className={`bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 ${
-            post.image ? "pt-0" : "pt-12"
-          } dark:bg-slate-900`}
-        >
-          {post.image && (
-            <div className={`${coverStyles.cover} -mx-6 -mb-[46px] h-[220px] overflow-hidden`}>
-              <img
-                src={post.image}
-                alt=""
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          )}
-          <div className="relative mx-auto w-full max-w-2xl lg:max-w-[50rem]">
-            <BackLink href="/posts" label="Back to writing" />
-            {post.draft ? (
-              <div className="mt-6">
-                <DraftBadge prominent />
-              </div>
-            ) : null}
-            <h1
-              className={`${
-                post.draft ? "mt-3" : "mt-6"
-              } text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
-            >
-              {post.title}
-            </h1>
-            <div className="mt-4 flex items-start gap-4">
-              {post.author?.avatarUrl ? (
-                <img
-                  src={post.author.avatarUrl}
-                  alt=""
-                  className="h-9 w-9 rounded-full border border-zinc-200 object-cover dark:border-slate-700"
-                  loading="lazy"
-                />
-              ) : null}
-              <div className="flex flex-col gap-1">
-                {post.author ? (
-                  post.author.url ? (
-                    <a
-                      className="text-base text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"
-                      href={post.author.url}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {post.author.name}
-                    </a>
-                  ) : (
-                    <span className="text-base text-zinc-900 dark:text-white">
-                      {post.author.name}
-                    </span>
-                  )
-                ) : null}
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  <span>Posted on {formatDate(post.publishedAt)}</span>
-                  <span aria-hidden="true">•</span>
-                  <a
-                    className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                    href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    View on GitHub
-                  </a>
-                </div>
-              </div>
-            </div>
-            {formatLabels(post.labels).length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {formatLabels(post.labels).map((label) => (
-                  <span
-                    key={label}
-                    className="rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-200"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-        <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
-          <ReadingShell
-            contentId="post-content"
-            headings={outline.headings}
-            isLongform={outline.isLongform}
-            title={post.title}
-            totalMinutes={outline.totalMinutes}
-          >
-            <article className="detail-markdown markdown-body mt-0">
-              <Markdown content={post.body} />
-            </article>
-            <section className="mt-10 border-t border-zinc-200 pt-8 dark:border-slate-700">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-                Comments ({comments.length})
-              </h2>
-              {comments.length === 0 ? (
-                <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-                  No comments yet.
-                </p>
-              ) : (
-                <div className="mt-6 space-y-4">
-                  {comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
-                    >
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                          {comment.user?.login ?? "Unknown"}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-[0.2em]">
-                          {formatDate(comment.created_at)}
-                        </span>
-                      </div>
-                      <div className="markdown-body mt-3">
-                        <Markdown content={comment.body ?? ""} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </ReadingShell>
-        </section>
-      </div>
-    );
+    pageData = { post, outline, readingTimeLabel, comments, relatedPosts };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to load post.";
@@ -324,4 +176,128 @@ export default async function PostPage({ params }: PageProps) {
       </div>
     );
   }
+
+  const { post, outline, readingTimeLabel, comments, relatedPosts } = pageData;
+  return (
+    <div className="min-h-screen">
+      <CommandActionsPalette
+        title={post.title}
+        url={post.url}
+        githubUrl={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
+        markdown={post.body}
+        readingTime={readingTimeLabel}
+        relatedPosts={relatedPosts}
+        geminiPrompt={`You are an expert summarizer. Provide:\n1) A 2-3 sentence TL;DR.\n2) Exactly 5 crisp takeaways as bullet points.\nBe concise and avoid fluff.\n\nPost:\n${post.body}`}
+        metadataLines={[
+          `Title: ${post.title}`,
+          `Published: ${formatDate(post.publishedAt)}`,
+          `Updated: ${formatDate(post.updatedAt)}`,
+          `Reading time: ${readingTimeLabel}`,
+          `Word count: ${outline.totalWords}`,
+          `Labels: ${formatLabels(post.labels).join(", ") || "None"}`,
+          `URL: ${post.url}`,
+          `GitHub: https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`,
+        ]}
+      />
+      <section
+        className={`bg-[#f4f1ea] bg-opacity-70 px-6 pb-6 ${
+          post.image ? "pt-0" : "pt-12"
+        } dark:bg-slate-900`}
+      >
+        {post.image && (
+            <div className={`${coverStyles.cover} -mx-6 -mb-[46px] h-[300px] overflow-hidden`}>
+            <img
+              src={post.image}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
+        <div className="relative mx-auto w-full max-w-2xl lg:max-w-[50rem]">
+          <BackLink href="/posts" label="Back to writing" />
+          {post.draft ? (
+            <div className="mt-6">
+              <DraftBadge prominent />
+            </div>
+          ) : null}
+          <h1
+            className={`${
+              post.draft ? "mt-3" : "mt-6"
+            } text-4xl font-semibold sm:text-6xl ${playfairDisplay.className}`}
+          >
+            {post.title}
+          </h1>
+          <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <span>Posted on {formatDate(post.publishedAt)}</span>
+            <span aria-hidden="true">•</span>
+            <a
+              className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
+              rel="noreferrer"
+              target="_blank"
+            >
+              View on GitHub
+            </a>
+          </div>
+          {formatLabels(post.labels).length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {formatLabels(post.labels).map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-zinc-200"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="px-6 pb-16 pt-6 dark:bg-slate-800">
+        <ReadingShell
+          contentId="post-content"
+          headings={outline.headings}
+          isLongform={outline.isLongform}
+          title={post.title}
+          totalMinutes={outline.totalMinutes}
+        >
+          <article className="detail-markdown markdown-body mt-0">
+            <Markdown content={post.body} />
+          </article>
+          <section className="mt-10 border-t border-zinc-200 pt-8 dark:border-slate-700">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+              Comments ({comments.length})
+            </h2>
+            {comments.length === 0 ? (
+              <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+                No comments yet.
+              </p>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                        {comment.user?.login ?? "Unknown"}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-[0.2em]">
+                        {formatDate(comment.created_at)}
+                      </span>
+                    </div>
+                    <div className="markdown-body mt-3">
+                      <Markdown content={comment.body ?? ""} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </ReadingShell>
+      </section>
+    </div>
+  );
 }

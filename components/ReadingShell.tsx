@@ -42,6 +42,7 @@ export const ReadingShell = ({
   const generatedId = useId().replace(/:/g, "");
   const resolvedContentId = contentId ?? `reading-content-${generatedId}`;
   const [progress, setProgress] = useState(0);
+  const [isMapDismissed, setIsMapDismissed] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(
     headings[0]?.id ?? null,
   );
@@ -152,9 +153,27 @@ export const ReadingShell = ({
             {title}
           </p>
         </div>
-        <p className="shrink-0 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          {Math.round(progress)}%
-        </p>
+        <button
+          type="button"
+          aria-label="Close reading map"
+          title="Close reading map"
+          onClick={() => setIsMapDismissed(true)}
+          className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors duration-150 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-700 dark:text-zinc-400 dark:hover:bg-slate-800 dark:hover:text-zinc-100 dark:focus-visible:ring-amber-300"
+        >
+          <svg
+            aria-hidden="true"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m9 9 6 6m0-6-6 6" />
+          </svg>
+        </button>
       </div>
       <div className="mt-4 h-px overflow-hidden bg-zinc-200/90 dark:bg-slate-700/90">
         <div
@@ -221,7 +240,7 @@ export const ReadingShell = ({
         >
           {children}
         </div>
-        {isLongform ? (
+        {isLongform && !isMapDismissed ? (
           <aside className="hidden xl:col-start-6 xl:block">
             <div className="sticky top-28">{navigation}</div>
           </aside>
