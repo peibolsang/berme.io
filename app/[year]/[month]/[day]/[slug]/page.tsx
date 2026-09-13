@@ -1,3 +1,4 @@
+import coverStyles from "@/components/PostCover.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -176,7 +177,7 @@ export default async function PostPage({ params }: PageProps) {
           } dark:bg-slate-900`}
         >
           {post.image && (
-            <div className="-mx-6 mb-6 h-[150px] overflow-hidden">
+            <div className={`${coverStyles.cover} -mx-6 -mb-[46px] h-[220px] overflow-hidden`}>
               <img
                 src={post.image}
                 alt=""
@@ -185,7 +186,7 @@ export default async function PostPage({ params }: PageProps) {
               />
             </div>
           )}
-          <div className="mx-auto w-full max-w-2xl lg:max-w-[50rem]">
+          <div className="relative mx-auto w-full max-w-2xl lg:max-w-[50rem]">
             <BackLink href="/posts" label="Back to writing" />
             {post.draft ? (
               <div className="mt-6">

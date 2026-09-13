@@ -1,0 +1,24 @@
+.cover {
+  --post-cover-surface: #f4f1ea;
+  position: relative;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+:global(.dark) .cover {
+  --post-cover-surface: #0f172a;
+}
+
+/* Match the tinted image strip in the Posts writing studio. */
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--post-cover-surface) 35%, transparent) 0%,
+    color-mix(in srgb, var(--post-cover-surface) 55%, transparent) 55%,
+    var(--post-cover-surface) 100%
+  );
+}
