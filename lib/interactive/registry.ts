@@ -1,3 +1,5 @@
+import { fdeLearningLoopsSpecSchema } from "./specs/fde-learning-loops";
+import { disputeEvidencePathSpecSchema } from "./specs/dispute-evidence-path";
 import { evalContextFeedbackSpecSchema } from "./specs/eval-context-feedback";
 import { evalReleasePathSpecSchema } from "./specs/eval-release-path";
 import { adoptionAmplifierSpecSchema } from "./specs/adoption-amplifier";
@@ -21,6 +23,8 @@ import type {
 } from "./types";
 
 export const interactiveDefinitionRegistry = {
+  "fde-learning-loops": { kind: "scrolly", schema: fdeLearningLoopsSpecSchema, version: 1 },
+  "dispute-evidence-path": { kind: "scrolly", schema: disputeEvidencePathSpecSchema, version: 1 },
   "eval-context-feedback": { kind: "scrolly", schema: evalContextFeedbackSpecSchema, version: 1 },
   "eval-release-path": { kind: "scrolly", schema: evalReleasePathSpecSchema, version: 1 },
   "adoption-amplifier": {

@@ -1,3 +1,5 @@
+import type { FdeLearningLoopsScrollyProps } from "./blocks/fde-learning-loops/FdeLearningLoopsScrolly";
+import type { DisputeEvidencePathScrollyProps } from "./blocks/dispute-evidence-path/DisputeEvidencePathScrolly";
 import type { EvalContextFeedbackScrollyProps } from "./blocks/eval-context-feedback/EvalContextFeedbackScrolly";
 import type { EvalReleasePathScrollyProps } from "./blocks/eval-release-path/EvalReleasePathScrolly";
 import dynamic from "next/dynamic";
@@ -124,7 +126,17 @@ const EvalReleasePathScrolly = dynamic<EvalReleasePathScrollyProps>(() => import
 
 const EvalContextFeedbackScrolly = dynamic<EvalContextFeedbackScrollyProps>(() => import("./blocks/eval-context-feedback/EvalContextFeedbackScrolly").then((module) => module.EvalContextFeedbackScrolly));
 
+const DisputeEvidencePathScrolly = dynamic<DisputeEvidencePathScrollyProps>(() =>
+  import("./blocks/dispute-evidence-path/DisputeEvidencePathScrolly").then((module) => module.DisputeEvidencePathScrolly),
+);
+
+const FdeLearningLoopsScrolly = dynamic<FdeLearningLoopsScrollyProps>(() =>
+  import("./blocks/fde-learning-loops/FdeLearningLoopsScrolly").then((module) => module.FdeLearningLoopsScrolly),
+);
+
 export const interactiveComponentRegistry = {
+  "fde-learning-loops": FdeLearningLoopsScrolly,
+  "dispute-evidence-path": DisputeEvidencePathScrolly,
   "eval-context-feedback": EvalContextFeedbackScrolly,
   "eval-release-path": EvalReleasePathScrolly,
   "adoption-amplifier": AdoptionAmplifierScrolly,

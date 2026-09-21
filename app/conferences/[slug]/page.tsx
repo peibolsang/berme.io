@@ -24,7 +24,6 @@ const formatDate = (value: string) =>
 
 const DEFAULT_AUTHOR = {
   name: "Pablo Bermejo",
-  avatarUrl: "https://github.com/peibolsang.png",
   url: "https://github.com/peibolsang",
 };
 
@@ -186,12 +185,6 @@ export default async function ConferenceDetailPage({ params }: PageProps) {
             {conference.title}
           </h1>
           <div className="mt-4 flex items-start gap-4">
-            <img
-              src={DEFAULT_AUTHOR.avatarUrl}
-              alt=""
-              className="h-9 w-9 rounded-full border border-zinc-200 object-cover dark:border-slate-700"
-              loading="lazy"
-            />
             <div className="flex flex-col gap-1">
               <a
                 className="text-base text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"

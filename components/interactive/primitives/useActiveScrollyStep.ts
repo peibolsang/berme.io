@@ -10,6 +10,7 @@ type UseActiveScrollyStepOptions = {
   mobileStageOffset?: number;
   observerRootMargin?: string;
   stepCount: number;
+  useViewportWhenStageUnstuck?: boolean;
 };
 
 export const getScrollyStepStatus = (
@@ -29,6 +30,7 @@ export const useActiveScrollyStep = ({
   mobileStageOffset = 44,
   observerRootMargin = "75% 0px",
   stepCount,
+  useViewportWhenStageUnstuck = false,
 }: UseActiveScrollyStepOptions) => {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -61,7 +63,10 @@ export const useActiveScrollyStep = ({
         return;
       }
 
-      const usesStackedLayout = window.innerWidth < mobileBreakpoint;
+      const stageIsUnstuck = useViewportWhenStageUnstuck && stageRef.current
+        ? window.getComputedStyle(stageRef.current).position !== "sticky"
+        : false;
+      const usesStackedLayout = window.innerWidth < mobileBreakpoint && !stageIsUnstuck;
       const stageBottom = stageRef.current?.getBoundingClientRect().bottom;
       const targetY = usesStackedLayout
         ? (stageBottom ?? window.innerHeight * 0.58) + mobileStageOffset
@@ -124,6 +129,7 @@ export const useActiveScrollyStep = ({
     mobileStageOffset,
     observerRootMargin,
     stepCount,
+    useViewportWhenStageUnstuck,
   ]);
 
   return {

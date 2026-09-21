@@ -119,14 +119,6 @@ export default async function ViewPage({ params }: PageProps) {
             {view.title}
           </h1>
           <div className="mt-4 flex items-start gap-4">
-            {view.author?.avatarUrl ? (
-              <img
-                src={view.author.avatarUrl}
-                alt=""
-                className="h-9 w-9 rounded-full border border-zinc-200 object-cover dark:border-slate-700"
-                loading="lazy"
-              />
-            ) : null}
             <div className="flex flex-col gap-1">
               {view.author ? (
                 view.author.url ? (

@@ -39,6 +39,8 @@ Prefer one composed interaction over several small flourishes. Hover and focus s
 
 ## Color system
 
+The upstream palette is maintained in `../berme-brand-studio/src/data/tokens.json`, with usage rules in `../berme-brand-studio/src/data/design-rules.json`. Use those token values for scrollytelling colors, including fills, text, and borders. Derive translucent accent layers from the same tokens rather than inventing additional hex colors.
+
 These are the canonical dark-theme colors. Use the listed Tailwind utilities in application code and the hex values in custom CSS, SVG, charts, or generated assets.
 
 | Token | Value | Tailwind | Use |
@@ -54,6 +56,9 @@ These are the canonical dark-theme colors. Use the listed Tailwind utilities in 
 | `quiet` | `#71717A` | `zinc-500` | Tertiary or redundant information only |
 | `accent` | `#FCD34D` | `amber-300` | Active states, progress, selected controls, key diagram state |
 | `accent-strong` | `#FBBF24` | `amber-400` | Small marks or emphasis that needs more saturation |
+| `accent-blue` | `#7DD3FC` | `sky-300` | Labeled categories or evidence routes |
+| `accent-green` | `#34D399` | `emerald-400` | Labeled categories or durable capability states |
+| `accent-red` | `#FB7185` | `rose-400` | Errors or destructive states |
 
 ### Surface hierarchy
 

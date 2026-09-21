@@ -1,3 +1,5 @@
+import type { FdeLearningLoopsSpec } from "./specs/fde-learning-loops";
+import type { DisputeEvidencePathSpec } from "./specs/dispute-evidence-path";
 import type { EvalContextFeedbackSpec } from "./specs/eval-context-feedback";
 import type { EvalReleasePathSpec } from "./specs/eval-release-path";
 import type { z } from "zod";
@@ -23,6 +25,8 @@ import type { PracticeSpiralSpec } from "./specs/practice-spiral";
 export type InteractiveKind = "chart" | "explorable" | "scrolly";
 
 export type InteractiveSpecMap = {
+  "fde-learning-loops": FdeLearningLoopsSpec;
+  "dispute-evidence-path": DisputeEvidencePathSpec;
   "eval-context-feedback": EvalContextFeedbackSpec;
   "eval-release-path": EvalReleasePathSpec;
   "adoption-amplifier": AdoptionAmplifierSpec;
