@@ -97,7 +97,6 @@
  .beat { min-height: 60svh; padding-top: 1.5rem; }
 
 }
-@media (max-height: 760px) { .stage { position: relative; top: auto; } }
 @media (prefers-reduced-motion: reduce) {
  .signal, .section .caption, .document::before, .decision::before { transition-duration: 160ms; }
 }
@@ -110,4 +109,5 @@
 :global(.dark) .landscape .stage { background: var(--fde-color-content-band); }
 .landscape .beat { min-height: 48svh; }
 .landscape .beat > p:last-child { max-width: 44rem; }
-@media (max-height: 650px) { .landscape .stage { position: relative; } }
+/* Fall back only when the actual diagram leaves too little reading space. */
+.stage[data-sticky="false"] { position: relative; top: auto; }
