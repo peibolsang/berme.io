@@ -3,27 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 
 // One reversible timeline: each lap finishes before handing off to its parent.
-export const LOOP_STOPS = [0, 1400, 3120, 5040, 5460] as const;
+export const LOOP_STOPS = [0, 1400, 3120, 5040, 5040] as const;
 const ENTER_TIMES = [0, 1720, 3440];
 const LAP_ENDS = [1400, 3120, 5040];
-const RADII = [[.22, .17], [.34, .31], [.46, .45]] as const;
+const SIZES = [.48, .72, .96] as const;
 
 export function loopGeometry(width: number, height: number) {
-  return RADII.map(([x, y]) => ({ cx: width / 2, cy: height / 2, rx: width * x, ry: height * y }));
-}
-
-export function signalExit(width: number, height: number, stacked: boolean) {
-  const x = width * .96;
-  const y = height / 2;
-  return stacked
-    ? [{ x, y }, { x: width * .985, y }, { x: width * .985, y: height - 4 }, { x: width / 2, y: height - 4 }, { x: width / 2, y: height + 14 }]
-    : [{ x, y }, { x: width + 22, y }];
+  return SIZES.map(scale => {
+    const side = Math.min(width, height) * scale;
+    return { cx: width / 2, cy: height / 2, rx: side / 2, ry: side / 2, radius: Math.min(32, side * .14) };
+  });
 }
 
 type Scene = { active: number; complete: number; ready: boolean; moving: boolean };
 const INITIAL: Scene = { active: -1, complete: -1, ready: false, moving: false };
 
-export function useLoopSignal(phase: number, width: number, height: number, stacked: boolean) {
+export function useLoopSignal(phase: number, width: number, height: number) {
   const signalRef = useRef<HTMLSpanElement>(null);
   const playhead = useRef(0);
   const keyboard = useRef(false);
@@ -54,21 +49,18 @@ export function useLoopSignal(phase: number, width: number, height: number, stac
       transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
       offset: time / LOOP_STOPS[4],
     });
-    geometry.forEach(({ cx, cy, rx, ry }, index) => {
+    geometry.forEach(({ cx, cy, rx, radius }, index) => {
+      const track = node.parentElement?.querySelector<SVGRectElement>(`[data-signal-track="${index}"]`);
+      if (!track) return;
+      const length = track.getTotalLength();
+      // SVG rectangles start on the top edge; begin each lap at the right midpoint.
+      const startOffset = 3 * rx - 3 * radius + Math.PI * radius / 2;
       push(cx + rx, cy, ENTER_TIMES[index]);
-      for (let sample = 1; sample <= 96; sample++) {
-        const angle = sample / 96 * Math.PI * 2;
-        push(cx + Math.cos(angle) * rx, cy + Math.sin(angle) * ry,
-          ENTER_TIMES[index] + sample / 96 * (LAP_ENDS[index] - ENTER_TIMES[index]));
+      for (let sample = 1; sample <= 128; sample++) {
+        const point = track.getPointAtLength((startOffset + sample / 128 * length) % length);
+        push(point.x, point.y,
+          ENTER_TIMES[index] + sample / 128 * (LAP_ENDS[index] - ENTER_TIMES[index]));
       }
-    });
-    const exit = signalExit(width, height, stacked);
-    const lengths = exit.slice(1).map((point, i) => Math.hypot(point.x - exit[i].x, point.y - exit[i].y));
-    const total = lengths.reduce((sum, length) => sum + length, 0);
-    let travelled = 0;
-    exit.slice(1).forEach((point, i) => {
-      travelled += lengths[i];
-      push(point.x, point.y, LOOP_STOPS[3] + travelled / total * (LOOP_STOPS[4] - LOOP_STOPS[3]));
     });
 
     const target = LOOP_STOPS[phase];
@@ -96,8 +88,8 @@ export function useLoopSignal(phase: number, width: number, height: number, stac
       const next: Scene = {
         active: phase === 0 && arrived ? -1 : time < ENTER_TIMES[1] ? 0 : time < ENTER_TIMES[2] ? 1 : 2,
         complete: time >= LAP_ENDS[2] ? 2 : time >= LAP_ENDS[1] ? 1 : time >= LAP_ENDS[0] ? 0 : -1,
-        ready: time >= LOOP_STOPS[4],
-        moving: !arrived && !reduced.matches,
+        ready: phase === 4 && time >= LOOP_STOPS[4],
+        moving: !arrived && time < LOOP_STOPS[3] && !reduced.matches,
       };
       const prev = sceneRef.current;
       if (next.active !== prev.active || next.complete !== prev.complete || next.ready !== prev.ready || next.moving !== prev.moving) {
@@ -122,7 +114,7 @@ export function useLoopSignal(phase: number, width: number, height: number, stac
       playhead.current = Math.max(0, Math.min(LOOP_STOPS[4], Number(animation.currentTime ?? playhead.current)));
       animation.cancel();
     };
-  }, [phase, width, height, stacked]);
+  }, [phase, width, height]);
 
   return { signalRef, scene };
 }

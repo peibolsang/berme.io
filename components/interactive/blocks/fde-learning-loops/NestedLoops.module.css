@@ -1,6 +1,9 @@
-.composition { display: grid; grid-template-columns: minmax(0, 1fr) 190px; align-items: center; gap: 22px; padding: 12px 22px 8px 12px; }
-.graph { position: relative; height: 330px; min-width: 0; }
-.graph > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.composition { padding: 20px 16px 8px; }
+.graph { position: relative; width: min(100%, 420px); aspect-ratio: 1; margin-inline: auto; min-width: 0; }
+/* The final handoff preserves the outer boundary, then settles it into a smaller surface.
+   This explanatory transition is deliberately slower than ordinary UI feedback. */
+.graph > svg { display: block; width: 100%; height: 100%; overflow: visible; transform: scale(1); transition: transform 600ms cubic-bezier(.77,0,.175,1); }
+.composition[data-ready="true"] .graph > svg { transform: scale(.9); }
 .ring, .loopLabel, .signal, .questions > span { --loop-color: var(--fde-color-accent-blue); }
 [data-loop="1"].ring, [data-loop="1"].loopLabel, [data-loop="1"].signal, .questions > [data-loop="1"] { --loop-color: var(--fde-color-accent); }
 [data-loop="2"].ring, [data-loop="2"].loopLabel, [data-loop="2"].signal, .questions > [data-loop="2"] { --loop-color: var(--fde-color-accent-green); }
@@ -13,33 +16,43 @@
 .check circle { fill: var(--fde-color-canvas); stroke: var(--loop-color); stroke-width: 1.4; }
 .check path { fill: none; stroke: var(--loop-color); stroke-width: 1.4; }
 .ring[data-complete="true"] .check { opacity: 1; }
-.handoff, .exit { fill: none; stroke: var(--fde-color-border); stroke-width: 1; stroke-dasharray: 3 5; }
-.exit[data-lit="true"] { stroke: var(--fde-color-accent-green); stroke-dasharray: none; }
-.loopLabel { position: absolute; left: 50%; transform: translate(-50%, -50%); width: max-content; max-width: 80%; text-align: center; }
-.loopLabel strong { display: block; font-size: 15px; font-weight: 550; line-height: 1.3; color: var(--fde-color-muted); }
-.loopLabel[data-lit="true"] strong { color: var(--loop-color); }
+.handoff { fill: none; stroke: var(--fde-color-border); stroke-width: 1; stroke-dasharray: 3 5; }
+.loopLabel { position: absolute; left: 50%; transform: translate(-50%, -50%); width: max-content; max-width: 90%; text-align: center; padding: 5px 14px; border: 1px solid var(--loop-color); border-radius: 999px; background: var(--fde-color-canvas); }
+.loopLabel strong { display: block; font-size: 14px; font-weight: 550; line-height: 1.3; color: var(--loop-color); }
+.loopLabel[data-lit="true"] { background: var(--loop-color); }
+.loopLabel[data-lit="true"] strong { color: var(--fde-color-canvas); }
+.ring, .loopLabel, .handoff { transition: opacity 220ms var(--ease-out, cubic-bezier(.23,1,.32,1)); }
+.composition[data-ready="true"] .ring:not([data-loop="2"]),
+.composition[data-ready="true"] .loopLabel,
+.composition[data-ready="true"] .handoff,
+.composition[data-ready="true"] .arrow,
+.composition[data-ready="true"] .check { opacity: 0; }
 .signal { position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--loop-color); border: 2px solid var(--fde-color-canvas); opacity: 0; pointer-events: none; }
 .signal[data-moving="true"] { opacity: 1; }
-.capability { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 20px 18px; border: 1px solid var(--fde-color-border); border-radius: 16px; background: var(--fde-color-content-band); color: var(--fde-color-reading-ink); }
-.capability > svg { width: 28px; height: 28px; flex: 0 0 28px; }
-.capability span { display: block; font: 500 10px/1.4 var(--font-geist-mono), monospace; letter-spacing: .12em; text-transform: uppercase; }
-.capability strong { display: block; margin-top: 8px; font-size: 21px; font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
-.capability[data-active="true"] { color: var(--fde-color-canvas); background: var(--fde-color-accent-green); border-color: var(--fde-color-accent-green); }
+.capability { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 24px; padding: 28px; text-align: center; background: linear-gradient(145deg, color-mix(in srgb, var(--fde-color-accent-green) 24%, var(--fde-color-canvas)), color-mix(in srgb, var(--fde-color-accent-green) 8%, var(--fde-color-canvas-deep))); border: 1px solid color-mix(in srgb, var(--fde-color-accent-green) 65%, var(--fde-color-border)); color: var(--fde-color-ink); opacity: 0; pointer-events: none; transition: opacity 420ms var(--ease-out, cubic-bezier(.23,1,.32,1)), transform 600ms cubic-bezier(.77,0,.175,1); }
+.capability > svg { color: var(--fde-color-accent-green); width: 64px; height: 64px; flex: 0 0 64px; }
+.capability span { color: var(--fde-color-accent-green); display: block; font: 500 10px/1.4 var(--font-geist-mono), monospace; letter-spacing: .12em; text-transform: uppercase; }
+.capability strong { display: block; max-width: 280px; margin-top: 12px; font-size: clamp(24px, 3vw, 32px); font-weight: 600; line-height: 1.15; letter-spacing: -.02em; }
+.capability > svg, .capability > div { opacity: 0; transition: opacity 220ms var(--ease-out, cubic-bezier(.23,1,.32,1)); }
+.capability[data-active="true"] { opacity: 1; transform: translate(-50%, -50%) scale(.9); }
+.capability[data-active="true"] > svg, .capability[data-active="true"] > div { opacity: 1; transition-duration: 300ms; transition-delay: 160ms; }
 .questions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 12px 22px 18px; }
 .questions > span { border-top: 2px solid var(--fde-color-border); padding-top: 9px; color: var(--fde-color-muted); font-size: 13px; line-height: 1.4; }
 .questions > [data-lit="true"] { border-color: var(--loop-color); color: var(--fde-color-reading-ink); }
 @media (max-width: 700px) {
- .composition { grid-template-columns: 1fr; gap: 14px; padding: 0 12px 12px; }
- .graph { height: 260px; }
- .loopLabel strong { font-size: 13px; }
- .capability { flex-direction: row; gap: 12px; padding: 13px 16px; align-items: center; }
- .capability strong { font-size: 17px; margin-top: 3px; }
- .capability span { font-size: 10px; }
- .questions { gap: 10px; padding: 4px 16px 12px; }
- .questions > span { font-size: 11px; }
+ .composition { padding: 16px 12px 12px; }
+ .graph { width: min(100%, 310px); }
+ .loopLabel { padding: 4px 10px; }
+ .loopLabel strong { font-size: 12px; }
+ .capability { gap: 16px; padding: 22px; }
+ .capability > svg { color: var(--fde-color-accent-green); width: 48px; height: 48px; flex-basis: 48px; }
+ .questions { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
  .signal { display: none; }
- .litTrack, .check { transition-duration: 160ms; }
+ .graph > svg, .composition[data-ready="true"] .graph > svg { transform: none; transition: none; }
+ .capability, .capability[data-active="true"] { transform: translate(-50%, -50%); }
+ .litTrack, .check, .ring, .loopLabel, .handoff, .capability,
+ .capability > svg, .capability > div,
+ .capability[data-active="true"] > svg, .capability[data-active="true"] > div { transition-duration: 160ms; transition-delay: 0ms; }
 }
-@media (max-width: 700px) { .questions { display: none; } }
