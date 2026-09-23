@@ -15,6 +15,7 @@ import {
   formatReadingTime,
 } from "../../../../../lib/markdown-headings";
 import { ReadingShell } from "../../../../../components/ReadingShell";
+import { PostFollowups } from "@/components/PostFollowups";
 import { DraftBadge } from "../../../../../components/DraftBadge";
 
 type PageProps = {
@@ -229,16 +230,21 @@ export default async function PostPage({ params }: PageProps) {
             {post.title}
           </h1>
           <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-            <span>Posted on {formatDate(post.publishedAt)}</span>
-            <span aria-hidden="true">•</span>
-            <a
-              className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-              href={`https://github.com/${config.github.owner}/${config.github.repo}/issues/${post.number}`}
-              rel="noreferrer"
-              target="_blank"
-            >
-              View on GitHub
-            </a>
+            <span>{post.author?.name ?? post.author?.login ?? "Author"}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            {comments.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <a
+                  href="#followups"
+                  className="text-zinc-600 underline underline-offset-4 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-4 dark:text-zinc-400 dark:hover:text-white"
+                >
+                  {comments.length} {comments.length === 1 ? "followup" : "followups"}{" "}
+                  <span aria-hidden="true">↓</span>
+                </a>
+              </>
+            )}
           </div>
           {formatLabels(post.labels).length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -265,37 +271,7 @@ export default async function PostPage({ params }: PageProps) {
           <article className="detail-markdown markdown-body mt-0">
             <Markdown content={post.body} />
           </article>
-          <section className="mt-10 border-t border-zinc-200 pt-8 dark:border-slate-700">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-              Comments ({comments.length})
-            </h2>
-            {comments.length === 0 ? (
-              <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-                No comments yet.
-              </p>
-            ) : (
-              <div className="mt-6 space-y-4">
-                {comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
-                  >
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                        {comment.user?.login ?? "Unknown"}
-                      </span>
-                      <span className="text-[10px] uppercase tracking-[0.2em]">
-                        {formatDate(comment.created_at)}
-                      </span>
-                    </div>
-                    <div className="markdown-body mt-3">
-                      <Markdown content={comment.body ?? ""} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <PostFollowups comments={comments} author={post.author} />
         </ReadingShell>
       </section>
     </div>
